@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"regexp"
 	"time"
@@ -109,6 +110,153 @@ func MakeVideoURL(videoId string) string {
 }
 
 // ParseVideo 解析视频下载地址
-func ParseVideo(videoURL string, cookieValue string) {
-	fmt.Println("解析成功")
+func ParseVideo(videoURL string, cookieValue string) (*ParseResult, error) {
+	request, err := http.NewRequest("GET", videoURL, nil)
+	if err != nil {
+		return nil, err
+	}
+	request.AddCookie(&http.Cookie{
+		Name:  "SESSDATA",
+		Value: cookieValue,
+	})
+	client := http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+	bs, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+	html := string(bs)
+	match := regexp.MustCompile(`window.__playinfo__=(.*?)</script>`)
+	result := match.FindStringSubmatch(html)
+	if len(result) == 0 {
+		return nil, errors.New("响应体内容格式异常")
+	}
+	playInfoStr := result[1]
+	var playInfo PlayInfo
+	err = json.Unmarshal([]byte(playInfoStr), &playInfo)
+	if err != nil {
+		return nil, err
+	}
+	initialStateMatch := regexp.MustCompile(`window.__INITIAL_STATE__=(.*?});`)
+	initResult := initialStateMatch.FindStringSubmatch(html)
+	if len(initResult) == 0 {
+		return nil, errors.New("响应体内容格式异常")
+	}
+	initialStateStr := initResult[1]
+	var initialState InitialState
+	err = json.Unmarshal([]byte(initialStateStr), &initialState)
+	if err != nil {
+		os.WriteFile("xxx.json", []byte(initialStateStr), 0600)
+		return nil, err
+	}
+	return &ParseResult{
+		PlayInfoData: playInfo.Data,
+		VideoData:    initialState.Data,
+	}, nil
+}
+
+type ParseResult struct {
+	PlayInfoData
+	VideoData
+}
+
+type PlayInfo struct {
+	Data PlayInfoData `json:"data"`
+}
+
+type PlayInfoData struct {
+	SupportFormats []FormatItem `json:"support_formats"`
+	Dash           struct {
+		Audio []AudioItem `json:"audio"`
+		Video []VideoItem `json:"video"`
+	} `json:"dash"`
+}
+
+type InitialState struct {
+	Data VideoData `json:"videoData"`
+}
+
+type VideoData struct {
+	// 视频标题
+	Title string `json:"title"`
+	// 创作团队
+	Staff []StaffItem `json:"staff"`
+	// 视频统计信息
+	Stat Stat `json:"stat"`
+	// 视频描述
+	Desc    string `json:"desc"`
+	Pubdate int    `json:"pubdate"`
+}
+
+func (video VideoData) PubdateString() string {
+	return time.Unix(int64(video.Pubdate), 0).Format(time.DateOnly)
+}
+
+type Stat struct {
+	// 投币数量
+	Coin int `json:"coin"`
+	// 弹幕条数
+	Danmaku int `json:"danmaku"`
+	// 收藏数量
+	Favorite int `json:"favorite"`
+	// 点赞数量
+	Like int `json:"like"`
+	// 分享数量
+	Share int `json:"share"`
+	// 播放量
+	View int `json:"view"`
+	// 评论数量
+	Reply int `json:"reply"`
+}
+
+type StaffItem struct {
+	Name  string `json:"name"`
+	Title string `json:"title"`
+}
+
+type FormatItem struct {
+	// 视频分辨率 ID
+	Quality int `json:"quality"`
+	// 分辨率描述
+	Description string `json:"new_description"`
+	// 编解码器
+	Codecs []string `json:"codecs"`
+}
+
+type AudioItem struct {
+	// 下载地址
+	BaseUrl string `json:"baseUrl"`
+	// 备用下载地址
+	BackupUrl []string `json:"backupUrl"`
+	// 编解码器
+	Codecs string `json:"codecs"`
+	// 比特率
+	Bandwidth int `json:"bandwidth"`
+}
+
+type VideoItem struct {
+	// 视频分辨率 ID
+	Id int `json:"id"`
+	// 下载地址
+	BaseUrl string `json:"baseUrl"`
+	// 备用下载地址
+	BackupUrl []string `json:"backupUrl"`
+	// 编解码器
+	Codecs string `json:"codecs"`
+	// 比特率
+	Bandwidth int `json:"bandwidth"`
+}
+
+// Description 视频分辨率描述
+func (video VideoItem) Description(formats []FormatItem) string {
+	for _, format := range formats {
+		if format.Quality == video.Id {
+			return format.Description
+		}
+	}
+	return ""
 }
