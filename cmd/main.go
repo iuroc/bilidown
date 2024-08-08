@@ -1,10 +1,16 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"log"
+	"os"
+	"strconv"
 
 	"github.com/iuroc/bilidown"
 )
+
+var scanner = bufio.NewScanner(os.Stdin)
 
 func main() {
 	ClearTerminal()
@@ -16,8 +22,10 @@ func main() {
 func promptDownload(cookieValue string) {
 	for {
 		fmt.Print("> 请输入 Bilibili 视频链接: ")
-		var url string
-		fmt.Scan(&url)
+		if !scanner.Scan() {
+			log.Fatal(scanner.Err())
+		}
+		url := scanner.Text()
 		videoId, err := bilidown.CheckVideoURLOrID(url)
 		if err != nil {
 			ClearTerminal()
@@ -60,12 +68,26 @@ func promptDownload(cookieValue string) {
 		for index, video := range parseResult.Dash.Video {
 			fmt.Printf("[%d]\t[分辨率: %s]\t[比特率: %dKbps]\t[编解码: %s]\n", index+1, video.Description(parseResult.SupportFormats), int(video.Bandwidth/1000), video.Codecs)
 		}
-		fmt.Printf("\n\n请输入需要下载的视频序号 [%d-%d]：", 1, len(parseResult.Dash.Video))
-		var videoSelectIndex int
-		fmt.Scan(&videoSelectIndex)
+		fmt.Println()
+		var videoSelectNum int
+		// https://www.bilibili.com/video/BV1fK4y1t7hj/
+		for {
+			fmt.Printf("请输入需要下载的视频序号 [%d-%d]：", 1, len(parseResult.Dash.Video))
+			if !scanner.Scan() {
+				log.Fatal(scanner.Err())
+			}
+			videoSelectNum, err = strconv.Atoi(scanner.Text())
+			if err != nil || videoSelectNum <= 0 || videoSelectNum > len(parseResult.Dash.Video) {
+				fmt.Print("❗️ 请输入正确的序号\n\n")
+				continue
+			}
+			break
+		}
+		bilidown.Download(parseResult.Dash.Video[videoSelectNum-1], parseResult.Dash.Audio, "download")
 		fmt.Println("🚗 回车继续解析下一个视频")
-		fmt.Scanln()
-		fmt.Scanln()
+		if !scanner.Scan() {
+			log.Fatalln(scanner.Err())
+		}
 		ClearTerminal()
 	}
 }
@@ -103,9 +125,11 @@ func shouldLogin() bool {
 		fmt.Printf("  %d. %s\n", index+1, item)
 	}
 	fmt.Printf("> 请输入操作序号 [%d-%d]: ", 1, len(items))
-	var id int
-	_, err := fmt.Scanf("%d\n", &id)
-	if err != nil || id > len(items) {
+	if !scanner.Scan() {
+		log.Fatal(scanner.Err())
+	}
+	id, err := strconv.Atoi(scanner.Text())
+	if err != nil || id <= 0 || id > len(items) {
 		ClearTerminal()
 		fmt.Print("❗️ 您输入的序号错误，请重新输入\n\n")
 		return shouldLogin()

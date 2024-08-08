@@ -260,3 +260,7 @@ func (video VideoItem) Description(formats []FormatItem) string {
 	}
 	return ""
 }
+
+func Download(video VideoItem, audios []AudioItem, dirPath string) {
+
+}
