@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"time"
 
 	"github.com/chromedp/cdproto/network"
@@ -21,7 +23,7 @@ func Login() (*network.Cookie, error) {
 	ctx, cancel := chromedp.NewContext(allocCtx)
 	defer cancel()
 	err := chromedp.Run(ctx,
-		chromedp.Navigate("https://www.bilibili.com/"),
+		chromedp.Navigate("https://passport.bilibili.com/login"),
 	)
 	if err != nil {
 		return nil, err
@@ -88,4 +90,25 @@ func expiresToTime(expires float64) time.Time {
 	seconds := int64(expires)
 	nanos := int64((expires - float64(seconds)) * 1e9)
 	return time.Unix(seconds, nanos)
+}
+
+// CheckVideoURLOrID 校验视频链接或视频 ID 格式
+func CheckVideoURLOrID(urlOrId string) (videoId string, err error) {
+	match := regexp.MustCompile(`^(?:(?:https?://)?www.bilibili.com/video/)?(BV1[a-zA-Z0-9]+)`)
+	result := match.FindStringSubmatch(urlOrId)
+	if len(result) == 0 {
+		return "", errors.New("视频链接或视频 ID 格式错误")
+	} else {
+		return result[1], nil
+	}
+}
+
+// MakeVideoURL 根据视频 ID 构建视频链接
+func MakeVideoURL(videoId string) string {
+	return "https://www.bilibili.com/video/" + videoId + "/"
+}
+
+// ParseVideo 解析视频下载地址
+func ParseVideo(videoURL string, cookieValue string) {
+	fmt.Println("解析成功")
 }
