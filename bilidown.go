@@ -4,10 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"regexp"
 	"time"
 
@@ -188,8 +191,12 @@ type VideoData struct {
 	// 视频统计信息
 	Stat Stat `json:"stat"`
 	// 视频描述
-	Desc    string `json:"desc"`
-	Pubdate int    `json:"pubdate"`
+	Desc string `json:"desc"`
+	// 发布时间
+	Pubdate int `json:"pubdate"`
+	Owner   struct {
+		Name string `json:"name"`
+	} `json:"owner"`
 }
 
 func (video VideoData) PubdateString() string {
@@ -261,6 +268,109 @@ func (video VideoItem) Description(formats []FormatItem) string {
 	return ""
 }
 
-func Download(video VideoItem, audios []AudioItem, dirPath string) {
+// Download 下载并合并指定的视频和音频，保存到输出目录
+func Download(parseResult *ParseResult, index int, downDirPath string, tempDirPath string) (outputPath string, err error) {
+	var bestAudio AudioItem
+	for _, audio := range parseResult.Dash.Audio {
+		if audio.Bandwidth > bestAudio.Bandwidth {
+			bestAudio = audio
+		}
+	}
+	video := parseResult.Dash.Video[index]
+	ClearDir(tempDirPath)
+	outputPath = filepath.Join(downDirPath, fmt.Sprintf("%s-%s.mp4", parseResult.Title, parseResult.Owner.Name))
+	fmt.Println("🚩 正在下载视频...")
+	tempVideoPath := filepath.Join(tempDirPath, "video")
+	err = DownloadFile(video.BaseUrl, tempVideoPath)
+	if err != nil {
+		return "", err
+	}
+	fmt.Print("\n\n")
+	fmt.Println("🚩 正在下载音频...")
+	tempAudioPath := filepath.Join(tempDirPath, "audio")
+	err = DownloadFile(bestAudio.BaseUrl, tempAudioPath)
+	if err != nil {
+		return "", err
+	}
+	cmd := exec.Command("./ffmpeg", "-i", tempVideoPath, "-i", tempAudioPath, "-vcodec", "copy", "-acodec", "copy", outputPath, "-y")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("合并音视频失败: %v, 输出: %s", err, output)
+	}
+	ClearDir(tempDirPath)
+	return outputPath, nil
+}
 
+func DownloadFile(url string, path string) error {
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return err
+	}
+	request.Header.Set("Referer", "https://www.bilibili.com")
+	request.Header.Set("User-Agent", "iuroc")
+	outFile, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer outFile.Close()
+	client := http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+	totalSize := response.ContentLength
+	var downloaded int64
+	buffer := make([]byte, 1024)
+	for {
+		n, err := response.Body.Read(buffer)
+		if n > 0 {
+			_, writeErr := outFile.Write(buffer[:n])
+			if writeErr != nil {
+				return writeErr
+			}
+			downloaded += int64(n)
+			percent := float64(downloaded) / float64(totalSize) * 100
+			fmt.Printf("\r下载进度: %.2f%% (%d/%d bytes)", percent, downloaded, totalSize)
+		}
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// InitDir 初始化文件夹，如果不存在则自动创建
+func InitDir(path string) {
+	// 检查文件夹是否存在
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		// 文件夹不存在，则创建它
+		err := os.MkdirAll(path, os.ModePerm)
+		if err != nil {
+			fmt.Printf("❗️ 创建文件夹失败: %v\n", err)
+			return
+		}
+		fmt.Printf("✅ 文件夹 '%s' 已成功创建\n", path)
+	}
+}
+
+// ClearDir 清空文件夹
+func ClearDir(path string) {
+	file, err := os.Open(path)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	names, err := file.Readdirnames(-1)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	for _, name := range names {
+		err = os.RemoveAll(filepath.Join(path, name))
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}
 }

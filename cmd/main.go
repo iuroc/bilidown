@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/iuroc/bilidown"
@@ -13,6 +14,8 @@ import (
 var scanner = bufio.NewScanner(os.Stdin)
 
 func main() {
+	bilidown.InitDir("download")
+	bilidown.InitDir("temp")
 	ClearTerminal()
 	cookieValue := promptLogin()
 	ClearTerminal()
@@ -29,21 +32,19 @@ func promptDownload(cookieValue string) {
 		videoId, err := bilidown.CheckVideoURLOrID(url)
 		if err != nil {
 			ClearTerminal()
-			fmt.Print("❗️ 您输入的视频链接格式错误，请重新输入\n\n")
-			promptDownload(cookieValue)
+			fmt.Print("❗️ 您输入的视频链接格式错误, 请重新输入\n\n")
 			continue
 		}
 		videoURL := bilidown.MakeVideoURL(videoId)
 		parseResult, err := bilidown.ParseVideo(videoURL, cookieValue)
 		if err != nil {
 			ClearTerminal()
-			fmt.Print("❗️ 视频解析失败，请重试\n\n")
-			promptDownload(cookieValue)
+			fmt.Print("❗️ 视频解析失败, 请重试\n\n")
 			continue
 		}
 		// https://www.bilibili.com/video/BV1fK4y1t7hj/
 		fmt.Println()
-		fmt.Print("👇👇👇👇👇👇👇👇 解析成功，以下是解析结果 👇👇👇👇👇👇👇👇\n\n")
+		fmt.Print("👇👇👇👇👇👇👇👇 解析成功, 以下是解析结果 👇👇👇👇👇👇👇👇\n\n")
 		fmt.Printf("🌟 视频标题: %s\n📝 视频描述: %s\n\n", parseResult.Title, parseResult.Desc)
 		fmt.Print("🔸🔸🔸🔸🔸🔸🔸🔸🔸🔸 视频信息 🔸🔸🔸🔸🔸🔸🔸🔸🔸🔸\n")
 		for index, staff := range parseResult.Staff {
@@ -71,19 +72,38 @@ func promptDownload(cookieValue string) {
 		fmt.Println()
 		var videoSelectNum int
 		// https://www.bilibili.com/video/BV1fK4y1t7hj/
+		cancel := false
 		for {
-			fmt.Printf("请输入需要下载的视频序号 [%d-%d]：", 1, len(parseResult.Dash.Video))
+			fmt.Printf("请输入需要下载的视频序号 [%d-%d], 输入 0 取消当前操作: ", 1, len(parseResult.Dash.Video))
 			if !scanner.Scan() {
 				log.Fatal(scanner.Err())
 			}
 			videoSelectNum, err = strconv.Atoi(scanner.Text())
-			if err != nil || videoSelectNum <= 0 || videoSelectNum > len(parseResult.Dash.Video) {
+			if err != nil || videoSelectNum < 0 || videoSelectNum > len(parseResult.Dash.Video) {
 				fmt.Print("❗️ 请输入正确的序号\n\n")
 				continue
 			}
+			if videoSelectNum == 0 {
+				cancel = true
+			}
 			break
 		}
-		bilidown.Download(parseResult.Dash.Video[videoSelectNum-1], parseResult.Dash.Audio, "download")
+		ClearTerminal()
+		if cancel {
+			continue
+		}
+		outputPath, err := bilidown.Download(parseResult, videoSelectNum-1, "download", "temp")
+		if err != nil {
+			ClearTerminal()
+			fmt.Printf("❗️ 视频下载失败, 建议您稍后重试: %v\n\n", err)
+			continue
+		}
+		absPath, err := filepath.Abs(outputPath)
+		if err != nil {
+			log.Fatalln(absPath)
+		}
+		ClearTerminal()
+		fmt.Printf("视频下载成功: %s\n\n", absPath)
 		fmt.Println("🚗 回车继续解析下一个视频")
 		if !scanner.Scan() {
 			log.Fatalln(scanner.Err())
@@ -92,8 +112,8 @@ func promptDownload(cookieValue string) {
 	}
 }
 
-// promptLogin 首先检查本地 Cookie，如果无可用 Cookie，则通过 Select 让用户选择是否登录，
-// 如果用户选择登录，则调用浏览器进行登录，并保存返回的 Cookie，否则 Cookie 保持空值表示游客访问。
+// promptLogin 首先检查本地 Cookie, 如果无可用 Cookie, 则通过 Select 让用户选择是否登录,
+// 如果用户选择登录, 则调用浏览器进行登录, 并保存返回的 Cookie, 否则 Cookie 保持空值表示游客访问。
 func promptLogin() (cookieValue string) {
 	cookieSavePath := "cookie"
 	cookieValue, err := bilidown.GetCookieValue(cookieSavePath)
@@ -104,7 +124,7 @@ func promptLogin() (cookieValue string) {
 				if err != nil {
 					ClearTerminal()
 					if err.Error() != "context canceled" {
-						fmt.Print("❗️ 打开浏览器失败，请确保安装了 Chrome 浏览器\n\n")
+						fmt.Print("❗️ 打开浏览器失败, 请确保安装了 Chrome 浏览器\n\n")
 					}
 					continue
 				}
@@ -120,7 +140,7 @@ func promptLogin() (cookieValue string) {
 // shouldLogin 返回是否应该调用浏览器进行登录操作
 func shouldLogin() bool {
 	items := []string{"登录账号（支持全部分辨率）", "游客访问（仅支持低分辨率）"}
-	fmt.Println("🔅 当前未登录，请选择是否登录: ")
+	fmt.Println("🔅 当前未登录, 请选择是否登录: ")
 	for index, item := range items {
 		fmt.Printf("  %d. %s\n", index+1, item)
 	}
@@ -131,7 +151,7 @@ func shouldLogin() bool {
 	id, err := strconv.Atoi(scanner.Text())
 	if err != nil || id <= 0 || id > len(items) {
 		ClearTerminal()
-		fmt.Print("❗️ 您输入的序号错误，请重新输入\n\n")
+		fmt.Print("❗️ 您输入的序号错误, 请重新输入\n\n")
 		return shouldLogin()
 	}
 	return id == 1
