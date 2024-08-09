@@ -1,7 +1,12 @@
 package main
 
-import "os"
+import (
+	"fmt"
+	"os/exec"
+)
 
 func main() {
-	os.RemoveAll("../cmd/temp")
+	cmd := exec.Command("ffmpeg")
+	bs, _ := cmd.CombinedOutput()
+	fmt.Println(string(bs))
 }

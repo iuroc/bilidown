@@ -82,7 +82,7 @@ func GetCookieValue(filePath string) (string, error) {
 	if err != nil {
 		return "", errors.New("cookie 文件内容格式错误")
 	}
-	if cookie.Name == "SESSDATA" && expiresToTime(cookie.Expires).After(time.Now()) {
+	if cookie.Name == "SESSDATA" && ExpiresToTime(cookie.Expires).After(time.Now()) {
 		return cookie.Value, nil
 	} else {
 		return "", errors.New("无可用 Cookie 或 Cookie 过期")
@@ -90,7 +90,7 @@ func GetCookieValue(filePath string) (string, error) {
 }
 
 // ExpiresToTime 将 network.Cookie.Expires 转换为 Time
-func expiresToTime(expires float64) time.Time {
+func ExpiresToTime(expires float64) time.Time {
 	seconds := int64(expires)
 	nanos := int64((expires - float64(seconds)) * 1e9)
 	return time.Unix(seconds, nanos)
@@ -292,10 +292,14 @@ func Download(parseResult *ParseResult, index int, downDirPath string, tempDirPa
 	if err != nil {
 		return "", err
 	}
-	cmd := exec.Command("./ffmpeg", "-i", tempVideoPath, "-i", tempAudioPath, "-vcodec", "copy", "-acodec", "copy", outputPath, "-y")
+	ffmpegExecPath := "ffmpeg"
+	if FileExists("./ffmpeg.exe") || FileExists("./ffmpeg") {
+		ffmpegExecPath = "./" + ffmpegExecPath
+	}
+	cmd := exec.Command(ffmpegExecPath, "-i", tempVideoPath, "-i", tempAudioPath, "-vcodec", "copy", "-acodec", "copy", outputPath, "-y")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("合并音视频失败: %v, 输出: %s", err, output)
+		return "", fmt.Errorf("合并音视频失败: %v\n%s", err, output)
 	}
 	ClearDir(tempDirPath)
 	return outputPath, nil
@@ -373,4 +377,13 @@ func ClearDir(path string) {
 			log.Fatalln(err)
 		}
 	}
+}
+
+// FileExists 判断文件是否存在
+func FileExists(path string) bool {
+	_, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return err == nil
 }
