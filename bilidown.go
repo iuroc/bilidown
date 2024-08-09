@@ -12,7 +12,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
+	"unicode"
 
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
@@ -278,7 +280,9 @@ func Download(parseResult *ParseResult, index int, downDirPath string, tempDirPa
 	}
 	video := parseResult.Dash.Video[index]
 	ClearDir(tempDirPath)
-	outputPath = filepath.Join(downDirPath, fmt.Sprintf("%s-%s.mp4", parseResult.Title, parseResult.Owner.Name))
+	outputFileName := fmt.Sprintf("%s-%s.mp4", parseResult.Title, parseResult.Owner.Name)
+	outputFileName = sanitizeFileName(outputFileName)
+	outputPath = filepath.Join(downDirPath, outputFileName)
 	fmt.Println("🚩 正在下载视频...")
 	tempVideoPath := filepath.Join(tempDirPath, "video")
 	err = DownloadFile(video.BaseUrl, tempVideoPath)
@@ -386,4 +390,24 @@ func FileExists(path string) bool {
 		return false
 	}
 	return err == nil
+}
+
+// sanitizeFileName 处理字符串，去除或替换不适合作为文件名的字符
+func sanitizeFileName(filename string) string {
+	// 定义不允许出现在文件名中的字符集
+	invalidChars := `\/:*?"<>|`
+
+	// 使用 strings.Map 替换敏感字符
+	sanitized := strings.Map(func(r rune) rune {
+		if strings.ContainsRune(invalidChars, r) || unicode.IsControl(r) {
+			return '_' // 用下划线替换敏感字符
+		}
+		return r
+	}, filename)
+
+	// 去除首尾的空白字符和特定特殊字符
+	sanitized = strings.TrimSpace(sanitized)
+	sanitized = strings.Trim(sanitized, ".")
+
+	return sanitized
 }
