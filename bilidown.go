@@ -79,7 +79,11 @@ func GetCookieValue(filePath string) (string, error) {
 	} else if err != nil {
 		log.Fatalln(err)
 	}
-	var cookie network.Cookie
+	var cookie struct {
+		Name    string
+		Value   string
+		Expires float64
+	}
 	err = json.Unmarshal(data, &cookie)
 	if err != nil {
 		return "", errors.New("cookie 文件内容格式错误")
@@ -120,6 +124,7 @@ func ParseVideo(videoURL string, cookieValue string) (*ParseResult, error) {
 	if err != nil {
 		return nil, err
 	}
+	request.Header.Set("User-Agent", "iuroc")
 	request.AddCookie(&http.Cookie{
 		Name:  "SESSDATA",
 		Value: cookieValue,

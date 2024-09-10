@@ -2,3 +2,4 @@ cmd/*.exe
 cmd/download
 cmd/temp
 cmd/cookie
+dist/

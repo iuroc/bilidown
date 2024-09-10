@@ -2,13 +2,18 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
+	"github.com/chromedp/cdproto/network"
 	"github.com/iuroc/bilidown"
+	"github.com/iuroc/gododo/biliqr"
+	"github.com/skip2/go-qrcode"
 )
 
 var scanner = bufio.NewScanner(os.Stdin)
@@ -16,10 +21,32 @@ var scanner = bufio.NewScanner(os.Stdin)
 func main() {
 	bilidown.InitDir("download")
 	bilidown.InitDir("temp")
-	ClearTerminal()
 	cookieValue := promptLogin()
 	ClearTerminal()
 	promptDownload(cookieValue)
+}
+
+func RequireQR() (string, error) {
+	ClearTerminal()
+	fmt.Println("正在获取登录二维码...")
+	qr, info, err := biliqr.NewLoginQR(qrcode.Low)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+	ClearTerminal()
+	fmt.Println(qr.ToSmallString(false))
+	for {
+		status, err := biliqr.GetQRStatus(info.OauthKey)
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
+		if status.Code == 0 {
+			return status.SESSDATA, nil
+		}
+		if status.Code == -2 {
+			return "", errors.New("二维码已过期")
+		}
+	}
 }
 
 func promptDownload(cookieValue string) {
@@ -39,6 +66,7 @@ func promptDownload(cookieValue string) {
 		parseResult, err := bilidown.ParseVideo(videoURL, cookieValue)
 		if err != nil {
 			ClearTerminal()
+			fmt.Println(err.Error())
 			fmt.Print("❗️ 视频解析失败, 请重试\n\n")
 			continue
 		}
@@ -120,16 +148,19 @@ func promptLogin() (cookieValue string) {
 	if err != nil {
 		for {
 			if shouldLogin() {
-				cookie, err := bilidown.Login()
+				cookieValue, err = RequireQR()
 				if err != nil {
 					ClearTerminal()
 					if err.Error() != "context canceled" {
-						fmt.Print("❗️ 打开浏览器失败, 请确保安装了 Chrome 浏览器\n\n")
+						fmt.Print("❗️ " + err.Error() + "\n\n")
 					}
 					continue
 				}
-				bilidown.SaveCookie(cookie, cookieSavePath)
-				cookieValue = cookie.Value
+				bilidown.SaveCookie(&network.Cookie{
+					Value:   cookieValue,
+					Name:    "SESSDATA",
+					Expires: float64(time.Now().Add(160 * 24 * time.Hour).Unix()),
+				}, cookieSavePath)
 			}
 			break
 		}
