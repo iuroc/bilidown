@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -17,10 +18,15 @@ import (
 )
 
 var scanner = bufio.NewScanner(os.Stdin)
+var loginQrcodeUrl *qrcode.QRCode
+
+const qrcodeUrl = "http://127.0.0.1:16666/login"
+const serverAddr = ":16666"
 
 func main() {
 	bilidown.InitDir("download")
 	bilidown.InitDir("temp")
+	go InitHttpService()
 	cookieValue := promptLogin()
 	ClearTerminal()
 	promptDownload(cookieValue)
@@ -33,8 +39,9 @@ func RequireQR() (string, error) {
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
+	loginQrcodeUrl = qr
 	ClearTerminal()
-	fmt.Println(qr.ToSmallString(false))
+	bilidown.OpenUrlByBrowser(qrcodeUrl)
 	for {
 		status, err := biliqr.GetQRStatus(info.OauthKey)
 		if err != nil {
@@ -190,4 +197,27 @@ func shouldLogin() bool {
 
 func ClearTerminal() {
 	fmt.Print("\x1b[H\x1b[2J")
+}
+
+func HandleLoginQrcode(w http.ResponseWriter, r *http.Request) {
+	if loginQrcodeUrl == nil {
+		fmt.Fprintf(w, "二维码未获取，请获取后访问")
+		return
+	}
+	loginQrcodeUrl.WriteFile(100, "1111.png")
+	qrcodeImg, err := loginQrcodeUrl.PNG(300)
+	if err != nil {
+		fmt.Fprintf(w, "二维码生成失败"+err.Error())
+		return
+	}
+	w.Write(qrcodeImg)
+	return
+}
+
+func InitHttpService() {
+	http.HandleFunc("/login", HandleLoginQrcode)
+	err := http.ListenAndServe(serverAddr, nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
 }
