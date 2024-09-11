@@ -204,7 +204,6 @@ func HandleLoginQrcode(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "二维码未获取，请获取后访问")
 		return
 	}
-	loginQrcodeUrl.WriteFile(100, "1111.png")
 	qrcodeImg, err := loginQrcodeUrl.PNG(300)
 	if err != nil {
 		fmt.Fprintf(w, "二维码生成失败"+err.Error())
