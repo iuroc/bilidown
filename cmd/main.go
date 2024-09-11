@@ -4,16 +4,15 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"github.com/iuroc/bilidown"
+	"github.com/iuroc/gododo/biliqr"
+	"github.com/skip2/go-qrcode"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
-
-	"github.com/chromedp/cdproto/network"
-	"github.com/iuroc/bilidown"
-	"github.com/iuroc/gododo/biliqr"
-	"github.com/skip2/go-qrcode"
 )
 
 var scanner = bufio.NewScanner(os.Stdin)
@@ -156,10 +155,10 @@ func promptLogin() (cookieValue string) {
 					}
 					continue
 				}
-				bilidown.SaveCookie(&network.Cookie{
+				bilidown.SaveCookie(&http.Cookie{
 					Value:   cookieValue,
 					Name:    "SESSDATA",
-					Expires: float64(time.Now().Add(160 * 24 * time.Hour).Unix()),
+					Expires: time.Now().Add(160 * 24 * time.Hour),
 				}, cookieSavePath)
 			}
 			break

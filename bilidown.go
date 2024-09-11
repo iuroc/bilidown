@@ -1,7 +1,6 @@
 package bilidown
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -15,52 +14,10 @@ import (
 	"strings"
 	"time"
 	"unicode"
-
-	"github.com/chromedp/cdproto/network"
-	"github.com/chromedp/chromedp"
 )
 
-// Login 调用浏览器登录并返回 SESSDATA
-func Login() (*network.Cookie, error) {
-	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(),
-		chromedp.Flag("headless", false),
-	)
-	defer cancel()
-	ctx, cancel := chromedp.NewContext(allocCtx)
-	defer cancel()
-	err := chromedp.Run(ctx,
-		chromedp.Navigate("https://passport.bilibili.com/login"),
-	)
-	if err != nil {
-		return nil, err
-	}
-	var loginCookie *network.Cookie
-	for {
-		time.Sleep(time.Second)
-		err = chromedp.Run(ctx,
-			chromedp.ActionFunc(func(ctx context.Context) error {
-				cookies, err := network.GetCookies().Do(ctx)
-				for _, cookie := range cookies {
-					if cookie.Name == "SESSDATA" {
-						loginCookie = cookie
-						return nil
-					}
-				}
-				return err
-			}),
-		)
-		if err != nil {
-			return nil, err
-		}
-		if loginCookie != nil {
-			break
-		}
-	}
-	return loginCookie, nil
-}
-
 // SaveCookie 将 Cookie 以 JSON 格式保存到 cookie 文件中
-func SaveCookie(cookie *network.Cookie, cookieSavePath string) {
+func SaveCookie(cookie *http.Cookie, cookieSavePath string) {
 	result, err := json.Marshal(cookie)
 	if err != nil {
 		log.Fatalln(err)
@@ -82,24 +39,17 @@ func GetCookieValue(filePath string) (string, error) {
 	var cookie struct {
 		Name    string
 		Value   string
-		Expires float64
+		Expires time.Time
 	}
 	err = json.Unmarshal(data, &cookie)
 	if err != nil {
 		return "", errors.New("cookie 文件内容格式错误")
 	}
-	if cookie.Name == "SESSDATA" && ExpiresToTime(cookie.Expires).After(time.Now()) {
+	if cookie.Name == "SESSDATA" && cookie.Expires.After(time.Now()) {
 		return cookie.Value, nil
 	} else {
 		return "", errors.New("无可用 Cookie 或 Cookie 过期")
 	}
-}
-
-// ExpiresToTime 将 network.Cookie.Expires 转换为 Time
-func ExpiresToTime(expires float64) time.Time {
-	seconds := int64(expires)
-	nanos := int64((expires - float64(seconds)) * 1e9)
-	return time.Unix(seconds, nanos)
 }
 
 // CheckVideoURLOrID 校验视频链接或视频 ID 格式
