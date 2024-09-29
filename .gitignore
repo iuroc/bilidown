@@ -1,5 +1,2 @@
-cmd/*.exe
-cmd/download
-cmd/temp
-cmd/cookie
+node_modules/
 dist/
