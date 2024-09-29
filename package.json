@@ -1,0 +1,18 @@
+{
+  "name": "bilidown",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"pnpm --silent --prefix client dev\" \"cd server && air\" -raw",
+    "start": "cd server && go run main.go",
+    "build": "pnpm --silent --prefix client build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
