@@ -39,6 +39,7 @@ type VideoInfo struct {
 	Dimension `json:"dimension"`
 	Staff     Staff          `json:"staff"`
 	Pages     []PageListItem `json:"pages"`
+	Duration  int            `json:"duration"`
 }
 
 type Staff []struct {

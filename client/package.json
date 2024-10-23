@@ -11,12 +11,13 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "vue": "^3.5.10"
-  },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.1.4",
     "vite": "^5.4.8"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "vanjs-core": "^1.5.2",
+    "vanjs-router": "^2.0.7"
+  }
 }

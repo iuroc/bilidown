@@ -2,6 +2,7 @@ package bilibili_test
 
 import (
 	"bilidown/bilibili"
+	"encoding/json"
 	"fmt"
 	"testing"
 )
@@ -21,5 +22,10 @@ func TestGetVideoInfo(t *testing.T) {
 		t.Error(err)
 	}
 
-	fmt.Printf("%+v", videoInfo)
+	data, err := json.Marshal(videoInfo)
+	if err != nil {
+		t.Error(err)
+	}
+
+	fmt.Println(string(data))
 }
