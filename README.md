@@ -9,10 +9,25 @@
 3. 主页面，进入时会校验二维码有效性，解析按钮按下时也会校验二维码有效性，如果二维码失效，则弹出登录窗口
 4. 使用 Nuxt 开发，尝试使用新的 UI 框架
 5. 主页面，放置地址输入框，右边一个解析按钮，支持解析下面几种链接：
-   1. 普通的 BV1 视频：https://www.bilibili.com/video/BV1NfxMedEUy/
-   2. 番剧：https://www.bilibili.com/video/BV1LZ4oe1EcR/ => 重定向到 => https://www.bilibili.com/bangumi/play/ep835909
-   3. 带分集的 BV1 视频：https://www.bilibili.com/video/BV1KX4y1V7sA/
+    1. 普通的 BV1 视频：https://www.bilibili.com/video/BV1NfxMedEUy/
+    2. HDR 视频：https://www.bilibili.com/video/BV1rp4y1e745/
+    3. 番剧：https://www.bilibili.com/video/BV1LZ4oe1EcR/ => 重定向到 => https://www.bilibili.com/bangumi/play/ep835909
+    4. 带分集的 BV1 视频：https://www.bilibili.com/video/BV1KX4y1V7sA/
 6. 主页面输入视频地址，点击解析，如果是单集的视频，直接呈现视频信息和下载界面，如果是多集的，就显示多集列表
 7. 组件列表
-   1. 分集列表
-   2. 单个视频详情卡片
+    1. 分集列表
+    2. 单个视频详情卡片
+
+## 功能规划（越往下越新）
+
+### 视频解析（/work）
+
+输入框和解析按钮，点击后下面呈现分集列表，如果是只有 1 项的，那就只显示 1 项，点击分集列表项，可以弹出模态框查看视频的详细信息，不管是当个还是批量，都默认全部选中分集结果，然后底部是【打包解析下载】按钮（单个结果时则显示【解析下载】），然后将下载任务以 JSON POST 的方式发给后端，后端向服务器创建一个下载任务，前端会询问（弹出窗口，选择下载到哪个文件夹），然后前端弹出提示，下载任务创建成功，创建任务时，后端向数据库插入任务记录，比如是批量解析的，其实不需要合并为一个组，只需要在批量解析下载时，选择一个统一的目录即可，而存储下载记录时，依然是分开来单个存储的（记录包括：bvid, cid, time 时间, status 进度, path 完整路径，视频标题、封面、下载时间、文件大小、分辨率、UP 主名称），后端 Go 在每次启动 HTTP 服务器时，都将未完成的数据库记录的进度改为失败，HTTP 服务器存活期间，Go 的临时的 Sync Map 数据是持续有效的，适合存储每个任务的实时下载进度，并供前端轮询。前端轮询时，Go 将 Sync Map 中未完成的（已经完成的记录应该等数据库进度更新为完成后就从 Map 删除）记录包括进度一起返回给前端。
+
+### 下载任务（/task）
+
+展示历史下载记录（包括视频标题、封面、下载时间、文件大小、分辨率、UP 主名称）
+
+参考文档：https://socialsisteryi.github.io/bilibili-API-collect/docs/video/videostream_url.html
+
+校验是否登录（携带 Cookie）：https://api.bilibili.com/x/space/myinfo
