@@ -11,14 +11,21 @@ export const VideoInfoCard = (option: {
     }) => {
         return div({ class: 'input-group input-group-sm' },
             div({ class: 'input-group-text' }, title),
-            van.tags[option?.elementType || 'input']({ class: 'form-control bg-white', disabled: option?.disabled || false, value })
+            van.tags[option?.elementType || 'input']({
+                class: 'form-control bg-white',
+                disabled: option?.disabled || false,
+                style: 'cursor: text;',
+                value
+            })
         )
     }
     const DescriptionGroup = (bottom = false) => div({
-        class: () => `input-group input-group-sm flex-fill ${bottom ? 'd-lg-none' : 'd-none'} ${option.data.val.desc ? 'd-lg-flex' : 'd-none'}`,
+        class: () => `input-group input-group-sm flex-fill ${bottom ? 'd-lg-none' : 'd-none d-lg-flex'}`,
     },
         div({ class: 'input-group-text' }, '描述'),
-        div({ class: 'form-control overflow-auto' }, () => option.data.val.desc)
+        div({ class: 'form-control hstack' },
+            () => option.data.val.desc.match(/^(\s*|-)$/) ? '暂无描述' : option.data.val.desc
+        )
     )
 
     const ownerFaceHide = van.state(true)

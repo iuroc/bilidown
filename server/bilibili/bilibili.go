@@ -3,7 +3,6 @@ package bilibili
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -20,7 +19,8 @@ func GetVideoInfo(avid string, bvid string) (videoInfo *VideoInfo, err error) {
 	if err != nil {
 		return nil, err
 	}
-	request.Header.Set("User-Agent", "github@iuroc")
+	request.Header.Set("Referer", "https://www.bilibili.com")
+	request.Header.Set("User-Agent", "Mozilla/5.0")
 	resp, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return nil, err
@@ -90,7 +90,8 @@ func GetPlayInfo(avid string, bvid string, cid int, sessdata string) (playInfo *
 		return nil, err
 	}
 	request.Header.Set("Cookie", "SESSDATA="+sessdata)
-	request.Header.Set("User-Agent", "github@iuroc")
+	request.Header.Set("Referer", "https://www.bilibili.com")
+	request.Header.Set("User-Agent", "Mozilla/5.0")
 	resp, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return nil, err
@@ -108,7 +109,6 @@ func GetPlayInfo(avid string, bvid string, cid int, sessdata string) (playInfo *
 	if body.Code != 0 {
 		return nil, errors.New(body.Message)
 	}
-	fmt.Println(string(body.Data))
 
 	playInfo = &PlayInfo{}
 	err = json.Unmarshal(body.Data, &playInfo)
