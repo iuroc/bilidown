@@ -37,13 +37,15 @@ export const VideoInfoCard = (option: {
                 // 封面
                 div({ class: 'col-md-5 col-xl-4' },
                     div({ class: 'position-relative' },
-                        img({
-                            src: () => option.data.val.pic,
-                            class: 'w-100 rounded',
-                            ondragstart: event => event.preventDefault(),
-                            referrerPolicy: 'no-referrer',
-                            onload: () => ownerFaceHide.val = false
-                        }),
+                        div({ class: 'ratio ratio-16x9' },
+                            img({
+                                src: () => option.data.val.pic,
+                                class: 'w-100 rounded object-fit-cover',
+                                ondragstart: event => event.preventDefault(),
+                                referrerPolicy: 'no-referrer',
+                                onload: () => ownerFaceHide.val = false
+                            }),
+                        ),
                         img({
                             src: () => option.data.val.owner.face,
                             hidden: ownerFaceHide,

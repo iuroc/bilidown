@@ -5,7 +5,6 @@ import (
 	"bilidown/util"
 	"encoding/base64"
 	"net/http"
-	"regexp"
 	"strconv"
 
 	"github.com/skip2/go-qrcode"
@@ -18,6 +17,7 @@ func API() *http.ServeMux {
 	router.HandleFunc("/getSeasonInfo", GetSeasonInfo)
 	router.HandleFunc("/getQRInfo", GetQRInfo)
 	router.HandleFunc("/checkLogin", CheckLogin)
+	router.HandleFunc("/getPlayInfo", GetPlayInfo)
 	return router
 }
 
@@ -27,11 +27,7 @@ func GetVideoInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	bvid := r.FormValue("bvid")
-	if bvid == "" {
-		util.Res{Success: false, Message: "bvid 不能为空"}.Write(w)
-		return
-	}
-	if !regexp.MustCompile("^BV1[a-zA-Z0-9]+").MatchString(bvid) {
+	if !util.CheckBVID(bvid) {
 		util.Res{Success: false, Message: "bvid 格式错误"}.Write(w)
 		return
 	}
@@ -125,4 +121,37 @@ func CheckLogin(w http.ResponseWriter, r *http.Request) {
 	} else {
 		util.Res{Success: false, Message: "登录失败"}.Write(w)
 	}
+}
+
+// GetPlayInfo 获取视频播放信息
+func GetPlayInfo(w http.ResponseWriter, r *http.Request) {
+	if r.ParseForm() != nil {
+		util.Res{Success: false, Message: "参数错误"}.Write(w)
+		return
+	}
+
+	bvid := r.FormValue("bvid")
+	if !util.CheckBVID(bvid) {
+		util.Res{Success: false, Message: "bvid 格式错误"}.Write(w)
+		return
+	}
+	cid, err := strconv.Atoi(r.FormValue("cid"))
+	if err != nil {
+		util.Res{Success: false, Message: "cid 格式错误"}.Write(w)
+		return
+	}
+	db := util.GetDB()
+	defer db.Close()
+	sessdata, err := bilibili.GetSessdata(db)
+	if err != nil || sessdata == "" {
+		util.Res{Success: false, Message: "未登录"}.Write(w)
+		return
+	}
+	client := bilibili.BiliClient{SESSDATA: sessdata}
+	playInfo, err := client.GetPlayInfo(bvid, cid)
+	if err != nil {
+		util.Res{Success: false, Message: err.Error()}.Write(w)
+		return
+	}
+	util.Res{Success: true, Message: "获取成功", Data: playInfo}.Write(w)
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"regexp"
 )
 
 // 统一的 JSON 响应结构
@@ -36,4 +37,11 @@ func GetDB(path ...string) *sql.DB {
 		log.Fatalln(err)
 	}
 	return db
+}
+
+func CheckBVID(bvid string) bool {
+	if !regexp.MustCompile("^BV1[a-zA-Z0-9]+").MatchString(bvid) {
+		return false
+	}
+	return true
 }
