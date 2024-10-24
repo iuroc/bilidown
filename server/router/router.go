@@ -14,12 +14,10 @@ import (
 func API() *http.ServeMux {
 	router := http.NewServeMux()
 
-	router.HandleFunc("/checkLogin", func(w http.ResponseWriter, r *http.Request) {
-
-	})
 	router.HandleFunc("/getVideoInfo", GetVideoInfo)
 	router.HandleFunc("/getSeasonInfo", GetSeasonInfo)
 	router.HandleFunc("/getQRInfo", GetQRInfo)
+	router.HandleFunc("/checkLogin", CheckLogin)
 	return router
 }
 
@@ -82,6 +80,7 @@ func GetSeasonInfo(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetQRInfo(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	client := bilibili.BiliClient{}
 	qrInfo, err := client.NewQRInfo()
 	if err != nil {
@@ -94,7 +93,6 @@ func GetQRInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	base64Str := base64.StdEncoding.EncodeToString(imageData)
-	w.Header().Set("Cache-Control", "no-store")
 	util.Res{
 		Success: true,
 		Message: "获取成功",
@@ -105,4 +103,26 @@ func GetQRInfo(w http.ResponseWriter, r *http.Request) {
 			Key:   qrInfo.QrcodeKey,
 			Image: "data:image/png;base64," + base64Str,
 		}}.Write(w)
+}
+
+func CheckLogin(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+	db := util.GetDB()
+	defer db.Close()
+	sessdata, err := bilibili.GetSessdata(db)
+	if err != nil || sessdata == "" {
+		util.Res{Success: false, Message: "未登录"}.Write(w)
+		return
+	}
+	client := bilibili.BiliClient{SESSDATA: sessdata}
+	check, err := client.CheckLogin()
+	if err != nil {
+		util.Res{Success: false, Message: err.Error()}.Write(w)
+		return
+	}
+	if check {
+		util.Res{Success: true, Message: "登录成功"}.Write(w)
+	} else {
+		util.Res{Success: false, Message: "登录失败"}.Write(w)
+	}
 }

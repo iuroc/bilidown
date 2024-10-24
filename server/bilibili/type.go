@@ -27,6 +27,14 @@ func (b *BaseRes) Success() bool {
 	return b.Code == 0
 }
 
+func (b *BaseResV2) Success() bool {
+	return b.Code == 0
+}
+
+func (b *BaseResV3) Success() bool {
+	return b.Code == 0
+}
+
 type QRInfo struct {
 	URL       string `json:"url"`
 	QrcodeKey string `json:"qrcode_key"`

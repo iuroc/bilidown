@@ -42,7 +42,7 @@ func (client *BiliClient) CheckLogin() (bool, error) {
 		return false, err
 	}
 	defer response.Body.Close()
-	body := BaseRes{}
+	body := BaseResV2{}
 	err = json.NewDecoder(response.Body).Decode(&body)
 	if err != nil {
 		return false, err
