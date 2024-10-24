@@ -102,13 +102,13 @@ export const secondToTime = (second: number) => {
 /** 视频信息卡片数据 */
 export type VideoInfoCardData = {
     title: string
-    desc: string
-    pubdate: number
-    pic: string
+    description: string
+    publishData: number
+    cover: string
     duration: number
-    bvid: string
     pages: {
         cid: number
+        bvid: string
         page: number
         from: string
         part: string
@@ -140,4 +140,32 @@ export type VideoInfo = VideoInfoCardData & {
         name: string
         face: string
     }[]
+    title: string
+    desc: string
+    pubdate: number
+    pic: string
+    duration: number
+    bvid: string
+    pages: {
+        cid: number
+        page: number
+        from: string
+        part: string
+        duration: number
+        dimension: {
+            width: number
+            height: number
+            rotate: number
+        }
+    }[]
+    owner: {
+        mid: number
+        name: string
+        face: string
+    }
+    dimension: {
+        width: number
+        height: number
+        rotate: number
+    }
 }

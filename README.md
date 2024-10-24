@@ -18,6 +18,12 @@
     1. 分集列表
     2. 单个视频详情卡片
 
+## 关键接口
+
+1. 根据 bvid 获取视频信息（包括基本信息和分集列表，含 bvid 和 cid）：https://api.bilibili.com/x/web-interface/view?bvid=（携带 Cookie）
+2. 根据 bvid 和 cid 获取视频播放地址：https://api.bilibili.com/x/player/wbi/playurl?bvid=&cid=&fnval=4048&fnver=0&fourk=1
+3. 根据 epid 获取番剧信息（包括基本信息和分集列表，含 bvid 和 cid）：https://api.bilibili.com/pgc/view/web/season?ep_id=
+
 ## 功能规划（越往下越新）
 
 ### 视频解析（/work）
@@ -40,8 +46,10 @@ SESSDATA 存储在 SQLite，前端每次初始进入页面时，都从 SQLite �
 
 ### field 字段表
 
--   `sessdata` string
--   其他设置项字段...
+-   `key` string
+-   `value` string
+
+该表插入 SESSDATA.
 
 ### task 任务表
 

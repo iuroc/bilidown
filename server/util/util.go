@@ -1,7 +1,9 @@
 package util
 
 import (
+	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -20,4 +22,18 @@ func (r Res) Write(w http.ResponseWriter) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(bs)
+}
+
+func GetDB(path ...string) *sql.DB {
+	pathStr := ""
+	if len(path) == 0 {
+		pathStr = "./data.db"
+	} else {
+		pathStr = path[0]
+	}
+	db, err := sql.Open("sqlite3", pathStr)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return db
 }
