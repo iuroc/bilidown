@@ -35,7 +35,7 @@ type VideoInfo struct {
 		Mid  int    `json:"mid"`
 		Name string `json:"name"`
 		Face string `json:"face"`
-	}
+	} `json:"owner"`
 	Dimension `json:"dimension"`
 	Staff     Staff          `json:"staff"`
 	Pages     []PageListItem `json:"pages"`

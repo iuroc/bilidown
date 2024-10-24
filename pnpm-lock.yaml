@@ -17,13 +17,19 @@ importers:
       bootstrap:
         specifier: ^5.3.3
         version: 5.3.3(@popperjs/core@2.11.8)
+      uuid:
+        specifier: ^10.0.0
+        version: 10.0.0
       vanjs-core:
         specifier: ^1.5.2
         version: 1.5.2
       vanjs-router:
-        specifier: ^2.0.7
-        version: 2.0.7
+        specifier: ^2.0.8
+        version: 2.0.8
     devDependencies:
+      '@types/uuid':
+        specifier: ^10.0.0
+        version: 10.0.0
       vite:
         specifier: ^5.4.8
         version: 5.4.9
@@ -254,6 +260,9 @@ packages:
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==, tarball: https://registry.npmjs.org/@types/estree/-/estree-1.0.6.tgz}
 
+  '@types/uuid@10.0.0':
+    resolution: {integrity: sha512-7gqG38EyHgyP1S+7+xomFtL+ZNHcKv6DwNaCZmJmo1vgMugyF3TCnXVg4t1uk89mLNwnLtnY3TpOpCOyp1/xHQ==, tarball: https://registry.npmjs.org/@types/uuid/-/uuid-10.0.0.tgz}
+
   ansi-regex@5.0.1:
     resolution: {integrity: sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==, tarball: https://registry.npmjs.org/ansi-regex/-/ansi-regex-5.0.1.tgz}
     engines: {node: '>=8'}
@@ -373,11 +382,15 @@ packages:
   tslib@2.7.0:
     resolution: {integrity: sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA==, tarball: https://registry.npmjs.org/tslib/-/tslib-2.7.0.tgz}
 
+  uuid@10.0.0:
+    resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==, tarball: https://registry.npmjs.org/uuid/-/uuid-10.0.0.tgz}
+    hasBin: true
+
   vanjs-core@1.5.2:
     resolution: {integrity: sha512-z9MHAzxYbNFJ6MYP+4j9l9KMxDU3ryI65JjIfUbGQwF1paLfiuqtIiq9Ve1UGKLd774Z7mtdWzd+/FR785dKjQ==, tarball: https://registry.npmjs.org/vanjs-core/-/vanjs-core-1.5.2.tgz}
 
-  vanjs-router@2.0.7:
-    resolution: {integrity: sha512-CvIL5C5OvknAZnhfdUMujwzklnweon4WLU+QzHxtjpWY3W6y6BDRbx5IXNat++GmPYxMg21LBomqRPUbPBMYjQ==, tarball: https://registry.npmjs.org/vanjs-router/-/vanjs-router-2.0.7.tgz}
+  vanjs-router@2.0.8:
+    resolution: {integrity: sha512-xuoo7AbhNXLbYJynUlYJPMCjlDUNnJ2UZN9vPl39qJOnb8hPrhWfye1mnwZiyQGimd4v/pJA2OD4KrtlJ7AUqQ==, tarball: https://registry.npmjs.org/vanjs-router/-/vanjs-router-2.0.8.tgz}
 
   vite@5.4.9:
     resolution: {integrity: sha512-20OVpJHh0PAM0oSOELa5GaZNWeDjcAvQjGXy2Uyr+Tp+/D2/Hdz6NLgpJLsarPTA2QJ6v8mX2P1ZfbsSKvdMkg==, tarball: https://registry.npmjs.org/vite/-/vite-5.4.9.tgz}
@@ -549,6 +562,8 @@ snapshots:
 
   '@types/estree@1.0.6': {}
 
+  '@types/uuid@10.0.0': {}
+
   ansi-regex@5.0.1: {}
 
   ansi-styles@4.3.0:
@@ -691,9 +706,11 @@ snapshots:
 
   tslib@2.7.0: {}
 
+  uuid@10.0.0: {}
+
   vanjs-core@1.5.2: {}
 
-  vanjs-router@2.0.7:
+  vanjs-router@2.0.8:
     dependencies:
       vanjs-core: 1.5.2
 
