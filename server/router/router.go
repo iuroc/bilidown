@@ -16,6 +16,7 @@ func API() *http.ServeMux {
 	router.HandleFunc("/getVideoInfo", GetVideoInfo)
 	router.HandleFunc("/getSeasonInfo", GetSeasonInfo)
 	router.HandleFunc("/getQRInfo", GetQRInfo)
+	router.HandleFunc("/getQRStatus", GetQRStatus)
 	router.HandleFunc("/checkLogin", CheckLogin)
 	router.HandleFunc("/getPlayInfo", GetPlayInfo)
 	return router
@@ -154,4 +155,36 @@ func GetPlayInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	util.Res{Success: true, Message: "获取成功", Data: playInfo}.Write(w)
+}
+
+// GetQRStatus 获取二维码状态
+func GetQRStatus(w http.ResponseWriter, r *http.Request) {
+	if r.ParseForm() != nil {
+		util.Res{Success: false, Message: "参数错误"}.Write(w)
+		return
+	}
+
+	key := r.FormValue("key")
+	if key == "" {
+		util.Res{Success: false, Message: "key 不能为空"}.Write(w)
+		return
+	}
+	client := bilibili.BiliClient{}
+	qrStatus, sessdata, err := client.GetQRStatus(key)
+	if err != nil {
+		util.Res{Success: false, Message: err.Error()}.Write(w)
+		return
+	}
+	if qrStatus.Code != bilibili.QR_SUCCESS {
+		util.Res{Success: false, Message: qrStatus.Message}.Write(w)
+		return
+	}
+	db := util.GetDB()
+	defer db.Close()
+	err = bilibili.SaveSessdata(db, sessdata)
+	if err != nil {
+		util.Res{Success: false, Message: err.Error()}.Write(w)
+		return
+	}
+	util.Res{Success: true, Message: "登录成功"}.Write(w)
 }
