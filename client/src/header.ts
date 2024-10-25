@@ -16,6 +16,9 @@ export default () => {
             div({ class: 'nav-item', hidden: () => !hasLogin.val },
                 a({ class: classStr('task'), href: '#/task' }, '任务列表')
             ),
+            div({ class: 'nav-item', hidden: () => !hasLogin.val },
+                a({ class: classStr('setting'), href: '#/setting' }, '设置中心')
+            ),
             div({ class: 'nav-item', hidden: hasLogin },
                 a({ class: classStr('login'), href: '#/login' }, '扫码登录')
             ),

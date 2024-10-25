@@ -4,6 +4,7 @@ import Header from './header'
 import Work from './work'
 import Task from './task'
 import Login from './login'
+import Setting from './setting'
 import { redirect } from 'vanjs-router'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
@@ -16,6 +17,7 @@ van.add(document.body,
         Header(),
         Work(),
         Task(),
-        Login()
+        Login(),
+        Setting()
     )
 )

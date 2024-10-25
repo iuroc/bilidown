@@ -19,6 +19,10 @@ export default () => {
                                 img({
                                     src: qrSrc,
                                     class: 'w-100',
+                                    hidden: true,
+                                    onload(this: HTMLImageElement) {
+                                        this.hidden = false
+                                    },
                                     ondragstart: event => event.preventDefault(),
                                 })
                             )

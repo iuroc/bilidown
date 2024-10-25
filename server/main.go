@@ -27,7 +27,7 @@ func InitTables() *sql.DB {
 	defer db.Close()
 
 	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS "field" (
-		"name" TEXT PRIMARY KEY,
+		"name" TEXT PRIMARY KEY NOT NULL,
 		"value" TEXT
 	)`)
 	if err != nil {
