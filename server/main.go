@@ -14,7 +14,7 @@ import (
 func main() {
 	InitTables()
 
-	http.Handle("/", http.FileServer(http.Dir("../client/dist")))
+	http.Handle("/", http.FileServer(http.Dir("static")))
 	http.Handle("/api/", http.StripPrefix("/api", router.API()))
 
 	fmt.Println("http://127.0.0.1:8098")

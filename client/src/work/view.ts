@@ -1,7 +1,7 @@
 import van, { State, Val } from 'vanjs-core'
 import { VideoInfoCardData } from './type'
 
-const { a, button, div, img, input } = van.tags
+const { a, button, div, img, input, span } = van.tags
 
 export const VideoInfoCard = (option: {
     data: State<VideoInfoCardData>
@@ -26,8 +26,8 @@ export const VideoInfoCard = (option: {
         return div({
             class: () => `input-group input-group-sm flex-fill ${bottom ? `d-${size.val}-none` : `d-none d-${size.val}-flex`}`,
         },
-            div({ class: 'input-group-text' }, '描述'),
-            div({ class: 'form-control hstack' },
+            div({ class: 'input-group-text align-items-start' }, '描述'),
+            div({ class: 'form-control' },
                 () => option.data.val.description.match(/^(\s*|-)$/) ? '暂无描述' : option.data.val.description
             )
         )
