@@ -1,7 +1,7 @@
 import van, { State, Val } from 'vanjs-core'
 import { VideoInfoCardData } from './type'
 
-const { div, img, input } = van.tags
+const { a, button, div, img, input } = van.tags
 
 export const VideoInfoCard = (option: {
     data: State<VideoInfoCardData>
@@ -36,7 +36,14 @@ export const VideoInfoCard = (option: {
     const ownerFaceHide = van.state(true)
 
     return div({ class: 'card border-3', hidden: () => !option.data.val.title },
-        div({ class: 'card-header' }, () => option.data.val.title),
+        div({ class: 'card-header' },
+            a({
+                class: 'link-dark text-decoration-none fw-bold', href: () => option.data.val.targetURL,
+                target: '_blank',
+            },
+                () => option.data.val.title,
+            )
+        ),
         div({ class: 'card-body vstack gap-3' },
             div({ class: 'row gx-3 gy-3' },
                 // 封面
@@ -46,21 +53,33 @@ export const VideoInfoCard = (option: {
                         : 'col-8 col-sm-6 mx-auto col-md-5 col-lg-3 col-xl-2'
                 },
                     div({ class: 'position-relative' },
-                        img({
-                            src: () => option.data.val.cover,
-                            class: 'w-100 rounded',
-                            ondragstart: event => event.preventDefault(),
-                            referrerPolicy: 'no-referrer',
-                            onload: () => ownerFaceHide.val = false
-                        }),
-                        img({
-                            src: () => option.data.val.owner.face,
-                            hidden: ownerFaceHide,
-                            referrerPolicy: 'no-referrer',
-                            ondragstart: event => event.preventDefault(),
-                            style: `right: 1rem; bottom: 1rem;`,
-                            class: 'rounded-3 border shadow position-absolute w-25'
-                        })
+                        a({
+                            href: () => option.data.val.targetURL,
+                            title: () => `打开视频播放页面`,
+                            target: '_blank',
+                        },
+                            img({
+                                src: () => option.data.val.cover,
+                                class: 'w-100 rounded',
+                                ondragstart: event => event.preventDefault(),
+                                referrerPolicy: 'no-referrer',
+                                onload: () => ownerFaceHide.val = false
+                            })
+                        ),
+                        a({
+                            href: () => `https://space.bilibili.com/${option.data.val.owner.mid}`,
+                            title: () => `查看用户主页：${option.data.val.owner.name}`,
+                            target: '_blank',
+                        },
+                            img({
+                                src: () => option.data.val.owner.face,
+                                hidden: ownerFaceHide,
+                                referrerPolicy: 'no-referrer',
+                                ondragstart: event => event.preventDefault(),
+                                style: `right: 1rem; bottom: 1rem;`,
+                                class: 'rounded-3 border shadow position-absolute w-25'
+                            })
+                        ),
                     ),
                 ),
                 // 字段信息

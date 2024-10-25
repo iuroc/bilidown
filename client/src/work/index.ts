@@ -17,7 +17,7 @@ export default () => {
         title: '', description: '', cover: '', publishData: '', duration: 0,
         pages: [], owner: { face: '', mid: 0, name: '' },
         dimension: { width: 0, height: 0, rotate: 0 },
-        staff: [], status: '', areas: [], styles: []
+        staff: [], status: '', areas: [], styles: [], targetURL: ''
     })
     /** 标识视频信息卡片应该显示普通视频还是剧集 */
     const videoInfoCardMode = van.state<'video' | 'season'>('video')
@@ -81,6 +81,8 @@ export default () => {
             if (!value) return goto('work')
             if (idType == 'bv' && !value.match(/^BV1[a-zA-Z0-9]+$/)) return goto('work')
             if ((idType == 'ep' || idType == 'ss') && !value.match(/^\d+$/)) return goto('work')
+            if (idType == 'bv') urlValue.val = value
+            else if (idType == 'ep' || idType == 'ss') urlValue.val = `${idType}${value}`
             start({ urlInvalid, videoInfocardData, btnLoading, videoInfoCardMode, idType, value })
         },
         async onLoad() {
@@ -107,6 +109,7 @@ const start = (option: {
         const bvid = option.value as string
         getVideoInfo(bvid).then(info => {
             option.videoInfocardData.val = {
+                targetURL: `https://www.bilibili.com/video/${bvid}`,
                 areas: [],
                 styles: [],
                 status: '',
@@ -132,6 +135,7 @@ const start = (option: {
         const ssid = option.idType === 'ss' ? option.value as number : 0
         getSeasonInfo(epid, ssid).then(info => {
             option.videoInfocardData.val = {
+                targetURL: `https://www.bilibili.com/bangumi/play/${option.idType}${option.value}`,
                 areas: info.areas.map(i => i.name),
                 styles: info.styles,
                 duration: 0,

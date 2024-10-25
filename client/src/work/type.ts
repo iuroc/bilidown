@@ -50,6 +50,8 @@ export type VideoInfoCardData = {
     areas: string[]
     /** 分类标签 */
     styles: string[]
+    /** 播放页面 */
+    targetURL: string
 }
 
 export type StaffItem = {
