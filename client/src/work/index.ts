@@ -3,6 +3,7 @@ import { Route, goto, nowHash } from 'vanjs-router'
 import { VideoInfoCard, VideoInfoCardData } from './view'
 import { getVideoInfo } from './data'
 import { v4 } from 'uuid'
+import { checkLogin, hasLogin } from '../mixin'
 
 const { button, div, input, label, span } = van.tags
 
@@ -56,11 +57,17 @@ export default () => {
                 VideoInfoCard({ data: videoInfocardData })
             )
         },
-        onFirst() {
+        delayed: true,
+        async onFirst() {
+            if (!await checkLogin()) return
             const bvid = this.args[0]
             if (!bvid) return
             if (bvid && !bvid.match(/^BV1[a-zA-Z0-9]+$/)) return goto('work')
             start({ urlInvalid, bvid, videoInfocardData, btnLoading })
+        },
+        async onLoad() {
+            if (!hasLogin.val) return goto('login')
+            this.show()
         }
     })
 }
