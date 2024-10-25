@@ -72,10 +72,19 @@ func GetSeasonInfo(w http.ResponseWriter, r *http.Request) {
 		util.Res{Success: false, Message: "参数错误"}.Write(w)
 		return
 	}
+	var epid int
 	epid, err := strconv.Atoi(r.FormValue("epid"))
-	if err != nil {
+	if r.FormValue("epid") != "" && err != nil {
 		util.Res{Success: false, Message: "epid 格式错误"}.Write(w)
 		return
+	}
+	var ssid int
+	if epid == 0 {
+		ssid, err = strconv.Atoi(r.FormValue("ssid"))
+		if r.FormValue("ssid") != "" && err != nil {
+			util.Res{Success: false, Message: "ssid 格式错误"}.Write(w)
+			return
+		}
 	}
 	db := util.GetDB()
 	defer db.Close()
@@ -86,7 +95,7 @@ func GetSeasonInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := bilibili.BiliClient{SESSDATA: sessdata}
-	seasonInfo, err := client.GetSeasonInfo(epid)
+	seasonInfo, err := client.GetSeasonInfo(epid, ssid)
 	if err != nil {
 		util.Res{Success: false, Message: err.Error()}.Write(w)
 		return

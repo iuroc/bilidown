@@ -141,7 +141,7 @@ type SeasonInfo struct {
 	Publish  struct {
 		IsFinish int    `json:"is_finish"` // 是否完结
 		PubTime  string `json:"pub_time"`  // 发布时间
-	}
+	} `json:"publish"`
 	SeasonID    int    `json:"season_id"`    // 剧集编号
 	SeasonTitle string `json:"season_title"` // 剧集标题
 	Stat        struct {
@@ -155,12 +155,16 @@ type SeasonInfo struct {
 		Views     int `json:"views"`     // 播放数量
 	} `json:"stat"`
 	Styles []string `json:"styles"` // 剧集内容类型，例如 [ "短剧", "奇幻", "搞笑" ]
-	Title  string   // 剧集标题
-	Total  int      // 总集数
+	Title  string   `json:"title"`  // 剧集标题
+	Total  int      `json:"total"`  // 总集数
 
-	Episodes []Episode // 分集信息列表
+	Episodes []Episode `json:"episodes"` // 分集信息列表
+
+	NewEp struct {
+		Desc  string `json:"desc"`   // 更新状态文本
+		IsNew int    `json:"is_new"` // 是否是连载，0 为完结，1 为连载
+	} `json:"new_ep"`
 }
-
 
 type PlayInfo struct {
 	AcceptDescription []string `json:"accept_description"`
@@ -175,7 +179,7 @@ type PlayInfo struct {
 		Duration int     `json:"duration"`
 		Video    []Media `json:"video"`
 		Audio    []Media `json:"audio"`
-	}
+	} `json:"dash"`
 }
 
 type Media struct {

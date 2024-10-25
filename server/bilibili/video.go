@@ -32,12 +32,15 @@ func (client *BiliClient) GetVideoInfo(bvid string) (*VideoInfo, error) {
 	return &bvInfo, nil
 }
 
-// GetSeasonInfo 根据 EPID 获取剧集信息
-func (client *BiliClient) GetSeasonInfo(epid int) (*SeasonInfo, error) {
+// GetSeasonInfo 根据 EPID 或 SSID 获取剧集信息
+func (client *BiliClient) GetSeasonInfo(epid int, ssid int) (*SeasonInfo, error) {
 	if client.SESSDATA == "" {
 		return nil, errors.New("SESSDATA 不能为空")
 	}
-	params := map[string]string{"ep_id": strconv.Itoa(epid)}
+	params := map[string]string{
+		"ep_id":     strconv.Itoa(epid),
+		"season_id": strconv.Itoa(ssid),
+	}
 	response, err := client.SimpleGET("https://api.bilibili.com/pgc/view/web/season", params)
 	if err != nil {
 		return nil, err

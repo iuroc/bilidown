@@ -1,11 +1,13 @@
 import van, { State, Val } from 'vanjs-core'
+import { VideoInfoCardData } from './type'
 
 const { div, img, input } = van.tags
 
 export const VideoInfoCard = (option: {
     data: State<VideoInfoCardData>
+    mode: State<'video' | 'season'>
 }) => {
-    const InputGroup = (title: string, value: State<string>, option?: {
+    const InputGroup = (title: Val<string>, value: State<string>, option?: {
         disabled?: Val<boolean>
         elementType?: 'input' | 'textarea'
     }) => {
@@ -19,14 +21,17 @@ export const VideoInfoCard = (option: {
             })
         )
     }
-    const DescriptionGroup = (bottom = false) => div({
-        class: () => `input-group input-group-sm flex-fill ${bottom ? 'd-lg-none' : 'd-none d-lg-flex'}`,
-    },
-        div({ class: 'input-group-text' }, '描述'),
-        div({ class: 'form-control hstack' },
-            () => option.data.val.desc.match(/^(\s*|-)$/) ? '暂无描述' : option.data.val.desc
+    const DescriptionGroup = (bottom = false) => {
+        const size = van.derive(() => option.mode.val == 'video' ? 'lg' : 'md')
+        return div({
+            class: () => `input-group input-group-sm flex-fill ${bottom ? `d-${size.val}-none` : `d-none d-${size.val}-flex`}`,
+        },
+            div({ class: 'input-group-text' }, '描述'),
+            div({ class: 'form-control hstack' },
+                () => option.data.val.description.match(/^(\s*|-)$/) ? '暂无描述' : option.data.val.description
+            )
         )
-    )
+    }
 
     const ownerFaceHide = van.state(true)
 
@@ -35,17 +40,19 @@ export const VideoInfoCard = (option: {
         div({ class: 'card-body vstack gap-3' },
             div({ class: 'row gx-3 gy-3' },
                 // 封面
-                div({ class: 'col-md-5 col-xl-4' },
+                div({
+                    class: () => option.mode.val == 'video'
+                        ? 'col-md-5 col-xl-4'
+                        : 'col-8 col-sm-6 mx-auto col-md-5 col-lg-3 col-xl-2'
+                },
                     div({ class: 'position-relative' },
-                        div({ class: 'ratio ratio-16x9' },
-                            img({
-                                src: () => option.data.val.pic,
-                                class: 'w-100 rounded object-fit-cover',
-                                ondragstart: event => event.preventDefault(),
-                                referrerPolicy: 'no-referrer',
-                                onload: () => ownerFaceHide.val = false
-                            }),
-                        ),
+                        img({
+                            src: () => option.data.val.cover,
+                            class: 'w-100 rounded',
+                            ondragstart: event => event.preventDefault(),
+                            referrerPolicy: 'no-referrer',
+                            onload: () => ownerFaceHide.val = false
+                        }),
                         img({
                             src: () => option.data.val.owner.face,
                             hidden: ownerFaceHide,
@@ -57,33 +64,60 @@ export const VideoInfoCard = (option: {
                     ),
                 ),
                 // 字段信息
-                div({ class: 'col-md-7 col-xl-8 vstack gap-2' },
+                div({
+                    class: () => option.mode.val == 'video'
+                        ? 'col-md-7 col-xl-8 vstack gap-2'
+                        : 'col-md-7 col-lg-9 col-xl-10 vstack gap-2'
+                },
                     div({ class: 'row gx-2 gy-2' },
                         div({ class: 'col-xl-7 col-xxl-8' },
-                            InputGroup('作者',
-                                van.derive(() => option.data.val.owner.name), { disabled: true }
+                            InputGroup(
+                                van.derive(() => option.mode.val == 'video' ? '制作信息' : '参演人员'),
+                                van.derive(() => {
+                                    if (option.data.val.staff.length > 0)
+                                        return option.data.val.staff.map(i => i.trim()).join(', ')
+                                    return option.data.val.owner.name
+                                }), { disabled: true }
                             ),
                         ),
                         div({ class: 'col-xl-5 col-xxl-4' },
                             InputGroup('发布时间',
-                                van.derive(() => new Date(option.data.val.pubdate * 1000).toLocaleString()), { disabled: true }
+                                van.derive(() => option.data.val.publishData), { disabled: true }
                             )
                         ),
-                        div({ class: 'col-sm col-md-12 col-lg-4' },
+                        div({ class: 'col-sm col-md-12 col-lg-4', hidden: () => option.mode.val != 'video' },
                             InputGroup('分辨率',
                                 van.derive(() => `${option.data.val.dimension.width}x${option.data.val.dimension.height}`),
                                 { disabled: true }
                             )
                         ),
-                        div({ class: 'col col-lg-4' },
+                        div({ class: 'col col-lg-4', hidden: () => option.mode.val != 'video' },
                             InputGroup('时长',
                                 van.derive(() => `${secondToTime(option.data.val.duration)}`),
                                 { disabled: true }
                             )
                         ),
-                        div({ class: 'col col-lg-4' },
+                        div({ class: 'col col-lg-4', hidden: () => option.mode.val != 'video' },
                             InputGroup('集数',
                                 van.derive(() => option.data.val.pages.length.toString()),
+                                { disabled: true }
+                            )
+                        ),
+                        div({ class: 'col-md-12 col-lg-4', hidden: () => option.mode.val != 'season' },
+                            InputGroup('状态',
+                                van.derive(() => option.data.val.status),
+                                { disabled: true }
+                            )
+                        ),
+                        div({ class: 'col-sm col-lg-4', hidden: () => option.mode.val != 'season' },
+                            InputGroup('地区',
+                                van.derive(() => option.data.val.areas.map(i => i.trim()).join(', ')),
+                                { disabled: true }
+                            )
+                        ),
+                        div({ class: 'col-sm col-lg-4', hidden: () => option.mode.val != 'season' },
+                            InputGroup('标签',
+                                van.derive(() => option.data.val.styles.join(', ')),
                                 { disabled: true }
                             )
                         ),
@@ -99,75 +133,4 @@ export const VideoInfoCard = (option: {
 /** 将秒数转换为 `mm:ss` */
 export const secondToTime = (second: number) => {
     return `${Math.floor(second / 60)}:${(second % 60).toString().padStart(2, '0')}`
-}
-
-/** 视频信息卡片数据 */
-export type VideoInfoCardData = {
-    title: string
-    description: string
-    publishData: number
-    cover: string
-    duration: number
-    pages: {
-        cid: number
-        bvid: string
-        page: number
-        from: string
-        part: string
-        duration: number
-        dimension: {
-            width: number
-            height: number
-            rotate: number
-        }
-    }[]
-    owner: {
-        mid: number
-        name: string
-        face: string
-    }
-    dimension: {
-        width: number
-        height: number
-        rotate: number
-    }
-}
-
-/** 接口返回的视频信息 */
-export type VideoInfo = VideoInfoCardData & {
-    aid: number
-    staff: null | {
-        mid: number
-        title: string
-        name: string
-        face: string
-    }[]
-    title: string
-    desc: string
-    pubdate: number
-    pic: string
-    duration: number
-    bvid: string
-    pages: {
-        cid: number
-        page: number
-        from: string
-        part: string
-        duration: number
-        dimension: {
-            width: number
-            height: number
-            rotate: number
-        }
-    }[]
-    owner: {
-        mid: number
-        name: string
-        face: string
-    }
-    dimension: {
-        width: number
-        height: number
-        rotate: number
-    }
 }

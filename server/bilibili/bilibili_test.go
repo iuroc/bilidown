@@ -17,7 +17,8 @@ const TEST_BVID = "BV1KX4y1V7sA"     // 普通合集
 const TEST_CID = 305542578           // 普通分集
 const TEST_BVID_HDR = "BV1rp4y1e745" // HDR 合集
 const TEST_CID_HDR = 244954665       // HDR 分集
-const TEST_EPID = 835909             // 番剧
+const TEST_EPID = 835909             // 剧集
+const TEST_SSID = 48744              // 番剧
 
 func TestBiliClient(t *testing.T) {
 	client := bilibili.BiliClient{SESSDATA: TEST_SESSDATA}
@@ -81,7 +82,7 @@ func TestGetBVInfo(t *testing.T) {
 
 func TestGetSeasonInfo(t *testing.T) {
 	client := bilibili.BiliClient{SESSDATA: TEST_SESSDATA}
-	seasonInfo, err := client.GetSeasonInfo(TEST_EPID)
+	seasonInfo, err := client.GetSeasonInfo(TEST_EPID, TEST_SSID)
 	if err != nil {
 		t.Error(err)
 	}
