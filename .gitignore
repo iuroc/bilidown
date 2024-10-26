@@ -3,3 +3,4 @@ dist/
 server/tmp/
 server/static/
 *.db
+server/*.exe

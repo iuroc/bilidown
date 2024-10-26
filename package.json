@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "concurrently \"pnpm --silent --prefix client dev\" \"cd server && air\" -raw",
-    "start": "cd server && go run main.go",
-    "build": "pnpm --silent --prefix client build"
+    "start": "cd server && ./bilidown",
+    "build": "pnpm --silent --prefix client build && cd server && go build"
   },
   "keywords": [],
   "author": "",
