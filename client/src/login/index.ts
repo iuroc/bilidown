@@ -1,6 +1,6 @@
 import van from 'vanjs-core'
 import { Route, goto, nowHash } from 'vanjs-router'
-import { checkLogin, hasLogin } from '../mixin'
+import { checkLogin, GLOBAL_HAS_LOGIN } from '../mixin'
 import { getQRInfo, getQRStatus } from './data'
 
 const { div, img } = van.tags
@@ -43,9 +43,12 @@ export default () => {
                 )
             )
         },
+        async onFirst() {
+            if (await checkLogin()) return goto('work')
+        },
         async onLoad() {
             // 检查登录标识，如果已经登录过了，则重定向到工作页
-            if (hasLogin.val) return goto('work')
+            if (GLOBAL_HAS_LOGIN.val) return goto('work')
 
             // 当前活动的二维码标识
             let qrKey = ''
@@ -72,7 +75,7 @@ export default () => {
                     const status = await getQRStatus(qrKey)
                     if (status.success) {
                         clearTimeout(statusTimer)
-                        hasLogin.val = true
+                        GLOBAL_HAS_LOGIN.val = true
                         goto('work')
                     } else {
                         qrStatusMessage.val = status.message
@@ -102,8 +105,5 @@ export default () => {
                 checkQRStatus()
             }, 1000)
         },
-        async onFirst() {
-            if (await checkLogin()) return goto('work')
-        }
     })
 }

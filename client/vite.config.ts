@@ -9,6 +9,7 @@ export default defineConfig({
         host: '0.0.0.0'
     },
     build: {
-        outDir: '../server/static'
+        outDir: '../server/static',
+        emptyOutDir: true
     }
 })

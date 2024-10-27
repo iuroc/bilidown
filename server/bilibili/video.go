@@ -16,7 +16,7 @@ func (client *BiliClient) GetVideoInfo(bvid string) (*VideoInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	body := BaseRes{}
+	body := BaseResV2{}
 	err = json.NewDecoder(response.Body).Decode(&body)
 	if err != nil {
 		return nil, err

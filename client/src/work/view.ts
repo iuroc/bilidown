@@ -28,7 +28,7 @@ export const VideoInfoCard = (option: {
         },
             div({ class: 'input-group-text align-items-start' }, '描述'),
             div({ class: 'form-control' },
-                () => option.data.val.description.match(/^(\s*|-)$/) ? '暂无描述' : option.data.val.description
+                () => option.data.val.description.match(/^(\s*|.)$/) ? '暂无描述' : option.data.val.description
             )
         )
     }
@@ -91,7 +91,9 @@ export const VideoInfoCard = (option: {
                     div({ class: 'row gx-2 gy-2' },
                         div({ class: 'col-xl-7 col-xxl-8' },
                             InputGroup(
-                                van.derive(() => option.mode.val == 'video' ? '制作信息' : '参演人员'),
+                                van.derive(() => option.mode.val == 'video'
+                                    ? (option.data.val.staff.length > 0 ? '制作信息' : '发布者')
+                                    : '参演人员'),
                                 van.derive(() => {
                                     if (option.data.val.staff.length > 0)
                                         return option.data.val.staff.map(i => i.trim()).join(', ')

@@ -34,11 +34,3 @@ export const getSeasonInfo = async (epid: number, ssid: number): Promise<SeasonI
     clearTimeout(timer)
     return res.data
 }
-
-
-/*
-影视飓风[UP主], XXXX[YYYYY],XXXX[YYYYY]    王大头 赵铁柱 赵煊 苏子缙 陈胖胖 陈皮诺Pino 张耀锋 刘莹莹
-1                                         已完结, 全12集
-1920x1080                                 中国大陆
-时长                                       短剧/搞笑/剧情
-*/
