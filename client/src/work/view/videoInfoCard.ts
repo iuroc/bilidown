@@ -67,62 +67,7 @@ class VideoInfoCardComp implements VanComponent {
                             ? 'col-md-7 col-xl-8 vstack gap-2'
                             : 'col-md-7 col-lg-9 col-xl-10 vstack gap-2'
                     },
-                        div({ class: 'row gx-2 gy-2' },
-                            div({ class: 'col-xl-7 col-xxl-8' },
-                                InputGroup(
-                                    van.derive(() => mode.val == 'video'
-                                        ? (data.val.staff.length > 0 ? '制作信息' : '发布者')
-                                        : '参演人员'),
-                                    van.derive(() => {
-                                        if (data.val.staff.length > 0)
-                                            return data.val.staff.map(i => i.trim()).join(', ')
-                                        return data.val.owner.name
-                                    }), { disabled: true }
-                                ),
-                            ),
-                            div({ class: 'col-xl-5 col-xxl-4' },
-                                InputGroup('发布时间',
-                                    van.derive(() => data.val.publishData), { disabled: true }
-                                )
-                            ),
-                            div({ class: 'col-sm col-md-12 col-lg-4', hidden: () => mode.val != 'video' },
-                                InputGroup('分辨率',
-                                    van.derive(() => `${data.val.dimension.width}x${data.val.dimension.height}`),
-                                    { disabled: true }
-                                )
-                            ),
-                            div({ class: 'col col-lg-4', hidden: () => mode.val != 'video' },
-                                InputGroup('时长',
-                                    van.derive(() => `${secondToTime(data.val.duration)}`),
-                                    { disabled: true }
-                                )
-                            ),
-                            div({ class: 'col col-lg-4', hidden: () => mode.val != 'video' },
-                                InputGroup('集数',
-                                    van.derive(() => data.val.pages.length.toString()),
-                                    { disabled: true }
-                                )
-                            ),
-                            div({ class: 'col-md-12 col-lg-4', hidden: () => mode.val != 'season' },
-                                InputGroup('状态',
-                                    van.derive(() => data.val.status),
-                                    { disabled: true }
-                                )
-                            ),
-                            div({ class: 'col-sm col-lg-4', hidden: () => mode.val != 'season' },
-                                InputGroup('地区',
-                                    van.derive(() => data.val.areas.map(i => i.trim()).join(', ')),
-                                    { disabled: true }
-                                )
-                            ),
-                            div({ class: 'col-sm col-lg-4', hidden: () => mode.val != 'season' },
-                                InputGroup('标签',
-                                    van.derive(() => data.val.styles.join(', ')),
-                                    { disabled: true }
-                                )
-                            ),
-                        ),
-                        DescriptionGroup(this),
+                        Right(this)
                     ),
                 ),
                 DescriptionGroup(this, true),
@@ -130,6 +75,67 @@ class VideoInfoCardComp implements VanComponent {
             )
         )
     }
+}
+
+const Right = (parent: VideoInfoCardComp) => {
+    return div({ class: 'vstack gap-2' },
+        div({ class: 'row gx-2 gy-2' },
+            div({ class: 'col-xl-7 col-xxl-8' },
+                InputGroup(
+                    van.derive(() => parent.mode.val == 'video'
+                        ? (parent.data.val.staff.length > 0 ? '制作信息' : '发布者')
+                        : '参演人员'),
+                    van.derive(() => {
+                        if (parent.data.val.staff.length > 0)
+                            return parent.data.val.staff.map(i => i.trim()).join(', ')
+                        return parent.data.val.owner.name
+                    }), { disabled: true }
+                ),
+            ),
+            div({ class: 'col-xl-5 col-xxl-4' },
+                InputGroup('发布时间',
+                    van.derive(() => parent.data.val.publishData), { disabled: true }
+                )
+            ),
+            div({ class: 'col-sm col-md-12 col-lg-4', hidden: () => parent.mode.val != 'video' },
+                InputGroup('分辨率',
+                    van.derive(() => `${parent.data.val.dimension.width}x${parent.data.val.dimension.height}`),
+                    { disabled: true }
+                )
+            ),
+            div({ class: 'col col-lg-4', hidden: () => parent.mode.val != 'video' },
+                InputGroup('时长',
+                    van.derive(() => `${secondToTime(parent.data.val.duration)}`),
+                    { disabled: true }
+                )
+            ),
+            div({ class: 'col col-lg-4', hidden: () => parent.mode.val != 'video' },
+                InputGroup('集数',
+                    van.derive(() => parent.data.val.pages.length.toString()),
+                    { disabled: true }
+                )
+            ),
+            div({ class: 'col-md-12 col-lg-4', hidden: () => parent.mode.val != 'season' },
+                InputGroup('状态',
+                    van.derive(() => parent.data.val.status),
+                    { disabled: true }
+                )
+            ),
+            div({ class: 'col-sm col-lg-4', hidden: () => parent.mode.val != 'season' },
+                InputGroup('地区',
+                    van.derive(() => parent.data.val.areas.map(i => i.trim()).join(', ')),
+                    { disabled: true }
+                )
+            ),
+            div({ class: 'col-sm col-lg-4', hidden: () => parent.mode.val != 'season' },
+                InputGroup('标签',
+                    van.derive(() => parent.data.val.styles.join(', ')),
+                    { disabled: true }
+                )
+            ),
+        ),
+        DescriptionGroup(parent),
+    )
 }
 
 const DescriptionGroup = (parent: VideoInfoCardComp, bottom = false) => {
