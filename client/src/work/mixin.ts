@@ -1,6 +1,4 @@
-import { State } from 'vanjs-core'
 import { getSeasonInfo, getVideoInfo } from './data'
-import { VideoParseResult, VideoInfoCardMode } from './type'
 import { WorkRoute } from '.'
 
 /** 点击按钮开始解析 */
@@ -16,6 +14,7 @@ export const start = async (
     }) => {
     history.replaceState(null, '', `#/work/${option.idType}/${option.value}`)
     workRoute.btnLoading.val = true
+    workRoute.ownerFaceHide.val = true
     if (option.idType === 'bv') {
         const bvid = option.value as string
         await getVideoInfo(bvid).then(info => {

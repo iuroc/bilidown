@@ -7,8 +7,9 @@ import Login from './login'
 import Setting from './setting'
 import _Error from './error'
 import { redirect } from 'vanjs-router'
-import 'bootstrap/dist/css/bootstrap.min.css'
 import { GLOBAL_HIDE_PAGE } from './mixin'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import './scss/index.scss'
 
 const { div } = van.tags
 

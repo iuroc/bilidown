@@ -8,13 +8,13 @@ const { a, div, img } = van.tags
 
 class VideoInfoCardComp implements VanComponent {
     element: HTMLElement
-    ownerFaceHide = van.state(true)
 
     constructor(
         public data: State<VideoParseResult>,
-        public mode: VideoInfoCardMode
+        public mode: VideoInfoCardMode,
+        ownerFaceHide: State<boolean>
     ) {
-        this.element = div({ class: 'card border-2 shadow' },
+        this.element = div({ class: 'card border-2 shadow-sm' },
             div({ class: 'card-header' },
                 a({
                     class: 'link-dark text-decoration-none fw-bold', href: () => data.val.targetURL,
@@ -23,7 +23,7 @@ class VideoInfoCardComp implements VanComponent {
                     () => data.val.title,
                 )
             ),
-            div({ class: 'card-body vstack gap-3' },
+            div({ class: 'card-body vstack gap-2' },
                 div({ class: 'row gx-3 gy-3' },
                     // 封面
                     div({
@@ -42,7 +42,7 @@ class VideoInfoCardComp implements VanComponent {
                                     class: 'w-100 rounded',
                                     ondragstart: event => event.preventDefault(),
                                     referrerPolicy: 'no-referrer',
-                                    onload: () => this.ownerFaceHide.val = false
+                                    onload: () => ownerFaceHide.val = false
                                 })
                             ),
                             a({
@@ -52,7 +52,7 @@ class VideoInfoCardComp implements VanComponent {
                             },
                                 img({
                                     src: () => data.val.owner.face,
-                                    hidden: this.ownerFaceHide,
+                                    hidden: ownerFaceHide,
                                     referrerPolicy: 'no-referrer',
                                     ondragstart: event => event.preventDefault(),
                                     style: `right: 1rem; bottom: 1rem;`,
@@ -67,7 +67,11 @@ class VideoInfoCardComp implements VanComponent {
                             ? 'col-md-7 col-xl-8 vstack gap-2'
                             : 'col-md-7 col-lg-9 col-xl-10 vstack gap-2'
                     },
-                        Right(this)
+                        div({ class: 'position-relative h-100' },
+                            div({ class: 'position-absolute top-0 bottom-0 position-relative-sm-down' },
+                                Right(this)
+                            )
+                        ),
                     ),
                 ),
                 DescriptionGroup(this, true),
@@ -78,7 +82,7 @@ class VideoInfoCardComp implements VanComponent {
 }
 
 const Right = (parent: VideoInfoCardComp) => {
-    return div({ class: 'vstack gap-2' },
+    return div({ class: 'vstack gap-2 h-100' },
         div({ class: 'row gx-2 gy-2' },
             div({ class: 'col-xl-7 col-xxl-8' },
                 InputGroup(
@@ -138,14 +142,23 @@ const Right = (parent: VideoInfoCardComp) => {
     )
 }
 
+/** 用于显示 `description` 字段的 `.input-group`
+ * 
+ * @param parent 父组件
+ * @param bottom 是否在底部
+ */
 const DescriptionGroup = (parent: VideoInfoCardComp, bottom = false) => {
     const size = van.derive(() => parent.mode.val == 'video' ? 'lg' : 'md')
     return div({
-        class: () => `input-group input-group-sm flex-fill ${bottom ? `d-${size.val}-none` : `d-none d-${size.val}-flex`}`,
+        class: () => `input-group input-group-sm ${bottom
+            ? `d-${size.val}-none`
+            : `d-none d-${size.val}-flex overflow-hidden flex-fill`
+            }`,
     },
         div({ class: 'input-group-text align-items-start' }, '描述'),
-        div({ class: 'form-control' },
+        div({ class: `form-control overflow-auto ${bottom ? `max-height-description` : `h-100`}` },
             () => parent.data.val.description.match(/^(\s*|.)$/) ? '暂无描述' : parent.data.val.description
+                .repeat(2)  // 模拟长文本
         )
     )
 }
@@ -167,5 +180,6 @@ const InputGroup = (title: Val<string>, value: State<string>, option?: {
 
 export default (
     data: State<VideoParseResult>,
-    mode: VideoInfoCardMode
-) => new VideoInfoCardComp(data, mode).element
+    mode: VideoInfoCardMode,
+    ownerFaceHide: State<boolean>
+) => new VideoInfoCardComp(data, mode, ownerFaceHide).element

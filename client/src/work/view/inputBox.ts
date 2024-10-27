@@ -27,37 +27,44 @@ class InputBoxComp implements VanComponent {
                     }),
                     label('请输入视频链接或 BV/EP/SS 号')
                 ),
-                button({
-                    class: 'btn btn-primary text-nowrap btn-lg',
-                    onclick() {
-                        try {
-                            const { type, value } = checkURL(workRoute.urlValue.oldVal)
-                            workRoute.urlInvalid.val = false
-                            start(workRoute, {
-                                idType: type,
-                                value,
-                                from: 'click'
-                            }).catch(error => {
-                                const errorMessage = `获取视频信息失败：${error.message}`
-                                alert(errorMessage)
-                                goto('work')
-                                workRoute.videoInfoCardMode.val = 'hide'
-                            }).finally(() => {
-                                workRoute.btnLoading.val = false
-                            })
-                        } catch (error) {
-                            workRoute.urlInvalid.val = true
-                        }
-                    },
-                    id: this.btnID,
-                    disabled: workRoute.btnLoading
-                }, span({ class: 'spinner-border spinner-border-sm me-2', hidden: () => !workRoute.btnLoading.val }),
-                    () => workRoute.btnLoading.val ? '解析中' : '解析视频'
-                )
+                ParseButton(this, false, this.btnID),
+                ParseButton(this, true)
             ),
             div({ class: 'invalid-feedback' }, () => workRoute.urlInvalid.val ? '您输入的视频链接格式错误' : ''),
         )
     }
+}
+
+const ParseButton = (parent: InputBoxComp, large: boolean, id: string = '') => {
+    const { workRoute } = parent
+
+    return button({
+        class: `btn btn-primary text-nowrap ${large ? `btn-lg d-none d-md-block` : 'd-md-none'}`,
+        onclick() {
+            try {
+                const { type, value } = checkURL(workRoute.urlValue.oldVal)
+                workRoute.urlInvalid.val = false
+                start(workRoute, {
+                    idType: type,
+                    value,
+                    from: 'click'
+                }).catch(error => {
+                    const errorMessage = `获取视频信息失败：${error.message}`
+                    alert(errorMessage)
+                    goto('work')
+                    workRoute.videoInfoCardMode.val = 'hide'
+                }).finally(() => {
+                    workRoute.btnLoading.val = false
+                })
+            } catch (error) {
+                workRoute.urlInvalid.val = true
+            }
+        },
+        id,
+        disabled: workRoute.btnLoading
+    }, span({ class: 'spinner-border spinner-border-sm me-2', hidden: () => !workRoute.btnLoading.val }),
+        () => workRoute.btnLoading.val ? '解析中' : '解析视频'
+    )
 }
 
 export default (workRoute: WorkRoute) => new InputBoxComp(workRoute).element

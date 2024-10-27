@@ -13,6 +13,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/uuid": "^10.0.0",
+    "sass-embedded": "^1.80.4",
     "vite": "^5.4.8"
   },
   "type": "module",
