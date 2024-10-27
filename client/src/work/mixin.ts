@@ -28,7 +28,7 @@ export const start = async (
                 description: info.desc,
                 publishData: new Date(info.pubdate * 1000).toLocaleString(),
                 duration: info.duration,
-                pages: info.pages.map(page => ({ ...page, bvid })),
+                pages: info.pages.map((page, index) => ({ ...page, bvid, bandge: (index + 1).toString() })),
                 dimension: info.dimension,
                 owner: info.owner,
                 staff: info.staff?.map(i => `${i.name}[${i.title}]`) || []
@@ -54,6 +54,7 @@ export const start = async (
                     duration: e.duration,
                     page: index + 1,
                     part: e.long_title,
+                    bandge: e.title
                 })),
                 status: info.new_ep.desc,
                 publishData: new Date().toLocaleDateString(),

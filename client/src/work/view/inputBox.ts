@@ -39,7 +39,7 @@ const ParseButton = (parent: InputBoxComp, large: boolean, id: string = '') => {
     const { workRoute } = parent
 
     return button({
-        class: `btn btn-primary text-nowrap ${large ? `btn-lg d-none d-md-block` : 'd-md-none'}`,
+        class: `btn btn-success text-nowrap ${large ? `btn-lg d-none d-md-block` : 'd-md-none'}`,
         onclick() {
             try {
                 const { type, value } = checkURL(workRoute.urlValue.oldVal)

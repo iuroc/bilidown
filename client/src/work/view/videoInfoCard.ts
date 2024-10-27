@@ -23,58 +23,60 @@ class VideoInfoCardComp implements VanComponent {
                     () => data.val.title,
                 )
             ),
-            div({ class: 'card-body vstack gap-3' },
-                div({ class: 'row gx-3 gy-3' },
-                    // 封面
-                    div({
-                        class: () => mode.val == 'video'
-                            ? 'col-md-5 col-xl-4'
-                            : 'col-8 col-sm-6 mx-auto col-md-5 col-lg-3 col-xl-2'
-                    },
-                        div({ class: 'position-relative' },
-                            a({
-                                href: () => data.val.targetURL,
-                                title: () => `打开视频播放页面`,
-                                target: '_blank',
-                            },
-                                img({
-                                    src: () => data.val.cover,
-                                    class: 'w-100 rounded',
-                                    ondragstart: event => event.preventDefault(),
-                                    referrerPolicy: 'no-referrer',
-                                    onload: () => ownerFaceHide.val = false
-                                })
+            div({ class: 'card-body vstack gap-4' },
+                div({ class: 'vstack gap-3' },
+                    div({ class: 'row gx-3 gy-3' },
+                        // 封面
+                        div({
+                            class: () => mode.val == 'video'
+                                ? 'col-md-5 col-xl-4'
+                                : 'col-8 col-sm-6 mx-auto col-md-5 col-lg-3 col-xl-2'
+                        },
+                            div({ class: 'position-relative shadow-sm rounded overflow-hidden' },
+                                a({
+                                    href: () => data.val.targetURL,
+                                    title: () => `打开视频播放页面`,
+                                    target: '_blank',
+                                },
+                                    img({
+                                        src: () => data.val.cover,
+                                        class: 'w-100',
+                                        ondragstart: event => event.preventDefault(),
+                                        referrerPolicy: 'no-referrer',
+                                        onload: () => ownerFaceHide.val = false
+                                    })
+                                ),
+                                a({
+                                    href: () => `https://space.bilibili.com/${data.val.owner.mid}`,
+                                    title: () => `查看用户主页：${data.val.owner.name}`,
+                                    target: '_blank',
+                                },
+                                    img({
+                                        src: () => data.val.owner.face,
+                                        hidden: ownerFaceHide,
+                                        referrerPolicy: 'no-referrer',
+                                        ondragstart: event => event.preventDefault(),
+                                        style: `right: 1rem; bottom: 1rem;`,
+                                        class: 'rounded-3 border shadow position-absolute w-25'
+                                    })
+                                ),
                             ),
-                            a({
-                                href: () => `https://space.bilibili.com/${data.val.owner.mid}`,
-                                title: () => `查看用户主页：${data.val.owner.name}`,
-                                target: '_blank',
-                            },
-                                img({
-                                    src: () => data.val.owner.face,
-                                    hidden: ownerFaceHide,
-                                    referrerPolicy: 'no-referrer',
-                                    ondragstart: event => event.preventDefault(),
-                                    style: `right: 1rem; bottom: 1rem;`,
-                                    class: 'rounded-3 border shadow position-absolute w-25'
-                                })
+                        ),
+                        // 字段信息
+                        div({
+                            class: () => mode.val == 'video'
+                                ? 'col-md-7 col-xl-8 vstack gap-2'
+                                : 'col-md-7 col-lg-9 col-xl-10 vstack gap-2'
+                        },
+                            div({ class: 'position-relative h-100' },
+                                div({ class: 'position-absolute top-0 bottom-0 position-relative-sm-down' },
+                                    Right(this)
+                                )
                             ),
                         ),
                     ),
-                    // 字段信息
-                    div({
-                        class: () => mode.val == 'video'
-                            ? 'col-md-7 col-xl-8 vstack gap-2'
-                            : 'col-md-7 col-lg-9 col-xl-10 vstack gap-2'
-                    },
-                        div({ class: 'position-relative h-100' },
-                            div({ class: 'position-absolute top-0 bottom-0 position-relative-sm-down' },
-                                Right(this)
-                            )
-                        ),
-                    ),
+                    DescriptionGroup(this, true),
                 ),
-                DescriptionGroup(this, true),
                 VideoItemList(data, mode)
             )
         )
@@ -150,7 +152,7 @@ const Right = (parent: VideoInfoCardComp) => {
 const DescriptionGroup = (parent: VideoInfoCardComp, bottom = false) => {
     const _class = van.derive(() => parent.mode.val == 'video' ? 'd-md-flex' : '')
     return div({
-        class: () => `input-group input-group-sm ${bottom
+        class: () => `shadow-sm input-group input-group-sm ${bottom
             ? `d-none d-lg-none ${_class.val}`
             : `overflow-hidden flex-fill`
             }`,
@@ -166,7 +168,7 @@ const InputGroup = (title: Val<string>, value: State<string>, option?: {
     disabled?: Val<boolean>
     elementType?: 'input' | 'textarea'
 }) => {
-    return div({ class: 'input-group input-group-sm' },
+    return div({ class: 'input-group input-group-sm shadow-sm' },
         div({ class: 'input-group-text' }, title),
         van.tags[option?.elementType || 'input']({
             class: 'form-control bg-white',

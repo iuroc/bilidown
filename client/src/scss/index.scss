@@ -7,3 +7,21 @@
 .max-height-description {
     max-height: 300px;
 }
+
+.video-item-btn {
+    cursor: pointer;
+    transition: all 0.2s;
+    border-color: transparent;
+
+    &:hover:not(.active) {
+        --bs-bg-opacity: 0.2;
+        border-width: 1px !important;
+        border-style: solid !important;
+        border-color: var(--bs-success) !important;
+    }
+
+    &.active {
+        --bs-bg-opacity: 0.8;
+        color: white;
+    }
+}

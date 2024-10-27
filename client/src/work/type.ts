@@ -30,6 +30,8 @@ export type VideoParseResult = {
             height: number
             rotate: number
         }
+        /** 前置胶囊标签内容 */
+        bandge: string
     }[]
     /** 合集作者 */
     owner: {

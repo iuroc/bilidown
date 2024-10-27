@@ -15,13 +15,13 @@ export class WorkRoute {
     urlInvalid = van.state(false)
     /** 仅作为类名字符串 */
     urlInvalidClass = van.derive(() => this.urlInvalid.val ? 'is-invalid' : '')
-    urlValue = van.state('https://www.bilibili.com/video/BV1H2yfYQEnc/')
-    // const urlValue = van.state('https://www.bilibili.com/bangumi/play/ep775787')
+    // urlValue = van.state('https://www.bilibili.com/video/BV1H2yfYQEnc/')
+    urlValue = van.state('https://www.bilibili.com/bangumi/play/ep775787')
     videoInfocardData = van.state<VideoParseResult>({
         title: '', description: '', cover: '', publishData: '', duration: 0,
         pages: [], owner: { face: '', mid: 0, name: '' },
         dimension: { width: 0, height: 0, rotate: 0 },
-        staff: [], status: '', areas: [], styles: [], targetURL: ''
+        staff: [], status: '', areas: [], styles: [], targetURL: '',
     })
     /** 标识视频信息卡片应该显示普通视频还是剧集，值为 `hide` 时隐藏卡片 */
     videoInfoCardMode: VideoInfoCardMode = van.state('hide')
