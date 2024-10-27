@@ -1,11 +1,12 @@
 import van, { State, Val } from 'vanjs-core'
-import { VideoInfoCardData } from './type'
+import { VideoInfoCardData, VideoInfoCardMode } from './type'
+import { secondToTime } from './mixin'
 
-const { a, button, div, img, input, span } = van.tags
+const { a, div, img } = van.tags
 
 export const VideoInfoCard = (option: {
     data: State<VideoInfoCardData>
-    mode: State<'video' | 'season'>
+    mode: VideoInfoCardMode
 }) => {
     const InputGroup = (title: Val<string>, value: State<string>, option?: {
         disabled?: Val<boolean>
@@ -35,7 +36,7 @@ export const VideoInfoCard = (option: {
 
     const ownerFaceHide = van.state(true)
 
-    return div({ class: 'card border-3', hidden: () => !option.data.val.title },
+    return div({ class: 'card border-2 shadow', hidden: () => option.mode.val == 'hide' },
         div({ class: 'card-header' },
             a({
                 class: 'link-dark text-decoration-none fw-bold', href: () => option.data.val.targetURL,
@@ -151,7 +152,3 @@ export const VideoInfoCard = (option: {
     )
 }
 
-/** 将秒数转换为 `mm:ss` */
-export const secondToTime = (second: number) => {
-    return `${Math.floor(second / 60)}:${(second % 60).toString().padStart(2, '0')}`
-}

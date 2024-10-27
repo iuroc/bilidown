@@ -2,8 +2,8 @@ import van from 'vanjs-core'
 import { Route, goto } from 'vanjs-router'
 import { VideoInfoCard } from './view'
 import { v4 } from 'uuid'
-import { checkLogin, GLOBAL_HAS_LOGIN } from '../mixin'
-import { VideoInfoCardData } from './type'
+import { checkLogin, GLOBAL_HAS_LOGIN, showErrorPage } from '../mixin'
+import { VideoInfoCardData, VideoInfoCardMode } from './type'
 import { IDType, checkURL, start } from './mixin'
 
 const { button, div, input, label, span } = van.tags
@@ -19,8 +19,8 @@ export default () => {
         dimension: { width: 0, height: 0, rotate: 0 },
         staff: [], status: '', areas: [], styles: [], targetURL: ''
     })
-    /** 标识视频信息卡片应该显示普通视频还是剧集 */
-    const videoInfoCardMode = van.state<'video' | 'season'>('video')
+    /** 标识视频信息卡片应该显示普通视频还是剧集，值为 `hide` 时隐藏卡片 */
+    const videoInfoCardMode: VideoInfoCardMode = van.state('hide')
     const btnID = v4()
 
     const btnLoading = van.state(false)
@@ -58,6 +58,13 @@ export default () => {
                                         idType: type,
                                         value,
                                         from: 'click'
+                                    }).catch(error => {
+                                        const errorMessage = `获取视频信息失败：${error.message}`
+                                        alert(errorMessage)
+                                        goto('work')
+                                        videoInfoCardMode.val = 'hide'
+                                    }).finally(() => {
+                                        btnLoading.val = false
                                     })
                                 } catch (error) {
                                     urlInvalid.val = true
@@ -84,6 +91,13 @@ export default () => {
             if (idType == 'bv') urlValue.val = value
             else if (idType == 'ep' || idType == 'ss') urlValue.val = `${idType}${value}`
             start({ urlInvalid, videoInfocardData, btnLoading, videoInfoCardMode, idType, value, from: 'onfirst' })
+                .catch(error => {
+                    const errorMessage = `获取视频信息失败：${error.message}`
+                    showErrorPage(errorMessage)
+                    videoInfoCardMode.val = 'hide'
+                }).finally(() => {
+                    btnLoading.val = false
+                })
         },
         async onLoad() {
             if (!GLOBAL_HAS_LOGIN.val) return goto('login')

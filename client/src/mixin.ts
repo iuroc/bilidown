@@ -30,6 +30,7 @@ export const GLOBAL_ERROR_MESSAGE = van.state('')
 
 /** 跳转到统一的错误提示页面 */
 export const showErrorPage = (message: string) => {
+    GLOBAL_HIDE_PAGE.val = true
     GLOBAL_ERROR_MESSAGE.val = message
     goto('error')
 }

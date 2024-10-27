@@ -1,15 +1,15 @@
 import { State } from 'vanjs-core'
 import { goto } from 'vanjs-router'
 import { getSeasonInfo, getVideoInfo } from './data'
-import { VideoInfoCardData } from './type'
+import { VideoInfoCardData, VideoInfoCardMode } from './type'
 import { showErrorPage } from '../mixin'
 
 /** 点击按钮开始解析 */
-export const start = (option: {
+export const start = async (option: {
     urlInvalid: State<boolean>
     videoInfocardData: State<VideoInfoCardData>
     btnLoading: State<boolean>
-    videoInfoCardMode: State<'video' | 'season'>
+    videoInfoCardMode: VideoInfoCardMode
     /** 标识字段类型 */
     idType: IDType
     /** 标识字段值 */
@@ -21,7 +21,7 @@ export const start = (option: {
     option.btnLoading.val = true
     if (option.idType === 'bv') {
         const bvid = option.value as string
-        getVideoInfo(bvid).then(info => {
+        await getVideoInfo(bvid).then(info => {
             option.videoInfocardData.val = {
                 targetURL: `https://www.bilibili.com/video/${bvid}`,
                 areas: [],
@@ -38,21 +38,11 @@ export const start = (option: {
                 staff: info.staff?.map(i => `${i.name}[${i.title}]`) || []
             }
             option.videoInfoCardMode.val = 'video'
-        }).catch(error => {
-            const errorMessage = `获取视频信息失败：${error.message}`
-            if (option.from === 'click') {
-                alert(errorMessage)
-                goto('work')
-            } else if (option.from === 'onfirst') {
-                showErrorPage(errorMessage)
-            }
-        }).finally(() => {
-            option.btnLoading.val = false
         })
     } else if (option.idType === 'ep' || option.idType === 'ss') {
         const epid = option.idType === 'ep' ? option.value as number : 0
         const ssid = option.idType === 'ss' ? option.value as number : 0
-        getSeasonInfo(epid, ssid).then(info => {
+        await getSeasonInfo(epid, ssid).then(info => {
             option.videoInfocardData.val = {
                 targetURL: `https://www.bilibili.com/bangumi/play/${option.idType}${option.value}`,
                 areas: info.areas.map(i => i.name),
@@ -76,16 +66,6 @@ export const start = (option: {
                 title: info.title
             }
             option.videoInfoCardMode.val = 'season'
-        }).catch(error => {
-            const errorMessage = `获取视频信息失败：${error.message}`
-            if (option.from === 'click') {
-                alert(errorMessage)
-                goto('work')
-            } else if (option.from === 'onfirst') {
-                showErrorPage(errorMessage)
-            }
-        }).finally(() => {
-            option.btnLoading.val = false
         })
     }
 }
@@ -108,4 +88,9 @@ export const checkURL = (url: string): {
     if (matchSeason) return { type: matchSeason[1] as 'ep' | 'ss', value: parseInt(matchSeason[2]) }
 
     throw new Error('您输入的视频链接格式错误')
+}
+
+/** 将秒数转换为 `mm:ss` */
+export const secondToTime = (second: number) => {
+    return `${Math.floor(second / 60)}:${(second % 60).toString().padStart(2, '0')}`
 }

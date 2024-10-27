@@ -1,3 +1,4 @@
+import { State } from "vanjs-core"
 
 /** 视频信息卡片数据 */
 export type VideoInfoCardData = {
@@ -144,3 +145,5 @@ export type SeasonInfo = {
         is_new: number
     }
 }
+
+export type VideoInfoCardMode = State<"video" | "season" | "hide">
