@@ -23,7 +23,7 @@ class VideoInfoCardComp implements VanComponent {
                     () => data.val.title,
                 )
             ),
-            div({ class: 'card-body vstack gap-2' },
+            div({ class: 'card-body vstack gap-3' },
                 div({ class: 'row gx-3 gy-3' },
                     // 封面
                     div({
@@ -148,17 +148,16 @@ const Right = (parent: VideoInfoCardComp) => {
  * @param bottom 是否在底部
  */
 const DescriptionGroup = (parent: VideoInfoCardComp, bottom = false) => {
-    const size = van.derive(() => parent.mode.val == 'video' ? 'lg' : 'md')
+    const _class = van.derive(() => parent.mode.val == 'video' ? 'd-md-flex' : '')
     return div({
         class: () => `input-group input-group-sm ${bottom
-            ? `d-${size.val}-none`
-            : `d-none d-${size.val}-flex overflow-hidden flex-fill`
+            ? `d-none d-lg-none ${_class.val}`
+            : `overflow-hidden flex-fill`
             }`,
     },
         div({ class: 'input-group-text align-items-start' }, '描述'),
         div({ class: `form-control overflow-auto ${bottom ? `max-height-description` : `h-100`}` },
             () => parent.data.val.description.match(/^(\s*|.)$/) ? '暂无描述' : parent.data.val.description
-                .repeat(2)  // 模拟长文本
         )
     )
 }

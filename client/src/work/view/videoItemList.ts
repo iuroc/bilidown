@@ -10,7 +10,11 @@ class VideoItemListComp implements VanComponent {
         public data: State<VideoParseResult>,
         public mode: VideoInfoCardMode
     ) {
-        this.element = div('分集列表')
+        this.element = div(
+            div({ class: 'list-group' },
+                div({class: 'list-group-item'}, '1234')
+            )
+        )
     }
 }
 
