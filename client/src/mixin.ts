@@ -50,3 +50,7 @@ export const checkLogin = async (): Promise<boolean> => {
     if (!res.success) return goto('login'), false
     return true
 }
+
+export interface VanComponent {
+    element: HTMLElement
+}

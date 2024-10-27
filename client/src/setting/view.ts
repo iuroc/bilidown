@@ -14,7 +14,7 @@ export const SaveFolderSetting = () => {
             class: 'form-control',
             value: saveFolder,
             oninput: event => saveFolder.val = event.target.value,
-            disabled: 'showDirectoryPicker' in window
+            disabled: true
         }),
         button({
             class: 'btn btn-success', onclick() {

@@ -10,6 +10,6 @@ export default defineConfig({
     },
     build: {
         outDir: '../server/static',
-        emptyOutDir: true
+        emptyOutDir: true,
     }
 })

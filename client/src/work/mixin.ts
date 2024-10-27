@@ -1,28 +1,25 @@
 import { State } from 'vanjs-core'
-import { goto } from 'vanjs-router'
 import { getSeasonInfo, getVideoInfo } from './data'
-import { VideoInfoCardData, VideoInfoCardMode } from './type'
-import { showErrorPage } from '../mixin'
+import { VideoParseResult, VideoInfoCardMode } from './type'
+import { WorkRoute } from '.'
 
 /** 点击按钮开始解析 */
-export const start = async (option: {
-    urlInvalid: State<boolean>
-    videoInfocardData: State<VideoInfoCardData>
-    btnLoading: State<boolean>
-    videoInfoCardMode: VideoInfoCardMode
-    /** 标识字段类型 */
-    idType: IDType
-    /** 标识字段值 */
-    value: string | number
-    /** 调用来源 */
-    from: 'click' | 'onfirst'
-}) => {
+export const start = async (
+    workRoute: WorkRoute,
+    option: {
+        /** 标识字段类型 */
+        idType: IDType
+        /** 标识字段值 */
+        value: string | number
+        /** 调用来源 */
+        from: 'click' | 'onfirst'
+    }) => {
     history.replaceState(null, '', `#/work/${option.idType}/${option.value}`)
-    option.btnLoading.val = true
+    workRoute.btnLoading.val = true
     if (option.idType === 'bv') {
         const bvid = option.value as string
         await getVideoInfo(bvid).then(info => {
-            option.videoInfocardData.val = {
+            workRoute.videoInfocardData.val = {
                 targetURL: `https://www.bilibili.com/video/${bvid}`,
                 areas: [],
                 styles: [],
@@ -37,13 +34,13 @@ export const start = async (option: {
                 owner: info.owner,
                 staff: info.staff?.map(i => `${i.name}[${i.title}]`) || []
             }
-            option.videoInfoCardMode.val = 'video'
+            workRoute.videoInfoCardMode.val = 'video'
         })
     } else if (option.idType === 'ep' || option.idType === 'ss') {
         const epid = option.idType === 'ep' ? option.value as number : 0
         const ssid = option.idType === 'ss' ? option.value as number : 0
         await getSeasonInfo(epid, ssid).then(info => {
-            option.videoInfocardData.val = {
+            workRoute.videoInfocardData.val = {
                 targetURL: `https://www.bilibili.com/bangumi/play/${option.idType}${option.value}`,
                 areas: info.areas.map(i => i.name),
                 styles: info.styles,
@@ -65,7 +62,7 @@ export const start = async (option: {
                 dimension: { height: 0, rotate: 0, width: 0 },
                 title: info.title
             }
-            option.videoInfoCardMode.val = 'season'
+            workRoute.videoInfoCardMode.val = 'season'
         })
     }
 }

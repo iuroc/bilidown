@@ -1,7 +1,7 @@
-import { State } from "vanjs-core"
+import { State } from 'vanjs-core'
 
-/** 视频信息卡片数据 */
-export type VideoInfoCardData = {
+/** 视频解析结果，数据用于 DOM 渲染，同时兼容 BV、EP、SS */
+export type VideoParseResult = {
     /** 合集标题 */
     title: string
     /** 合集描述 */
