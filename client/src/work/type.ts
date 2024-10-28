@@ -13,26 +13,10 @@ export type VideoParseResult = {
     /** 合集总时长 */
     duration: number
     /** 分集列表 */
-    pages: {
-        /** 分集 CID */
-        cid: number
-        /** 分集 BVID */
-        bvid: string
-        /** 分集在合集中的序号，从 1 开始 */
-        page: number
-        /** 分集标题 */
-        part: string
-        /** 分集时长 */
-        duration: number
-        /** 分集分辨率 */
-        dimension: {
-            width: number
-            height: number
-            rotate: number
-        }
-        /** 前置胶囊标签内容 */
-        bandge: string
-    }[]
+    pages: PageInParseResult[]
+
+    section: SectionItem[]
+
     /** 合集作者 */
     owner: {
         mid: number
@@ -55,6 +39,34 @@ export type VideoParseResult = {
     styles: string[]
     /** 播放页面 */
     targetURL: string
+}
+
+export type SectionItem = {
+    title: string
+    pages: PageInParseResult[]
+}
+
+export type PageInParseResult = {
+    /** 分集 CID */
+    cid: number
+    /** 分集 BVID */
+    bvid: string
+    /** 分集在合集中的序号，从 1 开始 */
+    page: number
+    /** 分集标题 */
+    part: string
+    /** 分集时长 */
+    duration: number
+    /** 分集分辨率 */
+    dimension: {
+        width: number
+        height: number
+        rotate: number
+    }
+    /** 前置胶囊标签内容 */
+    bandge: string
+    /** 是否选中 */
+    selected: State<boolean>
 }
 
 export type StaffItem = {
@@ -126,26 +138,32 @@ export type SeasonInfo = {
     styles: string[]
     title: string
     total: number
-    episodes: {
-        aid: number
-        bvid: string
-        cid: number
-        cover: string
-        dimension: {
-            width: number
-            height: number
-            rotate: number
-        }
-        duration: number
-        ep_id: number
-        long_title: string
-        pub_time: number
-        title: string
-    }[]
+    episodes: Episode[]
     new_ep: {
         desc: string
         is_new: number
     }
+    section: {
+        title: string
+        episodes: Episode[]
+    }[]
+}
+
+export type Episode = {
+    aid: number
+    bvid: string
+    cid: number
+    cover: string
+    dimension: {
+        width: number
+        height: number
+        rotate: number
+    }
+    duration: number
+    ep_id: number
+    long_title: string
+    pub_time: number
+    title: string
 }
 
 export type VideoInfoCardMode = State<"video" | "season" | "hide">

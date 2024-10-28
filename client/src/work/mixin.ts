@@ -1,5 +1,7 @@
 import { getSeasonInfo, getVideoInfo } from './data'
 import { WorkRoute } from '.'
+import van from 'vanjs-core'
+import { Episode, PageInParseResult, SeasonInfo, VideoParseResult } from './type'
 
 /** 点击按钮开始解析 */
 export const start = async (
@@ -19,6 +21,7 @@ export const start = async (
         const bvid = option.value as string
         await getVideoInfo(bvid).then(info => {
             workRoute.videoInfocardData.val = {
+                section: [],
                 targetURL: `https://www.bilibili.com/video/${bvid}`,
                 areas: [],
                 styles: [],
@@ -28,7 +31,12 @@ export const start = async (
                 description: info.desc,
                 publishData: new Date(info.pubdate * 1000).toLocaleString(),
                 duration: info.duration,
-                pages: info.pages.map((page, index) => ({ ...page, bvid, bandge: (index + 1).toString() })),
+                pages: info.pages.map((page, index) => ({
+                    ...page,
+                    bvid,
+                    bandge: (index + 1).toString(),
+                    selected: van.state(false)
+                })),
                 dimension: info.dimension,
                 owner: info.owner,
                 staff: info.staff?.map(i => `${i.name}[${i.title}]`) || []
@@ -40,6 +48,10 @@ export const start = async (
         const ssid = option.idType === 'ss' ? option.value as number : 0
         await getSeasonInfo(epid, ssid).then(info => {
             workRoute.videoInfocardData.val = {
+                section: info.section.map(i => ({
+                    pages: i.episodes.map(episodeToPage),
+                    title: i.title
+                })),
                 targetURL: `https://www.bilibili.com/bangumi/play/${option.idType}${option.value}`,
                 areas: info.areas.map(i => i.name),
                 styles: info.styles,
@@ -47,15 +59,7 @@ export const start = async (
                 cover: info.cover,
                 description: info.evaluate,
                 owner: { name: info.actors, face: '', mid: 0 },
-                pages: info.episodes.map((e, index) => ({
-                    bvid: e.bvid,
-                    cid: e.cid,
-                    dimension: e.dimension,
-                    duration: e.duration,
-                    page: index + 1,
-                    part: e.long_title,
-                    bandge: e.title
-                })),
+                pages: info.episodes.map(episodeToPage),
                 status: info.new_ep.desc,
                 publishData: new Date().toLocaleDateString(),
                 staff: info.actors.split('\n'),
@@ -64,6 +68,19 @@ export const start = async (
             }
             workRoute.videoInfoCardMode.val = 'season'
         })
+    }
+}
+
+const episodeToPage = (episode: Episode, index: number): PageInParseResult => {
+    return {
+        bvid: episode.bvid,
+        cid: episode.cid,
+        dimension: episode.dimension,
+        duration: episode.duration,
+        page: index + 1,
+        part: episode.long_title,
+        bandge: episode.title,
+        selected: van.state(false)
     }
 }
 

@@ -13,6 +13,10 @@
     transition: all 0.2s;
     border-color: transparent;
 
+    .text-muted {
+        transition: all 0.2s;
+    }
+
     &:hover:not(.active) {
         --bs-bg-opacity: 0.2;
         border-width: 1px !important;
@@ -22,6 +26,10 @@
 
     &.active {
         --bs-bg-opacity: 0.8;
-        color: white;
+        color: white !important;
+
+        .text-muted {
+            color: white !important;
+        }
     }
 }

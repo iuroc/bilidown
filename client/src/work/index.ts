@@ -22,6 +22,7 @@ export class WorkRoute {
         pages: [], owner: { face: '', mid: 0, name: '' },
         dimension: { width: 0, height: 0, rotate: 0 },
         staff: [], status: '', areas: [], styles: [], targetURL: '',
+        section: []
     })
     /** 标识视频信息卡片应该显示普通视频还是剧集，值为 `hide` 时隐藏卡片 */
     videoInfoCardMode: VideoInfoCardMode = van.state('hide')
@@ -29,6 +30,8 @@ export class WorkRoute {
 
     /** 按钮是否处于 `loading` 状态，如果是则按钮设置为 `disabled` */
     btnLoading = van.state(false)
+
+    sectionTabsActiveIndex = van.state(0)
 
     constructor() {
         const _that = this
@@ -38,7 +41,7 @@ export class WorkRoute {
                 return div({ class: 'vstack gap-3' },
                     InputBox(_that),
                     div({ hidden: () => _that.videoInfoCardMode.val == 'hide' || _that.btnLoading.val },
-                        VideoInfoCard(_that.videoInfocardData, _that.videoInfoCardMode, _that.ownerFaceHide),
+                        VideoInfoCard(_that),
                     ),
                 )
             },

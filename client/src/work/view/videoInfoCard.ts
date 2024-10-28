@@ -3,6 +3,7 @@ import { VideoParseResult, VideoInfoCardMode } from '../type'
 import { secondToTime } from '../mixin'
 import { VanComponent } from '../../mixin'
 import VideoItemList from './videoItemList'
+import { WorkRoute } from '..'
 
 const { a, div, img } = van.tags
 
@@ -10,10 +11,14 @@ class VideoInfoCardComp implements VanComponent {
     element: HTMLElement
 
     constructor(
-        public data: State<VideoParseResult>,
-        public mode: VideoInfoCardMode,
-        ownerFaceHide: State<boolean>
+        public workRoute: WorkRoute,
     ) {
+        const {
+            videoInfocardData: data,
+            videoInfoCardMode: mode,
+            ownerFaceHide
+        } = workRoute
+
         this.element = div({ class: 'card border-2 shadow-sm' },
             div({ class: 'card-header' },
                 a({
@@ -77,65 +82,68 @@ class VideoInfoCardComp implements VanComponent {
                     ),
                     DescriptionGroup(this, true),
                 ),
-                VideoItemList(data, mode)
+                VideoItemList(workRoute)
             )
         )
     }
 }
 
 const Right = (parent: VideoInfoCardComp) => {
+    const mode = parent.workRoute.videoInfoCardMode
+    const data = parent.workRoute.videoInfocardData
+
     return div({ class: 'vstack gap-2 h-100' },
         div({ class: 'row gx-2 gy-2' },
             div({ class: 'col-xl-7 col-xxl-8' },
                 InputGroup(
-                    van.derive(() => parent.mode.val == 'video'
-                        ? (parent.data.val.staff.length > 0 ? '制作信息' : '发布者')
+                    van.derive(() => mode.val == 'video'
+                        ? (data.val.staff.length > 0 ? '制作信息' : '发布者')
                         : '参演人员'),
                     van.derive(() => {
-                        if (parent.data.val.staff.length > 0)
-                            return parent.data.val.staff.map(i => i.trim()).join(', ')
-                        return parent.data.val.owner.name
+                        if (data.val.staff.length > 0)
+                            return data.val.staff.map(i => i.trim()).join(', ')
+                        return data.val.owner.name
                     }), { disabled: true }
                 ),
             ),
             div({ class: 'col-xl-5 col-xxl-4' },
                 InputGroup('发布时间',
-                    van.derive(() => parent.data.val.publishData), { disabled: true }
+                    van.derive(() => data.val.publishData), { disabled: true }
                 )
             ),
-            div({ class: 'col-sm col-md-12 col-lg-4', hidden: () => parent.mode.val != 'video' },
+            div({ class: 'col-sm col-md-12 col-lg-4', hidden: () => mode.val != 'video' },
                 InputGroup('分辨率',
-                    van.derive(() => `${parent.data.val.dimension.width}x${parent.data.val.dimension.height}`),
+                    van.derive(() => `${data.val.dimension.width}x${data.val.dimension.height}`),
                     { disabled: true }
                 )
             ),
-            div({ class: 'col col-lg-4', hidden: () => parent.mode.val != 'video' },
+            div({ class: 'col col-lg-4', hidden: () => mode.val != 'video' },
                 InputGroup('时长',
-                    van.derive(() => `${secondToTime(parent.data.val.duration)}`),
+                    van.derive(() => `${secondToTime(data.val.duration)}`),
                     { disabled: true }
                 )
             ),
-            div({ class: 'col col-lg-4', hidden: () => parent.mode.val != 'video' },
+            div({ class: 'col col-lg-4', hidden: () => mode.val != 'video' },
                 InputGroup('集数',
-                    van.derive(() => parent.data.val.pages.length.toString()),
+                    van.derive(() => data.val.pages.length.toString()),
                     { disabled: true }
                 )
             ),
-            div({ class: 'col-md-12 col-lg-4', hidden: () => parent.mode.val != 'season' },
+            div({ class: 'col-md-12 col-lg-4', hidden: () => mode.val != 'season' },
                 InputGroup('状态',
-                    van.derive(() => parent.data.val.status),
+                    van.derive(() => data.val.status),
                     { disabled: true }
                 )
             ),
-            div({ class: 'col-sm col-lg-4', hidden: () => parent.mode.val != 'season' },
+            div({ class: 'col-sm col-lg-4', hidden: () => mode.val != 'season' },
                 InputGroup('地区',
-                    van.derive(() => parent.data.val.areas.map(i => i.trim()).join(', ')),
+                    van.derive(() => data.val.areas.map(i => i.trim()).join(', ')),
                     { disabled: true }
                 )
             ),
-            div({ class: 'col-sm col-lg-4', hidden: () => parent.mode.val != 'season' },
+            div({ class: 'col-sm col-lg-4', hidden: () => mode.val != 'season' },
                 InputGroup('标签',
-                    van.derive(() => parent.data.val.styles.join(', ')),
+                    van.derive(() => data.val.styles.join(', ')),
                     { disabled: true }
                 )
             ),
@@ -150,7 +158,9 @@ const Right = (parent: VideoInfoCardComp) => {
  * @param bottom 是否在底部
  */
 const DescriptionGroup = (parent: VideoInfoCardComp, bottom = false) => {
-    const _class = van.derive(() => parent.mode.val == 'video' ? 'd-md-flex' : '')
+    const mode = parent.workRoute.videoInfoCardMode
+    const data = parent.workRoute.videoInfocardData
+    const _class = van.derive(() => mode.val == 'video' ? 'd-md-flex' : '')
     return div({
         class: () => `shadow-sm input-group input-group-sm ${bottom
             ? `d-none d-lg-none ${_class.val}`
@@ -158,9 +168,12 @@ const DescriptionGroup = (parent: VideoInfoCardComp, bottom = false) => {
             }`,
     },
         div({ class: 'input-group-text align-items-start' }, '描述'),
-        div({ class: `form-control overflow-auto ${bottom ? `max-height-description` : `h-100`}` },
-            () => parent.data.val.description.match(/^(\s*|.)$/) ? '暂无描述' : parent.data.val.description
-        )
+        () => {
+            const lines = (data.val.description.match(/^(\s*|.)$/) ? '暂无描述' : data.val.description).split('\n')
+            return div({ class: `form-control overflow-auto ${bottom ? `max-height-description` : `h-100`}` },
+                lines.map(line => div(line))
+            )
+        }
     )
 }
 
@@ -180,7 +193,5 @@ const InputGroup = (title: Val<string>, value: State<string>, option?: {
 }
 
 export default (
-    data: State<VideoParseResult>,
-    mode: VideoInfoCardMode,
-    ownerFaceHide: State<boolean>
-) => new VideoInfoCardComp(data, mode, ownerFaceHide).element
+    workRoute: WorkRoute
+) => new VideoInfoCardComp(workRoute).element

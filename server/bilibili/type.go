@@ -164,6 +164,11 @@ type SeasonInfo struct {
 		Desc  string `json:"desc"`   // 更新状态文本
 		IsNew int    `json:"is_new"` // 是否是连载，0 为完结，1 为连载
 	} `json:"new_ep"`
+
+	Section []struct {
+		Title    string    `json:"title"`
+		Episodes []Episode `json:"episodes"`
+	} `json:"section"`
 }
 
 type PlayInfo struct {
