@@ -17,6 +17,7 @@ export const start = async (
     history.replaceState(null, '', `#/work/${option.idType}/${option.value}`)
     workRoute.btnLoading.val = true
     workRoute.ownerFaceHide.val = true
+    workRoute.sectionTabsActiveIndex.val = 0
     if (option.idType === 'bv') {
         const bvid = option.value as string
         await getVideoInfo(bvid).then(info => {

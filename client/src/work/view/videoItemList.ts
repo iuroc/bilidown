@@ -12,14 +12,20 @@ class VideoItemListComp implements VanComponent {
         public workRoute: WorkRoute
     ) {
         const { videoInfocardData: data, sectionTabsActiveIndex } = workRoute
+        const mainPages = van.derive(() => data.val.pages)
+        const sectionPages = van.derive(() => data.val.section?.[sectionTabsActiveIndex.val]?.pages || [])
+
         this.element = div({
             hidden: () => false && data.val.pages.length <= 1,
             class: 'vstack gap-4'
         },
-            ButtonGroup(this),
-            ListBox(van.derive(() => data.val.pages)),
-            SectionTabs(this),
-            ListBox(van.derive(() => data.val.section?.[sectionTabsActiveIndex.val]?.pages || [])),
+            ButtonGroup(mainPages),
+            ListBox(mainPages),
+            div({ class: 'vstack gap-4', hidden: () => data.val.section.length <= 0 },
+                SectionTabs(this),
+                ButtonGroup(sectionPages),
+                ListBox(sectionPages),
+            )
         )
     }
 }
@@ -38,17 +44,15 @@ const SectionTabs = (parent: VideoItemListComp) => {
     )
 }
 
-const ButtonGroup = (parent: VideoItemListComp) => {
-    const data = parent.workRoute.videoInfocardData
-
-    const selectedCount = van.derive(() => data.val.pages.filter(page => page.selected.val).length)
-    const totalCount = van.derive(() => data.val.pages.length)
+const ButtonGroup = (pages: State<PageInParseResult[]>) => {
+    const selectedCount = van.derive(() => pages.val.filter(page => page.selected.val).length)
+    const totalCount = van.derive(() => pages.val.length)
 
     return div({ class: 'hstack gap-3' },
         button({
             class: 'btn btn-secondary',
             onclick() {
-                data.val.pages.forEach(page => page.selected.val = selectedCount.val < totalCount.val)
+                pages.val.forEach(page => page.selected.val = selectedCount.val < totalCount.val)
             }
         }, () => `${selectedCount.val < totalCount.val ? '全选' : '取消全选'} (${selectedCount.val}/${totalCount.val})`),
         button({
@@ -59,7 +63,7 @@ const ButtonGroup = (parent: VideoItemListComp) => {
 }
 
 const ListBox = (pages: State<PageInParseResult[]>) => {
-    return () => div({ class: 'row gy-3 gx-3' },
+    return () => div({ class: 'row gy-3 gx-3 overflow-y-auto pb-3', style: `max-height: 350px;` },
         pages.val.map(page => {
             const bandgeIsNum = isNaN(parseInt(page.bandge))
             const active = page.selected
