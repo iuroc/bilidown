@@ -12,17 +12,15 @@ class VideoItemListComp implements VanComponent {
         public workRoute: WorkRoute
     ) {
         const { videoInfocardData: data, sectionTabsActiveIndex } = workRoute
-        const mainPages = van.derive(() => data.val.pages)
-        const sectionPages = van.derive(() => data.val.section?.[sectionTabsActiveIndex.val]?.pages || [])
+        const allSection: State<SectionItem[]> = van.derive(() => [{ title: '正片', pages: data.val.pages }].concat(data.val.section))
+        const sectionPages = van.derive(() => allSection.val[sectionTabsActiveIndex.val].pages || [])
 
         this.element = div({
             hidden: () => false && data.val.pages.length <= 1,
             class: 'vstack gap-4'
         },
-            ButtonGroup(mainPages),
-            ListBox(mainPages),
-            div({ class: 'vstack gap-4', hidden: () => data.val.section.length <= 0 },
-                SectionTabs(this),
+            div({ class: 'vstack gap-4' },
+                div({ hidden: () => allSection.val.length <= 1 }, SectionTabs(this, allSection)),
                 ButtonGroup(sectionPages),
                 ListBox(sectionPages),
             )
@@ -30,10 +28,9 @@ class VideoItemListComp implements VanComponent {
     }
 }
 
-const SectionTabs = (parent: VideoItemListComp) => {
-    const data = parent.workRoute.videoInfocardData
+const SectionTabs = (parent: VideoItemListComp, allSection: State<SectionItem[]>) => {
     return () => div({ class: 'nav nav-underline' },
-        data.val.section.map((item, index) => div({ class: 'nav-item user-select-none', role: 'button' },
+        allSection.val.map((item, index) => div({ class: 'nav-item user-select-none', role: 'button' },
             div({
                 class: `nav-link ${parent.workRoute.sectionTabsActiveIndex.val == index ? 'active' : ''}`,
                 onclick() {
@@ -63,13 +60,13 @@ const ButtonGroup = (pages: State<PageInParseResult[]>) => {
 }
 
 const ListBox = (pages: State<PageInParseResult[]>) => {
-    return () => div({ class: 'row gy-3 gx-3 overflow-y-auto pb-3', style: `max-height: 350px;` },
+    return () => div({ class: 'row gy-3 gx-3' },
         pages.val.map(page => {
-            const bandgeIsNum = isNaN(parseInt(page.bandge))
+            const bandgeNotNum = !page.bandge.match(/^\d+$/)
             const active = page.selected
             return div({ class: 'col-xxl-3 col-lg-4 col-md-6' },
                 div({
-                    class: () => `${bandgeIsNum
+                    class: () => `${bandgeNotNum
                         ? `vstack gap-2 justify-content-center`
                         : `hstack gap-3`
                         } shadow-sm h-100 user-select-none card card-body video-item-btn bg-success bg-opacity-10 ${active.val ? 'active' : ''}`,
@@ -77,9 +74,9 @@ const ListBox = (pages: State<PageInParseResult[]>) => {
                         active.val = !active.val
                     }
                 },
-                    span({ class: 'badge text-bg-success bg-opacity-75 border', hidden: bandgeIsNum }, page.bandge),
+                    span({ class: 'badge text-bg-success bg-opacity-75 border', hidden: bandgeNotNum }, page.bandge),
                     div(page.part),
-                    div({ class: `${page.part ? 'small text-muted' : ''}`, hidden: !bandgeIsNum }, page.bandge),
+                    div({ class: `${page.part ? 'small text-muted' : ''}`, hidden: !bandgeNotNum }, page.bandge),
                 )
             )
         }),
