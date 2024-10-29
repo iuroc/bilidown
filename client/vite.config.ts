@@ -11,5 +11,12 @@ export default defineConfig({
     build: {
         outDir: '../server/static',
         emptyOutDir: true,
+    },
+    css: {
+        preprocessorOptions: {
+            scss: {
+                api: 'modern-compiler'
+            }
+        }
     }
 })

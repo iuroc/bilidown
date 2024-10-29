@@ -2,6 +2,25 @@
 
 > 哔哩哔哩视频解析下载工具
 
+## 开发环境
+
+1. 将 `gcc` 命令配置到 `PATH` 环境变量
+2. 设置环境变量 `CGO_ENABLED=1`
+3. 执行下面的代码：
+
+    ```shell
+    go mod tidy
+    pnpm install
+    pnpm dev
+    ```
+
+## 编译运行
+
+```shell
+pnpm build
+pnpm start
+```
+
 ## 功能规划
 
 1. 本地启动 HTTP 服务器，并将程序隐藏于托盘
