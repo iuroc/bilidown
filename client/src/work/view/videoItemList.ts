@@ -55,6 +55,9 @@ const ButtonGroup = (pages: State<PageInParseResult[]>) => {
         button({
             class: 'btn btn-primary',
             disabled: () => selectedCount.val <= 0,
+            onclick() {
+                const selectedList = pages.val.filter(page => page.selected.val)
+            }
         }, '解析选中项目')
     )
 }
