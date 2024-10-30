@@ -27,7 +27,7 @@ export class WorkRoute {
     })
     /** 标识视频信息卡片应该显示普通视频还是剧集，值为 `hide` 时隐藏卡片 */
     videoInfoCardMode: VideoInfoCardMode = van.state('hide')
-    ownerFaceHide = van.state(true)
+    ownerFaceHide = van.derive(() => this.videoInfocardData.val.owner.face == '')
 
     /** 全部选项卡和列表数据 */
     allSection
@@ -47,9 +47,17 @@ export class WorkRoute {
 
     constructor() {
         const _that = this
-        this.allSection = van.derive(() => [{ title: '正片', pages: this.videoInfocardData.val.pages }]
-            .concat(this.videoInfocardData.val.section))
-        this.sectionPages = van.derive(() => this.allSection.val[this.sectionTabsActiveIndex.val].pages || [])
+        this.allSection = van.derive(() => {
+            const list = (
+                this.videoInfoCardMode.val == 'season'
+                    || this.videoInfoCardMode.val == 'video' && this.videoInfocardData.val.section.length == 0
+                    ? [{ title: '正片', pages: this.videoInfocardData.val.pages }] : []
+            ).concat(this.videoInfocardData.val.section)
+            return list
+        })
+        this.sectionPages = van.derive(() => {
+            return this.allSection.val[this.sectionTabsActiveIndex.val]?.pages || []
+        })
         this.selectedPages = van.derive(() => this.sectionPages.val.filter(page => page.selected.val))
         this.parseModalComp = new ParseModalComp({ workRoute: this })
         van.add(document.body, this.parseModalComp.element)

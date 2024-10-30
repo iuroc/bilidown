@@ -2,7 +2,6 @@ import van, { State } from 'vanjs-core'
 import { VideoParseResult, VideoInfoCardMode, PageInParseResult, SectionItem } from '../type'
 import { VanComponent } from '../../mixin'
 import { WorkRoute } from '..'
-import { getPlayInfo } from '../data'
 
 const { button, div, span } = van.tags
 
@@ -19,7 +18,7 @@ class VideoItemListComp implements VanComponent {
             class: 'vstack gap-4'
         },
             div({ class: 'vstack gap-4' },
-                div({ hidden: () => workRoute.allSection.val.length <= 1 }, SectionTabs(this, workRoute.allSection)),
+                div({ hidden: () => workRoute.allSection.val.length == 1 && workRoute.allSection.val[0].title == '正片' }, SectionTabs(this, workRoute.allSection)),
                 ButtonGroup(workRoute),
                 ListBox(workRoute.sectionPages),
             )

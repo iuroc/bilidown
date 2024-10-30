@@ -48,7 +48,6 @@ class VideoInfoCardComp implements VanComponent {
                                         class: 'w-100',
                                         ondragstart: event => event.preventDefault(),
                                         referrerPolicy: 'no-referrer',
-                                        onload: () => ownerFaceHide.val = false
                                     })
                                 ),
                                 a({
@@ -169,7 +168,7 @@ const DescriptionGroup = (parent: VideoInfoCardComp, bottom = false) => {
             : `overflow-hidden flex-fill ${mode.val == 'video' ? 'd-md-none d-lg-flex ' : ''}`
             }`,
     },
-        div({ class: 'input-group-text align-items-start' }, '描述', bottom),
+        div({ class: 'input-group-text align-items-start' }, '描述'),
         () => {
             const lines = (data.val.description.match(/^(\s*|.)$/) ? '暂无描述' : data.val.description).split('\n')
             return div({ class: `form-control overflow-auto ${bottom ? `max-height-description` : `h-100`}` },

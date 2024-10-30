@@ -76,6 +76,19 @@ export type StaffItem = {
     face: string
 }
 
+type PageInVideoInfo = {
+    cid: number
+    page: number
+    from: string
+    part: string
+    duration: number
+    dimension: {
+        width: number
+        height: number
+        rotate: number
+    }
+}
+
 /** 接口返回的视频信息 */
 export type VideoInfo = {
     aid: number
@@ -86,18 +99,7 @@ export type VideoInfo = {
     pic: string
     duration: number
     bvid: string
-    pages: {
-        cid: number
-        page: number
-        from: string
-        part: string
-        duration: number
-        dimension: {
-            width: number
-            height: number
-            rotate: number
-        }
-    }[]
+    pages: PageInVideoInfo[]
     owner: {
         mid: number
         name: string
@@ -107,6 +109,17 @@ export type VideoInfo = {
         width: number
         height: number
         rotate: number
+    },
+    ugc_season: {
+        sections: {
+            title: string
+            episodes: {
+                title: string
+                pages: PageInVideoInfo[]
+                bvid: string
+            }[]
+        }[] | null
+        title: string
     }
 }
 
@@ -146,7 +159,7 @@ export type SeasonInfo = {
     section: {
         title: string
         episodes: Episode[]
-    }[]
+    }[] | null
 }
 
 export type Episode = {

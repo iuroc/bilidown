@@ -2,8 +2,9 @@ package router
 
 import (
 	"bilidown/util"
-	"github.com/sqweek/dialog"
 	"net/http"
+
+	"github.com/sqweek/dialog"
 )
 
 func API() *http.ServeMux {
@@ -28,7 +29,7 @@ func FolderPicker(w http.ResponseWriter, r *http.Request) {
 	}
 	db := util.GetDB()
 	defer db.Close()
-	_, err = db.Exec(`INSERT OR REPLACE INTO "field" ("name", "value") VALUES ("save_folder", ?)`, folderPath)
+	err = util.SaveDownloadFolder(db, folderPath)
 	if err != nil {
 		util.Res{Success: false, Message: err.Error()}.Write(w)
 		return

@@ -22,17 +22,18 @@ export class ParseModalComp implements VanComponent {
 
     allPlayInfo: State<{
         page: PageInParseResult
-        info: PlayInfo
+        info: PlayInfo | null
         selected: State<boolean>
         formatIndex: State<number>
     }[]> = van.state([])
 
+    errorList: State<string[]> = van.state([])
+
     constructor(public option: Option) {
-        const _that = this
         this.totalCount = van.derive(() => option.workRoute.selectedPages.val.length)
         const allFinish = van.derive(() => this.totalCount.val == this.finishCount.val)
         this.element = div({ class: `modal fade`, tabIndex: -1 },
-            div({ class: () => `modal-dialog modal-xl modal-fullscreen-xl-down ${this.totalCount.val < 10 ? '' : 'modal-dialog-scrollable'}` },
+            div({ class: () => `modal-dialog modal-xl modal-fullscreen-xl-down ${(this.totalCount.val + this.errorList.val.length) < 10 ? '' : 'modal-dialog-scrollable'}` },
                 div({ class: `modal-content` },
                     div({ class: `modal-header` },
                         div({ class: `h5 modal-title` }, () => allFinish.val ? '批量下载' : '批量解析'),
@@ -40,6 +41,12 @@ export class ParseModalComp implements VanComponent {
                     ),
                     div({ class: `modal-body vstack gap-3`, tabIndex: -1, style: 'outline: none;' },
                         this.ParseProgress(),
+                        div({ class: 'vstack gap-2', hidden: () => this.errorList.val.length == 0 || !allFinish.val },
+                            div({ class: 'text-danger' }, () => `以下 ${this.errorList.val.length} 个视频解析失败`),
+                            () => div({ class: 'list-group' },
+                                this.errorList.val.map(error => div({ class: 'list-group-item disabled' }, error))
+                            )
+                        ),
                         this.ListGroup()
                     ),
                     this.ModalFooter()
@@ -64,6 +71,9 @@ export class ParseModalComp implements VanComponent {
     /** 开始解析 */
     async start() {
         this.finishCount.val = 0
+        this.errorList.val = []
+        console.log(this.totalCount.val)
+
         const queue = new PQueue({ concurrency: 10 })
         for (const page of this.option.workRoute.selectedPages.val) {
             queue.add(async () => {
@@ -78,7 +88,11 @@ export class ParseModalComp implements VanComponent {
                     formatIndex: van.state(0),
                 })
                 this.finishCount.val++
-            }).catch(() => { })
+            }).catch(() => {
+                this.finishCount.val++
+                const badgeNotNum = !page.bandge.match(/^\d+$/)
+                this.errorList.val = this.errorList.val.concat(`${page.part}${badgeNotNum ? ` - ${page.bandge}` : ''}`)
+            })
         }
         await queue.onIdle()
     }
@@ -101,11 +115,11 @@ export class ParseModalComp implements VanComponent {
 
     ListGroup() {
         return () => div({ class: 'list-group', hidden: () => this.totalCount.val != this.finishCount.val },
-            this.allPlayInfo.val.map(info => {
+            this.allPlayInfo.val.filter(info => info.info).map(info => {
                 const badgeNotNum = !info.page.bandge.match(/^\d+$/)
 
                 return div({
-                    class: 'list-group-item user-select-none py-0',
+                    class: () => `list-group-item user-select-none py-0 ${info.info ? '' : 'disabled'}`,
                     role: 'button',
                     onclick(event) {
                         if ((event.target as HTMLElement).getAttribute('class')?.match(/dropdown-?/)) return
@@ -124,16 +138,16 @@ export class ParseModalComp implements VanComponent {
                         ),
                         div({ class: 'dropdown' },
                             div({ class: 'dropdown-toggle py-2 text-primary', 'data-bs-toggle': 'dropdown' },
-                                () => info.info.accept_description[info.formatIndex.val]
+                                () => info.info?.accept_description[info.formatIndex.val]
                             ),
                             () => div({ class: 'dropdown-menu shadow' },
-                                Array(info.info.accept_description.length).fill(0).map((_, index) => {
+                                Array(info.info?.accept_description.length).fill(0).map((_, index) => {
                                     return div({
                                         class: () => `dropdown-item ${info.formatIndex.val == index ? 'active' : ''}`,
                                         onclick() {
                                             info.formatIndex.val = index
                                         }
-                                    }, info.info.accept_description[index])
+                                    }, info.info?.accept_description[index])
                                 })
                             )
                         )
@@ -154,7 +168,7 @@ export class ParseModalComp implements VanComponent {
         const allFinish = van.derive(() => this.totalCount.val == this.finishCount.val)
 
         return div({ class: `modal-footer` },
-            div({ class: 'me-auto', hidden: () => !allFinish.val },
+            div({ class: 'me-auto', hidden: () => !allFinish.val || totalCount.val == 0 },
                 () => `已选择 (${selectedCount.val}/${totalCount.val}) 项`
             ),
             button({
@@ -163,13 +177,13 @@ export class ParseModalComp implements VanComponent {
                 hidden: allFinish
             }, '取消解析'),
             button({
-                class: 'btn btn-secondary', hidden: () => !allFinish.val || allSelected.val,
+                class: 'btn btn-secondary', hidden: () => !allFinish.val || allSelected.val || totalCount.val == 0,
                 onclick() {
                     _that.allPlayInfo.val.forEach(info => info.selected.val = true)
                 }
             }, '全选'),
             button({
-                class: 'btn btn-warning', hidden: () => !allFinish.val || !allSelected.val,
+                class: 'btn btn-warning', hidden: () => !allFinish.val || !allSelected.val || totalCount.val == 0,
                 onclick() {
                     _that.allPlayInfo.val.forEach(info => info.selected.val = false)
                 }

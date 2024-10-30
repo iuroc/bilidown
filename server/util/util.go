@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"regexp"
 )
 
@@ -40,8 +42,26 @@ func GetDB(path ...string) *sql.DB {
 }
 
 func CheckBVID(bvid string) bool {
-	if !regexp.MustCompile("^BV1[a-zA-Z0-9]+").MatchString(bvid) {
-		return false
+	return regexp.MustCompile("^BV1[a-zA-Z0-9]+").MatchString(bvid)
+}
+
+// GetDefaultDownloadFolder 获取默认下载路径
+func GetDefaultDownloadFolder() (string, error) {
+	return filepath.Abs("./download")
+}
+
+// SaveDownloadFolder 保存下载路径，不存在则自动创建
+func SaveDownloadFolder(db *sql.DB, downloadFolder string) error {
+	_, err := os.Stat(downloadFolder)
+	if err != nil {
+		if os.IsNotExist(err) {
+			err = os.MkdirAll(downloadFolder, os.ModePerm)
+			if err != nil {
+				return err
+			}
+		}
+		return err
 	}
-	return true
+	_, err = db.Exec(`INSERT OR REPLACE INTO "field" ("name", "value") VALUES ("download_folder", ?)`, downloadFolder)
+	return err
 }

@@ -113,6 +113,31 @@ type VideoInfo struct {
 		Like     int `json:"like"`     // 点赞数量
 		Dislike  int `json:"dislike"`  // 不喜欢
 	} `json:"stat"`
+	UgcSeason struct {
+		Sections []struct {
+			Title    string `json:"title"`
+			Episodes []struct {
+				Title string `json:"title"`
+				Pages []Page `json:"pages"`
+				Bvid  string `json:"bvid"`
+			} `json:"episodes"`
+		} `json:"sections"`
+		Title string `json:"title"`
+	} `json:"ugc_season"`
+}
+
+// EpisodeInBV 通过 BV 获取的视频信息中的合集信息
+type EpisodeInBV struct {
+	Aid       int                `json:"aid"`
+	Bvid      string             `json:"bvid"`
+	Cid       int                `json:"cid"`
+	Pic       string             `json:"pic"` // 封面
+	Dimension `json:"dimension"` // 分辨率
+	Duration  int                `json:"duration"` // 时长
+	EPID      int                `json:"ep_id"`
+	LongTitle string             `json:"long_title"` // 分集完整标题，比如【法外狂徒张三现身！】
+	PubTime   int                `json:"pub_time"`   // 发布时间
+	Title     string             `json:"title"`      // 分集简略标题，比如【1】
 }
 
 // Episode 剧集分集信息

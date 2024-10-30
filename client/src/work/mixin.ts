@@ -16,13 +16,30 @@ export const start = async (
     }) => {
     history.replaceState(null, '', `#/work/${option.idType}/${option.value}`)
     workRoute.btnLoading.val = true
-    workRoute.ownerFaceHide.val = true
     workRoute.sectionTabsActiveIndex.val = 0
     if (option.idType === 'bv') {
         const bvid = option.value as string
         await getVideoInfo(bvid).then(info => {
             workRoute.videoInfocardData.val = {
-                section: [],
+                section: (info.ugc_season.sections || []).map(i => {
+                    let index = 0
+                    return {
+                        title: (info.ugc_season.sections || []).length == 1 ? info.ugc_season.title : i.title,
+                        pages: i.episodes.flatMap(j => j.pages.map(k => {
+                            index++
+                            return {
+                                bvid: j.bvid,
+                                cid: k.cid,
+                                dimension: k.dimension,
+                                duration: k.duration,
+                                page: index,
+                                part: k.part,
+                                bandge: index.toString(),
+                                selected: van.state(bvid == j.bvid)
+                            }
+                        }))
+                    }
+                }),
                 targetURL: `https://www.bilibili.com/video/${bvid}`,
                 areas: [],
                 styles: [],
@@ -36,7 +53,7 @@ export const start = async (
                     ...page,
                     bvid,
                     bandge: (index + 1).toString(),
-                    selected: van.state(false)
+                    selected: van.state(info.pages.length == 1)
                 })),
                 dimension: info.dimension,
                 owner: info.owner,
@@ -49,7 +66,7 @@ export const start = async (
         const ssid = option.idType === 'ss' ? option.value as number : 0
         await getSeasonInfo(epid, ssid).then(info => {
             workRoute.videoInfocardData.val = {
-                section: info.section.map(i => ({
+                section: (info.section || []).map(i => ({
                     pages: i.episodes.map(episodeToPage),
                     title: i.title
                 })),
@@ -79,7 +96,7 @@ const episodeToPage = (episode: Episode, index: number): PageInParseResult => {
         dimension: episode.dimension,
         duration: episode.duration,
         page: index + 1,
-        part: episode.long_title,
+        part: episode.long_title || `第 ${episode.title} 集`,
         bandge: episode.title,
         selected: van.state(false)
     }

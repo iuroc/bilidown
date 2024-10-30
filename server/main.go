@@ -33,5 +33,13 @@ func InitTables() *sql.DB {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	defaultDownloadFolder, err := util.GetDefaultDownloadFolder()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = util.SaveDownloadFolder(db, defaultDownloadFolder)
+	if err != nil {
+		log.Fatalln(err)
+	}
 	return db
 }
