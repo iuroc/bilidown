@@ -1,11 +1,12 @@
-import van from 'vanjs-core'
+import van, { State } from 'vanjs-core'
 import { Route, goto } from 'vanjs-router'
 import VideoInfoCard from './view/videoInfoCard'
 import { checkLogin, GLOBAL_HAS_LOGIN, showErrorPage } from '../mixin'
-import { VideoParseResult, VideoInfoCardMode } from './type'
+import { VideoParseResult, VideoInfoCardMode, SectionItem } from './type'
 import { IDType, start } from './mixin'
-import VideoItemList from './view/videoItemList'
+import { ParseModalComp } from './view/parseModal'
 import InputBox from './view/inputBox'
+import { Modal } from 'bootstrap'
 
 const { div } = van.tags
 
@@ -28,6 +29,17 @@ export class WorkRoute {
     videoInfoCardMode: VideoInfoCardMode = van.state('hide')
     ownerFaceHide = van.state(true)
 
+    /** 全部选项卡和列表数据 */
+    allSection
+    /** 当前选项卡的按钮列表 */
+    sectionPages
+    /** 当前选中的按钮列表 */
+    selectedPages
+    /** 视频列表批量解析模态框 */
+    parseModal: Modal
+
+    parseModalComp: ParseModalComp
+
     /** 按钮是否处于 `loading` 状态，如果是则按钮设置为 `disabled` */
     btnLoading = van.state(false)
 
@@ -35,6 +47,15 @@ export class WorkRoute {
 
     constructor() {
         const _that = this
+        this.allSection = van.derive(() => [{ title: '正片', pages: this.videoInfocardData.val.pages }]
+            .concat(this.videoInfocardData.val.section))
+        this.sectionPages = van.derive(() => this.allSection.val[this.sectionTabsActiveIndex.val].pages || [])
+        this.selectedPages = van.derive(() => this.sectionPages.val.filter(page => page.selected.val))
+        this.parseModalComp = new ParseModalComp({ workRoute: this })
+        van.add(document.body, this.parseModalComp.element)
+
+        this.parseModal = new Modal(this.parseModalComp.element)
+
         this.element = Route({
             rule: 'work',
             Loader() {

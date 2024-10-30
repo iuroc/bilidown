@@ -180,11 +180,13 @@ type PlayInfo struct {
 		NewDescription string   `json:"new_description"`
 		Codecs         []string `json:"codecs"`
 	} `json:"support_formats"`
-	Dash struct {
-		Duration int     `json:"duration"`
-		Video    []Media `json:"video"`
-		Audio    []Media `json:"audio"`
-	} `json:"dash"`
+	Dash *Dash `json:"dash"`
+}
+
+type Dash struct {
+	Duration int     `json:"duration"`
+	Video    []Media `json:"video"`
+	Audio    []Media `json:"audio"`
 }
 
 type Media struct {

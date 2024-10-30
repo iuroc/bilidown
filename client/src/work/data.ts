@@ -1,5 +1,5 @@
 import { ResJSON, timeoutController } from '../mixin'
-import { SeasonInfo, VideoInfo } from './type'
+import { PlayInfo, SeasonInfo, VideoInfo } from './type'
 
 /**
  * 获取视频信息
@@ -32,5 +32,14 @@ export const getSeasonInfo = async (epid: number, ssid: number): Promise<SeasonI
 
     if (!res.success) throw new Error(res.message)
     clearTimeout(timer)
+    return res.data
+}
+
+
+export const getPlayInfo = async (bvid: string, cid: number, controller: AbortController): Promise<PlayInfo> => {
+    const res = await fetch(`/api/getPlayInfo?bvid=${bvid}&cid=${cid}`, {
+        signal: controller.signal
+    }).then(res => res.json()) as ResJSON<PlayInfo>
+    if (!res.success) throw new Error(res.message)
     return res.data
 }

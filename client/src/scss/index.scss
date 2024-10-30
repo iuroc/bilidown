@@ -12,12 +12,14 @@
     cursor: pointer;
     transition: all 0.2s;
     border-color: transparent;
+    outline: none;
 
     .text-muted {
         transition: all 0.2s;
     }
 
-    &:hover:not(.active) {
+    &:hover:not(.active),
+    &:focus-visible:not(.active) {
         --bs-bg-opacity: 0.2;
         border-width: 1px !important;
         border-style: solid !important;

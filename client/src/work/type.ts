@@ -167,3 +167,41 @@ export type Episode = {
 }
 
 export type VideoInfoCardMode = State<"video" | "season" | "hide">
+
+export type PlayInfo = {
+    accept_description: string[]
+    accept_quality: number[]
+    support_formats: {
+        quality: number
+        format: string
+        new_description: string
+        codecs: string[]
+    }[]
+    dash: {
+        duration: number
+        video: {
+            id: number
+            baseUrl: string
+            backupUrl: string[]
+            bandwidth: number
+            mimeType: string
+            codecs: string
+            width: number
+            height: number
+            frameRate: string
+            codecid: number
+        }[]
+        audio: {
+            id: number
+            baseUrl: string
+            backupUrl: string[]
+            bandwidth: number
+            mimeType: string
+            codecs: string
+            width: number
+            height: number
+            frameRate: string
+            codecid: number
+        }[]
+    }
+}

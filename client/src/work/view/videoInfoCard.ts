@@ -22,7 +22,7 @@ class VideoInfoCardComp implements VanComponent {
         this.element = div({ class: 'card border-2 shadow-sm' },
             div({ class: 'card-header' },
                 a({
-                    class: 'link-dark text-decoration-none fw-bold', href: () => data.val.targetURL,
+                    class: 'link-dark text-decoration-none fw-bold focus-ring', href: () => data.val.targetURL,
                     target: '_blank',
                 },
                     () => data.val.title,
@@ -55,6 +55,7 @@ class VideoInfoCardComp implements VanComponent {
                                     href: () => `https://space.bilibili.com/${data.val.owner.mid}`,
                                     title: () => `查看用户主页：${data.val.owner.name}`,
                                     target: '_blank',
+                                    tabIndex: () => mode.val == 'video' ? 0 : -1,
                                 },
                                     img({
                                         src: () => data.val.owner.face,
