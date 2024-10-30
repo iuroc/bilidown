@@ -162,13 +162,14 @@ const DescriptionGroup = (parent: VideoInfoCardComp, bottom = false) => {
     const mode = parent.workRoute.videoInfoCardMode
     const data = parent.workRoute.videoInfocardData
     const _class = van.derive(() => mode.val == 'video' ? 'd-md-flex' : '')
+    const size = van.derive(() => mode.val == 'video' ? 'lg' : 'lg')
     return div({
         class: () => `shadow-sm input-group input-group-sm ${bottom
             ? `d-none d-lg-none ${_class.val}`
-            : `overflow-hidden flex-fill`
+            : `overflow-hidden flex-fill ${mode.val == 'video' ? 'd-md-none d-lg-flex ' : ''}`
             }`,
     },
-        div({ class: 'input-group-text align-items-start' }, '描述'),
+        div({ class: 'input-group-text align-items-start' }, '描述', bottom),
         () => {
             const lines = (data.val.description.match(/^(\s*|.)$/) ? '暂无描述' : data.val.description).split('\n')
             return div({ class: `form-control overflow-auto ${bottom ? `max-height-description` : `h-100`}` },

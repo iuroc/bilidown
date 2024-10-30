@@ -9,7 +9,13 @@
 3. 执行下面的代码：
 
     ```shell
+    go install github.com/air-verse/air@latest
+    npm install pnpm -g
+
+    cd server
     go mod tidy
+
+    cd ../client
     pnpm install
     pnpm dev
     ```
