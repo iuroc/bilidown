@@ -123,10 +123,10 @@ export class ParseModalComp implements VanComponent {
                             ),
                         ),
                         div({ class: 'dropdown' },
-                            div({ class: 'dropdown-toggle py-2', 'data-bs-toggle': 'dropdown' },
+                            div({ class: 'dropdown-toggle py-2 text-primary', 'data-bs-toggle': 'dropdown' },
                                 () => info.info.accept_description[info.formatIndex.val]
                             ),
-                            () => div({ class: 'dropdown-menu' },
+                            () => div({ class: 'dropdown-menu shadow' },
                                 Array(info.info.accept_description.length).fill(0).map((_, index) => {
                                     return div({
                                         class: () => `dropdown-item ${info.formatIndex.val == index ? 'active' : ''}`,
