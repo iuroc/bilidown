@@ -102,6 +102,6 @@ func GetPlayInfo(w http.ResponseWriter, r *http.Request) {
 		util.Res{Success: false, Message: err.Error()}.Write(w)
 		return
 	}
-	// playInfo.Dash = nil
+	playInfo.Dash = nil
 	util.Res{Success: true, Message: "获取成功", Data: playInfo}.Write(w)
 }
