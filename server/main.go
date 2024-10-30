@@ -2,6 +2,7 @@ package main
 
 import (
 	"bilidown/router"
+	"bilidown/task"
 	"bilidown/util"
 	"database/sql"
 	"fmt"
@@ -33,11 +34,24 @@ func InitTables() *sql.DB {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS "task" (
+		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+		"bvid" text NOT NULL,
+		"cid" integer NOT NULL,
+		"format" integer NOT NULL,
+		"filepath" text NOT NULL,
+		"create_at" text NOT NULL DEFAULT CURRENT_TIMESTAMP
+	)`)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	defaultDownloadFolder, err := util.GetDefaultDownloadFolder()
 	if err != nil {
 		log.Fatalln(err)
 	}
-	err = util.SaveDownloadFolder(db, defaultDownloadFolder)
+	err = task.SaveDownloadFolder(db, defaultDownloadFolder)
 	if err != nil {
 		log.Fatalln(err)
 	}

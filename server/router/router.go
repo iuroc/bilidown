@@ -1,6 +1,7 @@
 package router
 
 import (
+	"bilidown/task"
 	"bilidown/util"
 	"net/http"
 
@@ -29,7 +30,7 @@ func FolderPicker(w http.ResponseWriter, r *http.Request) {
 	}
 	db := util.GetDB()
 	defer db.Close()
-	err = util.SaveDownloadFolder(db, folderPath)
+	err = task.SaveDownloadFolder(db, folderPath)
 	if err != nil {
 		util.Res{Success: false, Message: err.Error()}.Write(w)
 		return

@@ -96,7 +96,7 @@ const episodeToPage = (episode: Episode, index: number): PageInParseResult => {
         dimension: episode.dimension,
         duration: episode.duration,
         page: index + 1,
-        part: episode.long_title || `第 ${episode.title} 集`,
+        part: episode.long_title || (episode.title.match(/^\d+$/) ? `第 ${episode.title} 集` : episode.title),
         bandge: episode.title,
         selected: van.state(false)
     }

@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 )
 
 // 统一的 JSON 响应结构
@@ -50,18 +50,7 @@ func GetDefaultDownloadFolder() (string, error) {
 	return filepath.Abs("./download")
 }
 
-// SaveDownloadFolder 保存下载路径，不存在则自动创建
-func SaveDownloadFolder(db *sql.DB, downloadFolder string) error {
-	_, err := os.Stat(downloadFolder)
-	if err != nil {
-		if os.IsNotExist(err) {
-			err = os.MkdirAll(downloadFolder, os.ModePerm)
-			if err != nil {
-				return err
-			}
-		}
-		return err
-	}
-	_, err = db.Exec(`INSERT OR REPLACE INTO "field" ("name", "value") VALUES ("download_folder", ?)`, downloadFolder)
-	return err
+func IsNumber(str string) bool {
+	_, err := strconv.Atoi(str)
+	return err == nil
 }
