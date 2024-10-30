@@ -113,7 +113,7 @@ export class ParseModalComp implements VanComponent {
                     }
                 },
                     div({ class: 'hstack gap-2' },
-                        div({ class: 'hstack gap-3 flex-fill' },
+                        div({ class: 'hstack gap-3 flex-fill py-1' },
                             input({
                                 class: 'form-check-input', type: 'checkbox', checked: info.selected,
                             }),
