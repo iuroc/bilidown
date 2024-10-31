@@ -1,7 +1,7 @@
 import { getSeasonInfo, getVideoInfo } from './data'
 import { WorkRoute } from '.'
 import van from 'vanjs-core'
-import { Episode, PageInParseResult, SeasonInfo, VideoParseResult } from './type'
+import { Episode, PageInParseResult } from './type'
 
 /** 点击按钮开始解析 */
 export const start = async (
@@ -33,7 +33,7 @@ export const start = async (
                                 dimension: k.dimension,
                                 duration: k.duration,
                                 page: index,
-                                part: k.part,
+                                part: k.part || j.title,
                                 bandge: index.toString(),
                                 selected: van.state(bvid == j.bvid)
                             }
