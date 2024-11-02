@@ -2,8 +2,10 @@ package util
 
 import (
 	"bilidown/bilibili"
+	"crypto/rand"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -72,4 +74,10 @@ func IsValidFormatCode(format bilibili.MediaFormat) bool {
 		}
 	}
 	return false
+}
+
+func RandomString(length int) string {
+	randomBytes := make([]byte, length)
+	rand.Read(randomBytes)
+	return fmt.Sprintf("%x", randomBytes)[:length]
 }

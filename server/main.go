@@ -8,11 +8,16 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os/exec"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
+	if !CheckFfmpegInstalled() {
+		log.Fatalln("请将 ffmpeg 安装到环境变量 PATH 中")
+	}
+
 	InitTables()
 
 	http.Handle("/", http.FileServer(http.Dir("static")))
@@ -60,4 +65,9 @@ func InitTables() *sql.DB {
 		log.Fatalln(err)
 	}
 	return db
+}
+
+func CheckFfmpegInstalled() bool {
+	err := exec.Command("ffmpeg", "-version").Run()
+	return err == nil
 }

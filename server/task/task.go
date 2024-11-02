@@ -6,8 +6,8 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"sync"
@@ -38,6 +38,7 @@ type Task struct {
 var GlobalTaskList []Task
 var GlobalTaskMux = &sync.Mutex{}
 var GlobalDownloadSem = util.NewSemaphore(3)
+var GlobalMergeMux = &sync.Mutex{}
 
 func (task *Task) Create(db *sql.DB) error {
 	result, err := db.Exec(`INSERT INTO "task" ("bvid", "cid", "format", "title", "owner", "cover", "status", "folder")
@@ -70,23 +71,9 @@ func (task *Task) Start(db *sql.DB) error {
 		return nil
 	}
 
-	videoURL := ""
-	audioURL := ""
+	videoURL := GetVideoURL(playInfo.Dash.Video, task.Format)
+	audioURL := GetAudioURL(playInfo.Dash.Audio)
 
-	for _, item := range playInfo.Dash.Video {
-		if item.ID == task.Format {
-			videoURL = item.BaseURL
-			break
-		}
-	}
-
-	var maxAudioID bilibili.MediaFormat
-	for _, item := range playInfo.Dash.Audio {
-		if item.ID > maxAudioID {
-			maxAudioID = item.ID
-			audioURL = item.BaseURL
-		}
-	}
 	GlobalDownloadSem.Acquire()
 	task.UpdateStatus(db, "running")
 	err = DownloadMedia(client, audioURL, task, "audio")
@@ -100,9 +87,57 @@ func (task *Task) Start(db *sql.DB) error {
 		return nil
 	}
 	GlobalDownloadSem.Release()
+
+	outputPath := filepath.Join(task.Folder, fmt.Sprintf("%s_%s.mp4", task.Title, util.RandomString(6)))
+
+	videoPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".video")
+	audioPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".audio")
+	GlobalMergeMux.Lock()
+	err = MergeMedia(outputPath, videoPath, audioPath)
+	GlobalMergeMux.Unlock()
+	if err != nil {
+		task.UpdateStatus(db, "error")
+		fmt.Println(err.Error())
+		return nil
+	}
 	task.UpdateStatus(db, "done")
-	fmt.Printf("任务 %d 完成\n", task.ID)
 	return nil
+}
+
+// 合并音视频
+func MergeMedia(outputPath string, inputPaths ...string) error {
+	inputs := []string{}
+	for _, path := range inputPaths {
+		inputs = append(inputs, "-i", path)
+	}
+	err := exec.Command("ffmpeg", append(inputs, "-c:v", "copy", "-c:a", "copy", outputPath)...).Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func GetVideoURL(medias []bilibili.Media, format bilibili.MediaFormat) string {
+	for _, code := range []int{12, 7, 13} {
+		for _, item := range medias {
+			if item.ID == format && item.Codecid == code {
+				return item.BaseURL
+			}
+		}
+	}
+	return ""
+}
+
+func GetAudioURL(medias []bilibili.Media) string {
+	var maxAudioID bilibili.MediaFormat
+	var audioURL string
+	for _, item := range medias {
+		if item.ID > maxAudioID {
+			maxAudioID = item.ID
+			audioURL = item.BaseURL
+		}
+	}
+	return audioURL
 }
 
 func (task *Task) UpdateStatus(db *sql.DB, status TaskStatus) error {
@@ -110,26 +145,7 @@ func (task *Task) UpdateStatus(db *sql.DB, status TaskStatus) error {
 	return err
 }
 
-func GetSize(client *bilibili.BiliClient, _url string) (int64, error) {
-	client2 := &http.Client{}
-	req, err := http.NewRequest("HEAD", _url, nil)
-	if err != nil {
-		return 0, err
-	}
-	req.Header = client.MakeHeader()
-
-	resp, err := client2.Do(req)
-	if err != nil {
-		return 0, err
-	}
-	defer resp.Body.Close()
-	fmt.Println(_url, resp.ContentLength)
-	client2.CloseIdleConnections()
-	return resp.ContentLength, nil
-}
-
 func DownloadMedia(client *bilibili.BiliClient, _url string, task *Task, mediaType string) error {
-	fmt.Printf("开始下载 %d_%s\n", task.ID, mediaType)
 	resp, err := client.SimpleGET(_url, nil)
 	if err != nil {
 		return err
