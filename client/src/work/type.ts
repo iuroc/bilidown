@@ -1,5 +1,25 @@
 import { State } from 'vanjs-core'
 
+/**
+ * 参考：[qn 视频清晰度标识](https://socialsisteryi.github.io/bilibili-API-collect/docs/video/videostream_url.html#qn%E8%A7%86%E9%A2%91%E6%B8%85%E6%99%B0%E5%BA%A6%E6%A0%87%E8%AF%86)
+ * 
+ * | 值  | 含义        |
+ * | --- | ----------: |
+ * | 6   | 240P 极速   |
+ * | 16  | 360P 流畅   |
+ * | 32  | 480P 清晰   |
+ * | 64  | 720P 高清   |
+ * | 74  | 720P60 高帧率 |
+ * | 80  | 1080P 高清  |
+ * | 112 | 1080P+ 高码率 |
+ * | 116 | 1080P60 高帧率 |
+ * | 120 | 4K 超清     |
+ * | 125 | HDR 真彩色  |
+ * | 126 | 杜比视界     |
+ * | 127 | 8K 超高清    |
+ */
+export type VideoFormat = 6 | 16 | 32 | 64 | 74 | 80 | 112 | 116 | 120 | 125 | 126 | 127
+
 /** 视频解析结果，数据用于 DOM 渲染，同时兼容 BV、EP、SS */
 export type VideoParseResult = {
     /** 合集标题 */
@@ -218,3 +238,23 @@ export type PlayInfo = {
         }[]
     }
 }
+
+/** 创建任务时的初始数据 */
+export type TaskInitData = {
+    bvid: string
+    cid: number
+    format: number
+    title: string
+    owner: string
+    cover: string
+}
+
+/** 任务数据库中的数据 */
+export type TaskInDB = TaskInitData & {
+    id: number
+    folder: string
+    create_at: string
+    status: TaskStatus
+}
+
+export type TaskStatus = 'done' | 'waiting' | 'running' | 'error'

@@ -40,7 +40,11 @@ func InitTables() *sql.DB {
 		"bvid" text NOT NULL,
 		"cid" integer NOT NULL,
 		"format" integer NOT NULL,
-		"filepath" text NOT NULL,
+		"title" text NOT NULL,
+		"owner" text,
+		"cover" text,
+		"status" text NOT NULL,
+		"folder" text NOT NULL,
 		"create_at" text NOT NULL DEFAULT CURRENT_TIMESTAMP
 	)`)
 	if err != nil {

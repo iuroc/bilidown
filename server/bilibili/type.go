@@ -197,13 +197,13 @@ type SeasonInfo struct {
 }
 
 type PlayInfo struct {
-	AcceptDescription []string `json:"accept_description"`
-	AcceptQuality     []int    `json:"accept_quality"`
+	AcceptDescription []string      `json:"accept_description"`
+	AcceptQuality     []MediaFormat `json:"accept_quality"`
 	SupportFormats    []struct {
-		Quality        int      `json:"quality"`
-		Format         string   `json:"format"`
-		NewDescription string   `json:"new_description"`
-		Codecs         []string `json:"codecs"`
+		Quality        MediaFormat `json:"quality"`
+		Format         string      `json:"format"`
+		NewDescription string      `json:"new_description"`
+		Codecs         []string    `json:"codecs"`
 	} `json:"support_formats"`
 	Dash *Dash `json:"dash"`
 }
@@ -215,14 +215,16 @@ type Dash struct {
 }
 
 type Media struct {
-	ID        int      `json:"id"`
-	BaseURL   string   `json:"baseUrl"`
-	BackupURL []string `json:"backupUrl"`
-	Bandwidth int      `json:"bandwidth"`
-	MimeType  string   `json:"mimeType"`
-	Codecs    string   `json:"codecs"`
-	Width     int      `json:"width"`
-	Height    int      `json:"height"`
-	FrameRate string   `json:"frameRate"`
-	Codecid   int      `json:"codecid"`
+	ID        MediaFormat `json:"id"`
+	BaseURL   string      `json:"baseUrl"`
+	BackupURL []string    `json:"backupUrl"`
+	Bandwidth int         `json:"bandwidth"`
+	MimeType  string      `json:"mimeType"`
+	Codecs    string      `json:"codecs"`
+	Width     int         `json:"width"`
+	Height    int         `json:"height"`
+	FrameRate string      `json:"frameRate"`
+	Codecid   int         `json:"codecid"`
 }
+
+type MediaFormat int

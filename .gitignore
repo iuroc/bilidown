@@ -4,3 +4,4 @@ server/tmp/
 server/static/
 *.db
 server/*.exe
+download/

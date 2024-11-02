@@ -1,10 +1,12 @@
 package util
 
 import (
+	"bilidown/bilibili"
 	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -53,4 +55,21 @@ func GetDefaultDownloadFolder() (string, error) {
 func IsNumber(str string) bool {
 	_, err := strconv.Atoi(str)
 	return err == nil
+}
+
+// IsValidURL 判断字符串是否为合法的URL
+func IsValidURL(u string) bool {
+	_, err := url.ParseRequestURI(u)
+	return err == nil
+}
+
+// IsValidFormatCode 判断格式码是否合法
+func IsValidFormatCode(format bilibili.MediaFormat) bool {
+	allowed := []bilibili.MediaFormat{6, 16, 32, 64, 74, 80, 112, 116, 120, 125, 126, 127}
+	for _, v := range allowed {
+		if v == format {
+			return true
+		}
+	}
+	return false
 }
