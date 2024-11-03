@@ -35,6 +35,14 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 			util.Res{Success: false, Message: "封面链接格式错误"}.Write(w)
 			return
 		}
+		if !util.IsValidURL(item.Audio) {
+			util.Res{Success: false, Message: "音频链接格式错误"}.Write(w)
+			return
+		}
+		if !util.IsValidURL(item.Video) {
+			util.Res{Success: false, Message: "视频链接格式错误"}.Write(w)
+			return
+		}
 		if !util.IsValidFormatCode(item.Format) {
 			util.Res{Success: false, Message: "清晰度代码错误"}.Write(w)
 			return

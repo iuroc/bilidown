@@ -18,12 +18,17 @@ func (client *BiliClient) SimpleGET(_url string, params map[string]string) (*htt
 	for k, v := range params {
 		values.Set(k, v)
 	}
+	_client := http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyURL(nil),
+		},
+	}
 	request, err := http.NewRequest("GET", _url+"?"+values.Encode(), nil)
 	if err != nil {
 		return nil, err
 	}
 	request.Header = client.MakeHeader()
-	return http.DefaultClient.Do(request)
+	return _client.Do(request)
 }
 
 // MakeHeader 生成请求头

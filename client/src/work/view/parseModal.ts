@@ -1,6 +1,6 @@
 import van, { State } from 'vanjs-core'
 import { VanComponent } from '../../mixin'
-import { PageInParseResult, PlayInfo } from '../type'
+import { PageInParseResult, PlayInfo, VideoFormat } from '../type'
 import { WorkRoute } from '..'
 import { createTask, getPlayInfo } from '../data'
 import PQueue from 'p-queue'
@@ -72,7 +72,7 @@ export class ParseModalComp implements VanComponent {
     async start() {
         this.finishCount.val = 0
         this.errorList.val = []
-        const queue = new PQueue({ concurrency: 3 })
+        const queue = new PQueue({ concurrency: 10 })
         for (const page of this.option.workRoute.selectedPages.val) {
             queue.add(async () => {
                 if (this.totalCount.val == this.finishCount.val) return
@@ -123,7 +123,10 @@ export class ParseModalComp implements VanComponent {
                         isVideoMode ? `[${owner}]` : ''
                     ]).filter(p => p).join(' '),
                 format: info.info!.accept_quality[info.formatIndex.val],
-                owner
+                owner,
+                audio: getAudioURL(info.info!),
+                duration: info.info!.dash.duration,
+                video: getVideoURL(info.info!, info.info!.accept_quality[info.formatIndex.val]),
             })
         })).then(() => {
             this.option.workRoute.parseModal.hide()
@@ -228,4 +231,23 @@ export class ParseModalComp implements VanComponent {
             }, '开始下载'),
         )
     }
+}
+
+const getAudioURL = (playInfo: PlayInfo): string => {
+    if (playInfo.dash.flac) {
+        return playInfo.dash.flac.audio.baseUrl
+    } else {
+        return playInfo.dash.audio.sort((a, b) => b.id - a.id)[0].baseUrl
+    }
+}
+
+const getVideoURL = (playInfo: PlayInfo, format: VideoFormat): string => {
+    for (const code of [12, 7, 13]) {
+        for (const item of playInfo.dash.video) {
+            if (item.id == format && item.codecid == code) {
+                return item.baseUrl
+            }
+        }
+    }
+    throw new Error('未找到对应视频分辨率格式')
 }

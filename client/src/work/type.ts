@@ -201,9 +201,22 @@ export type Episode = {
 
 export type VideoInfoCardMode = State<"video" | "season" | "hide">
 
+export type Media = {
+    id: number
+    baseUrl: string
+    backupUrl: string[]
+    bandwidth: number
+    mimeType: string
+    codecs: string
+    width: number
+    height: number
+    frameRate: string
+    codecid: number
+}
+
 export type PlayInfo = {
     accept_description: string[]
-    accept_quality: number[]
+    accept_quality: VideoFormat[]
     support_formats: {
         quality: number
         format: string
@@ -212,30 +225,11 @@ export type PlayInfo = {
     }[]
     dash: {
         duration: number
-        video: {
-            id: number
-            baseUrl: string
-            backupUrl: string[]
-            bandwidth: number
-            mimeType: string
-            codecs: string
-            width: number
-            height: number
-            frameRate: string
-            codecid: number
-        }[]
-        audio: {
-            id: number
-            baseUrl: string
-            backupUrl: string[]
-            bandwidth: number
-            mimeType: string
-            codecs: string
-            width: number
-            height: number
-            frameRate: string
-            codecid: number
-        }[]
+        video: Media[]
+        audio: Media[]
+        flac: {
+            audio: Media
+        } | null
     }
 }
 
@@ -247,6 +241,9 @@ export type TaskInitData = {
     title: string
     owner: string
     cover: string
+    audio: string
+    video: string
+    duration: number
 }
 
 /** 任务数据库中的数据 */

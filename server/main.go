@@ -27,7 +27,7 @@ func main() {
 	http.Handle("/api/", http.StripPrefix("/api", router.API()))
 
 	fmt.Println("http://127.0.0.1:8098")
-	http.ListenAndServe(":8098", nil)
+	http.ListenAndServe("127.0.0.1:8098", nil)
 }
 
 // InitTables 初始化数据表
@@ -60,6 +60,7 @@ func InitTables(db *sql.DB) {
 		"cover" text NOT NULL,
 		"status" text NOT NULL,
 		"folder" text NOT NULL,
+		"duration" integer NOT NULL,
 		"create_at" text NOT NULL DEFAULT CURRENT_TIMESTAMP
 	)`)
 	if err != nil {

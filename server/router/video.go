@@ -103,6 +103,5 @@ func GetPlayInfo(w http.ResponseWriter, r *http.Request) {
 		util.Res{Success: false, Message: fmt.Sprintf("client.GetPlayInfo: %v", err)}.Write(w)
 		return
 	}
-	playInfo.Dash = nil
 	util.Res{Success: true, Message: "获取成功", Data: playInfo}.Write(w)
 }

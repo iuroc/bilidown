@@ -1,17 +1,19 @@
 package util
 
 import (
-	"bilidown/bilibili"
-	"crypto/rand"
+	"bilidown/common"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
+	"time"
 )
 
 // 统一的 JSON 响应结构
@@ -66,8 +68,8 @@ func IsValidURL(u string) bool {
 }
 
 // IsValidFormatCode 判断格式码是否合法
-func IsValidFormatCode(format bilibili.MediaFormat) bool {
-	allowed := []bilibili.MediaFormat{6, 16, 32, 64, 74, 80, 112, 116, 120, 125, 126, 127}
+func IsValidFormatCode(format common.MediaFormat) bool {
+	allowed := []common.MediaFormat{6, 16, 32, 64, 74, 80, 112, 116, 120, 125, 126, 127}
 	for _, v := range allowed {
 		if v == format {
 			return true
@@ -76,13 +78,19 @@ func IsValidFormatCode(format bilibili.MediaFormat) bool {
 	return false
 }
 
-func RandomString(length int) string {
-	randomBytes := make([]byte, length)
-	rand.Read(randomBytes)
-	return fmt.Sprintf("%x", randomBytes)[:length]
-}
-
 // FilterFileName 过滤文件名特殊字符
 func FilterFileName(fileName string) string {
 	return regexp.MustCompile(`[\\/:*?"<>|\n]`).ReplaceAllString(fileName, "")
+}
+
+func GenerateRandomUserAgent() string {
+	rand.NewSource(time.Now().UnixNano())
+	firstLetter := string(rune(rand.Intn(26) + 'A'))
+	lettersLength := rand.Intn(3) + 4
+	var sb strings.Builder
+	for i := 0; i < lettersLength; i++ {
+		sb.WriteByte(byte(rand.Intn(26) + 'a'))
+	}
+	version := fmt.Sprintf("%d.%d.%d", rand.Intn(10), rand.Intn(10), rand.Intn(10))
+	return fmt.Sprintf("%s%s/%s", firstLetter, sb.String(), version)
 }

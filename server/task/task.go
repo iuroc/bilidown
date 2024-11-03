@@ -2,12 +2,14 @@ package task
 
 import (
 	"bilidown/bilibili"
+	"bilidown/common"
 	"bilidown/util"
 	"bufio"
 	"database/sql"
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -20,21 +22,23 @@ import (
 
 // TaskInitOption 创建任务时需要从 POST 请求获取的参数
 type TaskInitOption struct {
-	Bvid   string               `json:"bvid"`
-	Cid    int                  `json:"cid"`
-	Format bilibili.MediaFormat `json:"format"`
-	Title  string               `json:"title"`
-	Owner  string               `json:"owner"`
-	Cover  string               `json:"cover"`
-	Status TaskStatus           `json:"status"`
-	Folder string               `json:"folder"`
+	Bvid     string             `json:"bvid"`
+	Cid      int                `json:"cid"`
+	Format   common.MediaFormat `json:"format"`
+	Title    string             `json:"title"`
+	Owner    string             `json:"owner"`
+	Cover    string             `json:"cover"`
+	Status   TaskStatus         `json:"status"`
+	Folder   string             `json:"folder"`
+	Audio    string             `json:"audio"`
+	Video    string             `json:"video"`
+	Duration int                `json:"duration"`
 }
 
 // TaskInDB 任务数据库中的数据
 type TaskInDB struct {
 	TaskInitOption
 	ID       int64     `json:"id"`
-	Duration int       `json:"duration"`
 	CreateAt time.Time `json:"createAt"`
 }
 
@@ -54,8 +58,18 @@ var GlobalDownloadSem = util.NewSemaphore(3)
 var GlobalMergeSem = util.NewSemaphore(3)
 
 func (task *Task) Create(db *sql.DB) error {
-	result, err := db.Exec(`INSERT INTO "task" ("bvid", "cid", "format", "title", "owner", "cover", "status", "folder")
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, task.Bvid, task.Cid, task.Format, task.Title, task.Owner, task.Cover, task.Status, task.Folder)
+	result, err := db.Exec(`INSERT INTO "task" ("bvid", "cid", "format", "title", "owner", "cover", "status", "folder", "duration")
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		task.Bvid,
+		task.Cid,
+		task.Format,
+		task.Title,
+		task.Owner,
+		task.Cover,
+		task.Status,
+		task.Folder,
+		task.Duration,
+	)
 	if err != nil {
 		return err
 	}
@@ -79,35 +93,15 @@ func (task *Task) Start() {
 	}
 	client := &bilibili.BiliClient{SESSDATA: sessdata}
 
-	playInfo, err := client.GetPlayInfo(task.Bvid, task.Cid)
-	if err != nil {
-		task.UpdateStatus(db, "error", fmt.Errorf("client.GetPlayInfo: %v", err))
-		return
-	}
-
-	task.Duration = playInfo.Dash.Duration
-	err = task.UpdateDuration(db)
-	if err != nil {
-		task.UpdateStatus(db, "error", fmt.Errorf("task.UpdateDuration: %v", err))
-		return
-	}
-
-	videoURL, err := GetVideoURL(playInfo.Dash.Video, task.Format)
-	if err != nil {
-		task.UpdateStatus(db, "error", fmt.Errorf("GetVideoURL: %v", err))
-		return
-	}
-	audioURL := GetAudioURL(playInfo.Dash)
-
 	GlobalDownloadSem.Acquire()
 	task.UpdateStatus(db, "running")
-	err = DownloadMedia(client, audioURL, task, "audio")
+	err = DownloadMedia(client, task.Audio, task, "audio")
 	if err != nil {
 		GlobalDownloadSem.Release()
 		task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
 		return
 	}
-	err = DownloadMedia(client, videoURL, task, "video")
+	err = DownloadMedia(client, task.Video, task, "video")
 	if err != nil {
 		GlobalDownloadSem.Release()
 		task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
@@ -116,7 +110,7 @@ func (task *Task) Start() {
 	GlobalDownloadSem.Release()
 
 	outputPath := filepath.Join(task.Folder,
-		fmt.Sprintf("%s - %s.mp4", util.FilterFileName(task.Title), util.RandomString(6)),
+		fmt.Sprintf("%s - %s.mp4", util.FilterFileName(task.Title), common.RandomString(6)),
 	)
 
 	videoPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".video")
@@ -142,11 +136,6 @@ func (task *Task) Start() {
 	}
 	GlobalMergeSem.Release()
 	task.UpdateStatus(db, "done")
-}
-
-func (task *Task) UpdateDuration(db *sql.DB) error {
-	_, err := db.Exec(`UPDATE "task" SET "duration" = ? WHERE "id" = ?`, task.Duration, task.ID)
-	return err
 }
 
 // 合并音视频
@@ -192,7 +181,7 @@ func (task *Task) MergeMedia(outputPath string, inputPaths ...string) error {
 	return nil
 }
 
-func GetVideoURL(medias []bilibili.Media, format bilibili.MediaFormat) (string, error) {
+func GetVideoURL(medias []bilibili.Media, format common.MediaFormat) (string, error) {
 	for _, code := range []int{12, 7, 13} {
 		for _, item := range medias {
 			if item.ID == format && item.Codecid == code {
@@ -207,7 +196,7 @@ func GetAudioURL(dash *bilibili.Dash) string {
 	if dash.Flac != nil {
 		return dash.Flac.Audio.BaseURL
 	}
-	var maxAudioID bilibili.MediaFormat
+	var maxAudioID common.MediaFormat
 	var audioURL string
 	for _, item := range dash.Audio {
 		if item.ID > maxAudioID {
@@ -222,7 +211,10 @@ func (task *Task) UpdateStatus(db *sql.DB, status TaskStatus, errs ...error) err
 	_, err := db.Exec(`UPDATE "task" SET "status" = ? WHERE "id" = ?`, status, task.ID)
 	for _, err := range errs {
 		if err != nil {
-			util.CreateLog(db, fmt.Sprintf("Task-%d-Error: %v", task.ID, err))
+			err = util.CreateLog(db, fmt.Sprintf("Task-%d-Error: %v", task.ID, err))
+			if err != nil {
+				log.Fatalln(err)
+			}
 		}
 	}
 	task.Status = status
