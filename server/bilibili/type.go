@@ -213,6 +213,9 @@ type Dash struct {
 	Duration int     `json:"duration"`
 	Video    []Media `json:"video"`
 	Audio    []Media `json:"audio"`
+	Flac     *struct {
+		Audio Media `json:"audio"`
+	} `json:"flac"`
 }
 
 type Media struct {

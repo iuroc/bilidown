@@ -13,7 +13,7 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 		util.Res{Success: false, Message: "不支持的请求方法"}.Write(w)
 		return
 	}
-	var body []task.TaskInitOption
+	var body []task.TaskInDB
 	err := json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
 		util.Res{Success: false, Message: "参数错误"}.Write(w)
@@ -44,7 +44,7 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 			util.Res{Success: false, Message: err.Error()}.Write(w)
 			return
 		}
-		_task := task.Task{TaskInitOption: item}
+		_task := task.Task{TaskInDB: item}
 		err = _task.Create(db)
 		if err != nil {
 			util.Res{Success: false, Message: err.Error()}.Write(w)
@@ -56,9 +56,5 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetActiveTask(w http.ResponseWriter, r *http.Request) {
-	util.Res{Success: true, Data: struct {
-		Tasks []*task.Task `json:"tasks"`
-	}{
-		Tasks: task.GlobalTaskList,
-	}}.Write(w)
+	util.Res{Success: true, Data: task.GlobalTaskList}.Write(w)
 }

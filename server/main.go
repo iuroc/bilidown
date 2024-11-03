@@ -55,8 +55,8 @@ func InitTables() *sql.DB {
 		"cid" integer NOT NULL,
 		"format" integer NOT NULL,
 		"title" text NOT NULL,
-		"owner" text,
-		"cover" text,
+		"owner" text NOT NULL,
+		"cover" text NOT NULL,
 		"status" text NOT NULL,
 		"folder" text NOT NULL,
 		"create_at" text NOT NULL DEFAULT CURRENT_TIMESTAMP

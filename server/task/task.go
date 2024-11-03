@@ -5,6 +5,7 @@ import (
 	"bilidown/util"
 	"bufio"
 	"database/sql"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -13,9 +14,10 @@ import (
 	"regexp"
 	"strconv"
 	"sync"
+	"time"
 )
 
-// TaskInitOption 创建任务时的初始数据
+// TaskInitOption 创建任务时需要从 POST 请求获取的参数
 type TaskInitOption struct {
 	Bvid   string               `json:"bvid"`
 	Cid    int                  `json:"cid"`
@@ -27,16 +29,22 @@ type TaskInitOption struct {
 	Folder string               `json:"folder"`
 }
 
+// TaskInDB 任务数据库中的数据
+type TaskInDB struct {
+	TaskInitOption
+	ID       int64     `json:"id"`
+	Duration int       `json:"duration"`
+	CreateAt time.Time `json:"createAt"`
+}
+
 // done | waiting | running | error
 type TaskStatus string
 
 type Task struct {
-	TaskInitOption
-	ID            int64   `json:"id"`
+	TaskInDB
 	AudioProgress float64 `json:"audioProgress"`
 	VideoProgress float64 `json:"videoProgress"`
 	MergeProgress float64 `json:"mergeProgress"`
-	Duration      int     `json:"duration"`
 }
 
 var GlobalTaskList = []*Task{}
@@ -76,8 +84,12 @@ func (task *Task) Start() {
 	}
 
 	task.Duration = playInfo.Dash.Duration
-	videoURL := GetVideoURL(playInfo.Dash.Video, task.Format)
-	audioURL := GetAudioURL(playInfo.Dash.Audio)
+	videoURL, err := GetVideoURL(playInfo.Dash.Video, task.Format)
+	if err != nil {
+		task.UpdateStatus(db, "error", err)
+		return
+	}
+	audioURL := GetAudioURL(playInfo.Dash)
 
 	GlobalDownloadSem.Acquire()
 	task.UpdateStatus(db, "running")
@@ -160,21 +172,24 @@ func (task *Task) MergeMedia(outputPath string, inputPaths ...string) error {
 	return nil
 }
 
-func GetVideoURL(medias []bilibili.Media, format bilibili.MediaFormat) string {
+func GetVideoURL(medias []bilibili.Media, format bilibili.MediaFormat) (string, error) {
 	for _, code := range []int{12, 7, 13} {
 		for _, item := range medias {
 			if item.ID == format && item.Codecid == code {
-				return item.BaseURL
+				return item.BaseURL, nil
 			}
 		}
 	}
-	return ""
+	return "", errors.New("未找到对应视频分辨率格式")
 }
 
-func GetAudioURL(medias []bilibili.Media) string {
+func GetAudioURL(dash *bilibili.Dash) string {
+	if dash.Flac != nil {
+		return dash.Flac.Audio.BaseURL
+	}
 	var maxAudioID bilibili.MediaFormat
 	var audioURL string
-	for _, item := range medias {
+	for _, item := range dash.Audio {
 		if item.ID > maxAudioID {
 			maxAudioID = item.ID
 			audioURL = item.BaseURL
@@ -287,4 +302,38 @@ func SaveDownloadFolder(db *sql.DB, downloadFolder string) error {
 	}
 	_, err = db.Exec(`INSERT OR REPLACE INTO "field" ("name", "value") VALUES ("download_folder", ?)`, downloadFolder)
 	return err
+}
+
+func GetTaskList(db *sql.DB, page int, pageSize int) ([]TaskInDB, error) {
+	var tasks []TaskInDB
+
+	rows, err := db.Query(`SELECT (
+		"id", "bvid", "cid", "format", "title",
+		"owner", "cover", "status", "folder"
+	) FROM "task" ORDER BY "id" DESC LIMIT ?, ?`,
+		page*pageSize, pageSize,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		task := TaskInDB{}
+		err = rows.Scan(
+			&task.ID,
+			&task.Bvid,
+			&task.Cid,
+			&task.Format,
+			&task.Title,
+			&task.Owner,
+			&task.Cover,
+			&task.Status,
+			&task.Folder,
+		)
+		if err != nil {
+			return nil, err
+		}
+		tasks = append(tasks, task)
+	}
+	return tasks, nil
 }
