@@ -61,6 +61,7 @@ func (task *Task) Create(db *sql.DB) error {
 	}
 
 	task.ID, err = result.LastInsertId()
+	task.CreateAt = time.Now()
 	return err
 }
 
@@ -73,21 +74,21 @@ func (task *Task) Start() {
 	defer db.Close()
 	sessdata, err := bilibili.GetSessdata(db)
 	if err != nil {
-		task.UpdateStatus(db, "error", err)
+		task.UpdateStatus(db, "error", fmt.Errorf("bilibili.GetSessdata: %v", err))
 		return
 	}
 	client := &bilibili.BiliClient{SESSDATA: sessdata}
 
 	playInfo, err := client.GetPlayInfo(task.Bvid, task.Cid)
 	if err != nil {
-		task.UpdateStatus(db, "error", err)
+		task.UpdateStatus(db, "error", fmt.Errorf("client.GetPlayInfo: %v", err))
 		return
 	}
 
 	task.Duration = playInfo.Dash.Duration
 	videoURL, err := GetVideoURL(playInfo.Dash.Video, task.Format)
 	if err != nil {
-		task.UpdateStatus(db, "error", err)
+		task.UpdateStatus(db, "error", fmt.Errorf("GetVideoURL: %v", err))
 		return
 	}
 	audioURL := GetAudioURL(playInfo.Dash)
@@ -97,18 +98,20 @@ func (task *Task) Start() {
 	err = DownloadMedia(client, audioURL, task, "audio")
 	if err != nil {
 		GlobalDownloadSem.Release()
-		task.UpdateStatus(db, "error", err)
+		task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
 		return
 	}
 	err = DownloadMedia(client, videoURL, task, "video")
 	if err != nil {
 		GlobalDownloadSem.Release()
-		task.UpdateStatus(db, "error", err)
+		task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
 		return
 	}
 	GlobalDownloadSem.Release()
 
-	outputPath := filepath.Join(task.Folder, fmt.Sprintf("%s - %s.mp4", task.Title, util.RandomString(6)))
+	outputPath := filepath.Join(task.Folder,
+		fmt.Sprintf("%s - %s.mp4", util.FilterFileName(task.Title), util.RandomString(6)),
+	)
 
 	videoPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".video")
 	audioPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".audio")
@@ -116,19 +119,19 @@ func (task *Task) Start() {
 	err = task.MergeMedia(outputPath, videoPath, audioPath)
 	if err != nil {
 		GlobalMergeSem.Release()
-		task.UpdateStatus(db, "error", err)
+		task.UpdateStatus(db, "error", fmt.Errorf("task.MergeMedia: %v", err))
 		return
 	}
 	err = os.Remove(videoPath)
 	if err != nil {
 		GlobalMergeSem.Release()
-		task.UpdateStatus(db, "error", err)
+		task.UpdateStatus(db, "error", fmt.Errorf("os.Remove: %v", err))
 		return
 	}
 	err = os.Remove(audioPath)
 	if err != nil {
 		GlobalMergeSem.Release()
-		task.UpdateStatus(db, "error", err)
+		task.UpdateStatus(db, "error", fmt.Errorf("os.Remove: %v", err))
 		return
 	}
 	GlobalMergeSem.Release()
@@ -208,7 +211,7 @@ func (task *Task) UpdateStatus(db *sql.DB, status TaskStatus, errs ...error) err
 	_, err := db.Exec(`UPDATE "task" SET "status" = ? WHERE "id" = ?`, status, task.ID)
 	for _, err := range errs {
 		if err != nil {
-			util.CreateLog(db, err.Error())
+			util.CreateLog(db, fmt.Sprintf("Task-%d-Error: %v", task.ID, err))
 		}
 	}
 	task.Status = status
@@ -284,7 +287,7 @@ func newProgressBar(total int64) *progressBar {
 // GetCurrentFolder 获取数据库中的下载保存路径，如果不存在则将默认路径保存到数据库
 func GetCurrentFolder(db *sql.DB) (string, error) {
 	var filepath string
-	err := db.QueryRow(`SELECT "value" FROM "field" WHERE "name" = "download_folder"`).Scan(&filepath)
+	err := db.QueryRow(`SELECT "value" FROM "field" WHERE "name" = 'download_folder'`).Scan(&filepath)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			folder, err := util.GetDefaultDownloadFolder()
@@ -314,7 +317,7 @@ func SaveDownloadFolder(db *sql.DB, downloadFolder string) error {
 		}
 		return err
 	}
-	_, err = db.Exec(`INSERT OR REPLACE INTO "field" ("name", "value") VALUES ("download_folder", ?)`, downloadFolder)
+	_, err = db.Exec(`INSERT OR REPLACE INTO "field" ("name", "value") VALUES ('download_folder', ?)`, downloadFolder)
 	return err
 }
 
@@ -323,7 +326,7 @@ func GetTaskList(db *sql.DB, page int, pageSize int) ([]TaskInDB, error) {
 
 	rows, err := db.Query(`SELECT (
 		"id", "bvid", "cid", "format", "title",
-		"owner", "cover", "status", "folder"
+		"owner", "cover", "status", "folder", "create_at"
 	) FROM "task" ORDER BY "id" DESC LIMIT ?, ?`,
 		page*pageSize, pageSize,
 	)
@@ -343,6 +346,7 @@ func GetTaskList(db *sql.DB, page int, pageSize int) ([]TaskInDB, error) {
 			&task.Cover,
 			&task.Status,
 			&task.Folder,
+			&task.CreateAt,
 		)
 		if err != nil {
 			return nil, err
@@ -350,4 +354,10 @@ func GetTaskList(db *sql.DB, page int, pageSize int) ([]TaskInDB, error) {
 		tasks = append(tasks, task)
 	}
 	return tasks, nil
+}
+
+// InitHistoryTask 初始化上一次程序退出时未完成的任务，将进度变为 error
+func InitHistoryTask(db *sql.DB) error {
+	_, err := db.Exec(`UPDATE "task" SET "status" = 'error' WHERE "status" IN ('waiting', 'running')`)
+	return err
 }

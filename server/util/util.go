@@ -81,3 +81,8 @@ func RandomString(length int) string {
 	rand.Read(randomBytes)
 	return fmt.Sprintf("%x", randomBytes)[:length]
 }
+
+// FilterFileName 过滤文件名特殊字符
+func FilterFileName(fileName string) string {
+	return regexp.MustCompile(`[\\/:*?"<>|\n]`).ReplaceAllString(fileName, "")
+}

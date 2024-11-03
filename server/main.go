@@ -18,7 +18,10 @@ func main() {
 		log.Fatalln("请将 ffmpeg 安装到环境变量 PATH 中")
 	}
 
-	InitTables()
+	db := util.GetDB()
+	defer db.Close()
+	InitTables(db)
+	task.InitHistoryTask(db)
 
 	http.Handle("/", http.FileServer(http.Dir("static")))
 	http.Handle("/api/", http.StripPrefix("/api", router.API()))
@@ -28,10 +31,7 @@ func main() {
 }
 
 // InitTables 初始化数据表
-func InitTables() *sql.DB {
-	db := util.GetDB()
-	defer db.Close()
-
+func InitTables(db *sql.DB) {
 	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS "field" (
 		"name" TEXT PRIMARY KEY NOT NULL,
 		"value" TEXT
@@ -70,7 +70,7 @@ func InitTables() *sql.DB {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	return db
+
 }
 
 func CheckFfmpegInstalled() bool {

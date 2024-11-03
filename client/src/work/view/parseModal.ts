@@ -103,14 +103,25 @@ export class ParseModalComp implements VanComponent {
             const isVideoMode = this.option.workRoute.videoInfoCardMode.val == 'video'
             const cardTitle = this.option.workRoute.videoInfocardData.val.title
             const owner = this.option.workRoute.videoInfocardData.val.staff.length > 0
-                ? this.option.workRoute.videoInfocardData.val.staff.join(' ')
+                ? this.option.workRoute.videoInfocardData.val.staff[0].split("[")[0]
                 : this.option.workRoute.videoInfocardData.val.owner.name
 
             return ({
                 bvid: info.page.bvid,
                 cid: info.page.cid,
                 cover: this.option.workRoute.videoInfocardData.val.cover,
-                title: `${badgeNotNum ? '' : info.page.bandge} - ${info.page.part} - ${cardTitle} - ${owner}`,
+                title: (badgeNotNum
+                    ? [
+                        info.page.part,
+                        `[${info.page.bandge}]`,
+                        `[${cardTitle}]`,
+                    ]
+                    : [
+                        this.option.workRoute.sectionPages.val.length == 1 ? '' : `[${info.page.bandge}]`,
+                        info.page.part,
+                        info.page.part == cardTitle ? '' : `[${cardTitle}]`,
+                        isVideoMode ? `[${owner}]` : ''
+                    ]).filter(p => p).join(' '),
                 format: info.info!.accept_quality[info.formatIndex.val],
                 owner
             })
@@ -133,45 +144,47 @@ export class ParseModalComp implements VanComponent {
 
     ListGroup() {
         return () => div({ class: 'list-group', hidden: () => this.totalCount.val != this.finishCount.val },
-            this.allPlayInfo.val.filter(info => info.info).map(info => {
-                const badgeNotNum = !info.page.bandge.match(/^\d+$/)
+            this.allPlayInfo.val.filter(info => info.info)
+                .sort((a, b) => a.page.page - b.page.page)
+                .map(info => {
+                    const badgeNotNum = !info.page.bandge.match(/^\d+$/)
 
-                return div({
-                    class: () => `list-group-item user-select-none py-0 ${info.info ? '' : 'disabled'}`,
-                    role: 'button',
-                    onclick(event) {
-                        if ((event.target as HTMLElement).getAttribute('class')?.match(/dropdown-?/)) return
-                        info.selected.val = !info.selected.val
-                    }
-                },
-                    div({ class: 'hstack gap-2' },
-                        div({ class: 'hstack gap-3 flex-fill py-1' },
-                            input({
-                                class: 'form-check-input', type: 'checkbox', checked: info.selected,
-                            }),
-                            div({},
-                                div(info.page.part),
-                                badgeNotNum ? div({ class: info.page.part ? 'small text-secondary' : '' }, info.page.bandge) : ''
+                    return div({
+                        class: () => `list-group-item user-select-none py-0 ${info.info ? '' : 'disabled'}`,
+                        role: 'button',
+                        onclick(event) {
+                            if ((event.target as HTMLElement).getAttribute('class')?.match(/dropdown-?/)) return
+                            info.selected.val = !info.selected.val
+                        }
+                    },
+                        div({ class: 'hstack gap-2' },
+                            div({ class: 'hstack gap-3 flex-fill py-1' },
+                                input({
+                                    class: 'form-check-input', type: 'checkbox', checked: info.selected,
+                                }),
+                                div({},
+                                    div(info.page.part),
+                                    badgeNotNum ? div({ class: info.page.part ? 'small text-secondary' : '' }, info.page.bandge) : ''
+                                ),
                             ),
-                        ),
-                        div({ class: 'dropdown' },
-                            div({ class: 'dropdown-toggle py-2 text-primary', 'data-bs-toggle': 'dropdown' },
-                                () => info.info?.accept_description[info.formatIndex.val]
-                            ),
-                            () => div({ class: 'dropdown-menu shadow' },
-                                Array(info.info?.accept_description.length).fill(0).map((_, index) => {
-                                    return div({
-                                        class: () => `dropdown-item ${info.formatIndex.val == index ? 'active' : ''}`,
-                                        onclick() {
-                                            info.formatIndex.val = index
-                                        }
-                                    }, info.info?.accept_description[index])
-                                })
+                            div({ class: 'dropdown' },
+                                div({ class: 'dropdown-toggle py-2 text-primary', 'data-bs-toggle': 'dropdown' },
+                                    () => info.info?.accept_description[info.formatIndex.val]
+                                ),
+                                () => div({ class: 'dropdown-menu shadow' },
+                                    Array(info.info?.accept_description.length).fill(0).map((_, index) => {
+                                        return div({
+                                            class: () => `dropdown-item ${info.formatIndex.val == index ? 'active' : ''}`,
+                                            onclick() {
+                                                info.formatIndex.val = index
+                                            }
+                                        }, info.info?.accept_description[index])
+                                    })
+                                )
                             )
                         )
                     )
-                )
-            })
+                })
         )
     }
 
