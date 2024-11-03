@@ -1,8 +1,14 @@
 import { ResJSON } from "../mixin"
-import { TaskStatus, VideoFormat } from "../work/type"
+import { TaskInDB, TaskStatus, VideoFormat } from "../work/type"
 
 export const getActiveTask = async (): Promise<ActiveTask[]> => {
     const res = await fetch('/api/getActiveTask').then(res => res.json()) as ResJSON<ActiveTask[]>
+    if (!res.success) throw new Error(res.message)
+    return res.data
+}
+
+export const getTaskList = async (page: number, pageSize: number): Promise<TaskInDB[]> => {
+    const res = await fetch(`/api/getTaskList?page=${page}&pageSize=${pageSize}`).then(res => res.json()) as ResJSON<TaskInDB[]>
     if (!res.success) throw new Error(res.message)
     return res.data
 }

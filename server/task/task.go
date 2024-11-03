@@ -86,6 +86,12 @@ func (task *Task) Start() {
 	}
 
 	task.Duration = playInfo.Dash.Duration
+	err = task.UpdateDuration(db)
+	if err != nil {
+		task.UpdateStatus(db, "error", fmt.Errorf("task.UpdateDuration: %v", err))
+		return
+	}
+
 	videoURL, err := GetVideoURL(playInfo.Dash.Video, task.Format)
 	if err != nil {
 		task.UpdateStatus(db, "error", fmt.Errorf("GetVideoURL: %v", err))
@@ -136,6 +142,11 @@ func (task *Task) Start() {
 	}
 	GlobalMergeSem.Release()
 	task.UpdateStatus(db, "done")
+}
+
+func (task *Task) UpdateDuration(db *sql.DB) error {
+	_, err := db.Exec(`UPDATE "task" SET "duration" = ? WHERE "id" = ?`, task.Duration, task.ID)
+	return err
 }
 
 // 合并音视频
@@ -324,15 +335,17 @@ func SaveDownloadFolder(db *sql.DB, downloadFolder string) error {
 func GetTaskList(db *sql.DB, page int, pageSize int) ([]TaskInDB, error) {
 	var tasks []TaskInDB
 
-	rows, err := db.Query(`SELECT (
+	rows, err := db.Query(`SELECT
 		"id", "bvid", "cid", "format", "title",
 		"owner", "cover", "status", "folder", "create_at"
-	) FROM "task" ORDER BY "id" DESC LIMIT ?, ?`,
+	FROM "task" ORDER BY "id" DESC LIMIT ?, ?`,
 		page*pageSize, pageSize,
 	)
 	if err != nil {
 		return nil, err
 	}
+
+	createAt := ""
 
 	for rows.Next() {
 		task := TaskInDB{}
@@ -346,8 +359,12 @@ func GetTaskList(db *sql.DB, page int, pageSize int) ([]TaskInDB, error) {
 			&task.Cover,
 			&task.Status,
 			&task.Folder,
-			&task.CreateAt,
+			&createAt,
 		)
+		if err != nil {
+			return nil, err
+		}
+		task.CreateAt, err = time.Parse("2006-01-02 15:04:05", createAt)
 		if err != nil {
 			return nil, err
 		}

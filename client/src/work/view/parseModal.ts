@@ -72,7 +72,7 @@ export class ParseModalComp implements VanComponent {
     async start() {
         this.finishCount.val = 0
         this.errorList.val = []
-        const queue = new PQueue({ concurrency: 10 })
+        const queue = new PQueue({ concurrency: 3 })
         for (const page of this.option.workRoute.selectedPages.val) {
             queue.add(async () => {
                 if (this.totalCount.val == this.finishCount.val) return

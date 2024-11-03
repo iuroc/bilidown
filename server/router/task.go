@@ -5,6 +5,7 @@ import (
 	"bilidown/util"
 	"encoding/json"
 	"net/http"
+	"strconv"
 )
 
 func CreateTask(w http.ResponseWriter, r *http.Request) {
@@ -57,4 +58,28 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 
 func GetActiveTask(w http.ResponseWriter, r *http.Request) {
 	util.Res{Success: true, Data: task.GlobalTaskList}.Write(w)
+}
+
+func GetTaskList(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		util.Res{Success: false, Message: "参数错误"}.Write(w)
+		return
+	}
+	db := util.GetDB()
+	defer db.Close()
+	page, err := strconv.Atoi(r.FormValue("page"))
+	if err != nil {
+		page = 0
+	}
+	pageSize, err := strconv.Atoi(r.FormValue("pageSize"))
+	if err != nil {
+		pageSize = 360
+	}
+	tasks, err := task.GetTaskList(db, page, pageSize)
+	if err != nil {
+		util.Res{Success: false, Message: err.Error()}.Write(w)
+		return
+	}
+	util.Res{Success: true, Data: tasks}.Write(w)
 }

@@ -3,6 +3,7 @@ package router
 import (
 	"bilidown/bilibili"
 	"bilidown/util"
+	"fmt"
 	"net/http"
 	"strconv"
 )
@@ -99,7 +100,7 @@ func GetPlayInfo(w http.ResponseWriter, r *http.Request) {
 	client := bilibili.BiliClient{SESSDATA: sessdata}
 	playInfo, err := client.GetPlayInfo(bvid, cid)
 	if err != nil {
-		util.Res{Success: false, Message: err.Error()}.Write(w)
+		util.Res{Success: false, Message: fmt.Sprintf("client.GetPlayInfo: %v", err)}.Write(w)
 		return
 	}
 	playInfo.Dash = nil

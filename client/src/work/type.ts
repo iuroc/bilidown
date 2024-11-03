@@ -253,7 +253,7 @@ export type TaskInitData = {
 export type TaskInDB = TaskInitData & {
     id: number
     folder: string
-    create_at: string
+    createAt: string
     status: TaskStatus
 }
 
