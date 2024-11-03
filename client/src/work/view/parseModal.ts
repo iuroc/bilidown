@@ -103,8 +103,10 @@ export class ParseModalComp implements VanComponent {
             const isVideoMode = this.option.workRoute.videoInfoCardMode.val == 'video'
             const cardTitle = this.option.workRoute.videoInfocardData.val.title
             const owner = this.option.workRoute.videoInfocardData.val.staff.length > 0
-                ? this.option.workRoute.videoInfocardData.val.staff[0].split("[")[0]
-                : this.option.workRoute.videoInfocardData.val.owner.name
+                ? this.option.workRoute.videoInfocardData.val.staff[0].split("[")[0].trim()
+                : this.option.workRoute.videoInfocardData.val.owner.name.trim()
+            const activeVideoInfo = getActiveFormatVideo(info.info!, info.info!.accept_quality[info.formatIndex.val])
+            const pagesLength = this.option.workRoute.videoInfocardData.val.pages.length
 
             return ({
                 bvid: info.page.bvid,
@@ -112,21 +114,25 @@ export class ParseModalComp implements VanComponent {
                 cover: this.option.workRoute.videoInfocardData.val.cover,
                 title: (badgeNotNum
                     ? [
-                        info.page.part,
-                        `[${info.page.bandge}]`,
-                        `[${cardTitle}]`,
+                        info.page.part.trim(),
+                        `[${info.page.bandge.trim()}]`,
+                        `[${cardTitle.trim()}]`,
+                        `[${info.info!.accept_description[info.formatIndex.val]}]`,
+                        `[${info.info!.dash.duration}]`
                     ]
                     : [
-                        this.option.workRoute.sectionPages.val.length == 1 ? '' : `[${info.page.bandge}]`,
-                        info.page.part,
-                        info.page.part == cardTitle ? '' : `[${cardTitle}]`,
-                        isVideoMode ? `[${owner}]` : ''
+                        this.option.workRoute.sectionPages.val.length == 1 ? '' : `[${info.page.bandge.trim()}]`,
+                        info.page.part.trim(),
+                        pagesLength == 1 ? '' : `[${cardTitle.trim()}]`,
+                        isVideoMode ? `[${owner}]` : '',
+                        `[${info.info!.accept_description[info.formatIndex.val]}]`,
+                        `[${info.info!.dash.duration}]`
                     ]).filter(p => p).join(' '),
                 format: info.info!.accept_quality[info.formatIndex.val],
                 owner,
                 audio: getAudioURL(info.info!),
                 duration: info.info!.dash.duration,
-                video: getVideoURL(info.info!, info.info!.accept_quality[info.formatIndex.val]),
+                ...activeVideoInfo
             })
         })).then(() => {
             this.option.workRoute.parseModal.hide()
@@ -241,11 +247,15 @@ const getAudioURL = (playInfo: PlayInfo): string => {
     }
 }
 
-const getVideoURL = (playInfo: PlayInfo, format: VideoFormat): string => {
+const getActiveFormatVideo = (playInfo: PlayInfo, format: VideoFormat): { video: string, width: number, height: number } => {
     for (const code of [12, 7, 13]) {
         for (const item of playInfo.dash.video) {
             if (item.id == format && item.codecid == code) {
-                return item.baseUrl
+                return {
+                    video: item.baseUrl,
+                    width: item.width,
+                    height: item.height
+                }
             }
         }
     }

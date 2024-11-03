@@ -244,6 +244,8 @@ export type TaskInitData = {
     audio: string
     video: string
     duration: number
+    width: number
+    height: number
 }
 
 /** 任务数据库中的数据 */

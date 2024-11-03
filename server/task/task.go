@@ -33,6 +33,8 @@ type TaskInitOption struct {
 	Audio    string             `json:"audio"`
 	Video    string             `json:"video"`
 	Duration int                `json:"duration"`
+	Width    int                `json:"width"`
+	Height   int                `json:"height"`
 }
 
 // TaskInDB 任务数据库中的数据
@@ -110,7 +112,7 @@ func (task *Task) Start() {
 	GlobalDownloadSem.Release()
 
 	outputPath := filepath.Join(task.Folder,
-		fmt.Sprintf("%s - %s.mp4", util.FilterFileName(task.Title), common.RandomString(6)),
+		fmt.Sprintf("%s %s.mp4", util.FilterFileName(task.Title), common.RandomString(6)),
 	)
 
 	videoPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".video")
