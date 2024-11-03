@@ -40,6 +40,15 @@ func InitTables() *sql.DB {
 		log.Fatalln(err)
 	}
 
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS "log" (
+		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+		"content" TEXT NOT NULL,
+		"create_at" text NOT NULL DEFAULT CURRENT_TIMESTAMP
+	)`)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS "task" (
 		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
 		"bvid" text NOT NULL,
@@ -56,11 +65,7 @@ func InitTables() *sql.DB {
 		log.Fatalln(err)
 	}
 
-	defaultDownloadFolder, err := util.GetDefaultDownloadFolder()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	err = task.SaveDownloadFolder(db, defaultDownloadFolder)
+	_, err = task.GetCurrentFolder(db)
 	if err != nil {
 		log.Fatalln(err)
 	}

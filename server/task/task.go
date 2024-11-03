@@ -59,15 +59,14 @@ func (task *Task) Start(db *sql.DB) error {
 	GlobalTaskMux.Unlock()
 	sessdata, err := bilibili.GetSessdata(db)
 	if err != nil {
-		fmt.Println(err.Error())
-		task.UpdateStatus(db, "error")
+		task.UpdateStatus(db, "error", err)
 		return nil
 	}
 	client := &bilibili.BiliClient{SESSDATA: sessdata}
 
 	playInfo, err := client.GetPlayInfo(task.Bvid, task.Cid)
 	if err != nil {
-		task.UpdateStatus(db, "error")
+		task.UpdateStatus(db, "error", err)
 		return nil
 	}
 
@@ -78,12 +77,12 @@ func (task *Task) Start(db *sql.DB) error {
 	task.UpdateStatus(db, "running")
 	err = DownloadMedia(client, audioURL, task, "audio")
 	if err != nil {
-		task.UpdateStatus(db, "error")
+		task.UpdateStatus(db, "error", err)
 		return nil
 	}
 	err = DownloadMedia(client, videoURL, task, "video")
 	if err != nil {
-		task.UpdateStatus(db, "error")
+		task.UpdateStatus(db, "error", err)
 		return nil
 	}
 	GlobalDownloadSem.Release()
@@ -96,7 +95,7 @@ func (task *Task) Start(db *sql.DB) error {
 	err = MergeMedia(outputPath, videoPath, audioPath)
 	GlobalMergeMux.Unlock()
 	if err != nil {
-		task.UpdateStatus(db, "error")
+		task.UpdateStatus(db, "error", err)
 		fmt.Println(err.Error())
 		return nil
 	}
@@ -140,8 +139,13 @@ func GetAudioURL(medias []bilibili.Media) string {
 	return audioURL
 }
 
-func (task *Task) UpdateStatus(db *sql.DB, status TaskStatus) error {
+func (task *Task) UpdateStatus(db *sql.DB, status TaskStatus, errs ...error) error {
 	_, err := db.Exec(`UPDATE "task" SET "status" = ? WHERE "id" = ?`, status, task.ID)
+	for _, err := range errs {
+		if err != nil {
+			util.CreateLog(db, err.Error())
+		}
+	}
 	return err
 }
 
@@ -203,10 +207,22 @@ func newProgressBar(total int64) *progressBar {
 	}
 }
 
+// GetCurrentFolder 获取数据库中的下载保存路径，如果不存在则将默认路径保存到数据库
 func GetCurrentFolder(db *sql.DB) (string, error) {
 	var filepath string
 	err := db.QueryRow(`SELECT "value" FROM "field" WHERE "name" = "download_folder"`).Scan(&filepath)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			folder, err := util.GetDefaultDownloadFolder()
+			if err != nil {
+				return "", err
+			}
+			err = SaveDownloadFolder(db, folder)
+			if err != nil {
+				return "", err
+			}
+			return folder, nil
+		}
 		return "", err
 	}
 	return filepath, nil
