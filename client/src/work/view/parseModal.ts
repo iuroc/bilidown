@@ -172,8 +172,9 @@ export class ParseModalComp implements VanComponent {
                                     class: 'form-check-input', type: 'checkbox', checked: info.selected,
                                 }),
                                 div({},
-                                    div(info.page.part),
-                                    badgeNotNum ? div({ class: info.page.part ? 'small text-secondary' : '' }, info.page.bandge) : ''
+                                    div((badgeNotNum ? '' : `${info.page.bandge}. `) + info.page.part),
+                                    badgeNotNum ? div({ class: info.page.part ? 'small text-secondary' : '' },
+                                        info.page.bandge) : ''
                                 ),
                             ),
                             div({ class: 'dropdown' },
