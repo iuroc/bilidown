@@ -2,7 +2,7 @@ import van, { State } from 'vanjs-core'
 import { VanComponent } from '../../mixin'
 import { PageInParseResult, PlayInfo } from '../type'
 import { WorkRoute } from '..'
-import { getPlayInfo } from '../data'
+import { createTask, getPlayInfo } from '../data'
 import PQueue from 'p-queue'
 
 const { a, button, div, input } = van.tags
@@ -98,7 +98,27 @@ export class ParseModalComp implements VanComponent {
     async download() {
         const selectedPlayInfos = this.allPlayInfo.val.filter(info => info.selected.val)
         // 需要传递给服务器，需要创建下载任务的数据列表
-        console.log(selectedPlayInfos)
+        createTask(selectedPlayInfos.map(info => {
+            const badgeNotNum = !info.page.bandge.match(/^\d+$/)
+            const isVideoMode = this.option.workRoute.videoInfoCardMode.val == 'video'
+            const cardTitle = this.option.workRoute.videoInfocardData.val.title
+            const owner = this.option.workRoute.videoInfocardData.val.staff.length > 0
+                ? this.option.workRoute.videoInfocardData.val.staff.join(' ')
+                : this.option.workRoute.videoInfocardData.val.owner.name
+
+            return ({
+                bvid: info.page.bvid,
+                cid: info.page.cid,
+                cover: this.option.workRoute.videoInfocardData.val.cover,
+                title: `${badgeNotNum ? '' : info.page.bandge} - ${info.page.part} - ${cardTitle} - ${owner}`,
+                format: info.info!.accept_quality[info.formatIndex.val],
+                owner
+            })
+        })).then(() => {
+            this.option.workRoute.parseModal.hide()
+        }).catch(error => {
+            alert(error.message)
+        })
     }
 
     ParseProgress() {

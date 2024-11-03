@@ -42,6 +42,7 @@ func InitTables() *sql.DB {
 
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS "log" (
 		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+		"task_id" integer NOT NULL,
 		"content" TEXT NOT NULL,
 		"create_at" text NOT NULL DEFAULT CURRENT_TIMESTAMP
 	)`)

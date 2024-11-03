@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -95,33 +96,38 @@ func (task *Task) Start() {
 	task.UpdateStatus(db, "running")
 	err = DownloadMedia(client, audioURL, task, "audio")
 	if err != nil {
+		GlobalDownloadSem.Release()
 		task.UpdateStatus(db, "error", err)
 		return
 	}
 	err = DownloadMedia(client, videoURL, task, "video")
 	if err != nil {
+		GlobalDownloadSem.Release()
 		task.UpdateStatus(db, "error", err)
 		return
 	}
 	GlobalDownloadSem.Release()
 
-	outputPath := filepath.Join(task.Folder, fmt.Sprintf("%s_%s.mp4", task.Title, util.RandomString(6)))
+	outputPath := filepath.Join(task.Folder, fmt.Sprintf("%s - %s.mp4", task.Title, util.RandomString(6)))
 
 	videoPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".video")
 	audioPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".audio")
 	GlobalMergeSem.Acquire()
 	err = task.MergeMedia(outputPath, videoPath, audioPath)
 	if err != nil {
+		GlobalMergeSem.Release()
 		task.UpdateStatus(db, "error", err)
 		return
 	}
 	err = os.Remove(videoPath)
 	if err != nil {
+		GlobalMergeSem.Release()
 		task.UpdateStatus(db, "error", err)
 		return
 	}
 	err = os.Remove(audioPath)
 	if err != nil {
+		GlobalMergeSem.Release()
 		task.UpdateStatus(db, "error", err)
 		return
 	}
@@ -210,7 +216,15 @@ func (task *Task) UpdateStatus(db *sql.DB, status TaskStatus, errs ...error) err
 }
 
 func DownloadMedia(client *bilibili.BiliClient, _url string, task *Task, mediaType string) error {
-	resp, err := client.SimpleGET(_url, nil)
+	var resp *http.Response
+	var err error
+	for i := 0; i < 5; i++ {
+		resp, err = client.SimpleGET(_url, nil)
+		if err == nil {
+			break
+		}
+	}
+
 	if err != nil {
 		return err
 	}

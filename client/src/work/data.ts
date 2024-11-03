@@ -1,5 +1,5 @@
 import { ResJSON, timeoutController } from '../mixin'
-import { PlayInfo, SeasonInfo, VideoInfo } from './type'
+import { PlayInfo, SeasonInfo, TaskInitData, VideoInfo } from './type'
 
 /**
  * 获取视频信息
@@ -42,4 +42,17 @@ export const getPlayInfo = async (bvid: string, cid: number, controller: AbortCo
     }).then(res => res.json()) as ResJSON<PlayInfo>
     if (!res.success) throw new Error(res.message)
     return res.data
+}
+
+export const createTask = async (tasks: TaskInitData[]): Promise<ResJSON> => {
+    const { signal, timer } = timeoutController()
+
+    return await fetch('/api/createTask', {
+        method: 'POST',
+        signal,
+        body: JSON.stringify(tasks),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    }).then(res => res.json()) as ResJSON
 }
