@@ -209,6 +209,7 @@ type PlayInfo struct {
 }
 
 type Dash struct {
+	// 视频时长（秒）
 	Duration int     `json:"duration"`
 	Video    []Media `json:"video"`
 	Audio    []Media `json:"audio"`

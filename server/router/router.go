@@ -19,6 +19,7 @@ func API() *http.ServeMux {
 	router.HandleFunc("/getPlayInfo", GetPlayInfo)
 	router.HandleFunc("/folderPicker", FolderPicker)
 	router.HandleFunc("/createTask", CreateTask)
+	router.HandleFunc("/getActiveTask", GetActiveTask)
 	return router
 }
 
