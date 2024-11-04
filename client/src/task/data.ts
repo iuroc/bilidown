@@ -3,7 +3,7 @@ import { TaskInDB, TaskStatus, VideoFormat } from "../work/type"
 
 let getActiveTaskController: AbortController | undefined
 
-export const getActiveTask = async (): Promise<ActiveTask[]> => {
+export const getActiveTask = async (): Promise<ActiveTask[] | null> => {
     getActiveTaskController?.abort()
     getActiveTaskController = new AbortController()
     try {
@@ -13,14 +13,14 @@ export const getActiveTask = async (): Promise<ActiveTask[]> => {
         if (!res.success) throw new Error(res.message)
         return res.data
     } catch (error) {
-        if (error instanceof Error && error.name === 'AbortError') return []
+        if (error instanceof Error && error.name === 'AbortError') return null
         throw error
     }
 }
 
 let getTaskListController: AbortController | undefined
 
-export const getTaskList = async (page: number, pageSize: number): Promise<TaskInDB[]> => {
+export const getTaskList = async (page: number, pageSize: number): Promise<TaskInDB[] | null> => {
     getTaskListController?.abort()
     getTaskListController = new AbortController()
     try {
@@ -30,7 +30,7 @@ export const getTaskList = async (page: number, pageSize: number): Promise<TaskI
         if (!res.success) throw new Error(res.message)
         return res.data
     } catch (error) {
-        if (error instanceof Error && error.name === 'AbortError') return []
+        if (error instanceof Error && error.name === 'AbortError') return null
         throw error
     }
 }

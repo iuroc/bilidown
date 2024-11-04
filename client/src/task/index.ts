@@ -71,26 +71,38 @@ export class TaskRoute implements VanComponent {
             async onLoad() {
                 if (!GLOBAL_HAS_LOGIN.val) return goto('login')
 
-                let timer = setInterval(() => {
-                    if (now.val.split('/')[0] == 'task') {
-                        getActiveTask().then(activeTaskList => {
-                            _that.taskList.val.forEach(taskInDB => {
-                                activeTaskList.forEach(task => {
-                                    if (taskInDB.id == task.id) {
-                                        taskInDB.audioProgress.val = task.audioProgress
-                                        taskInDB.videoProgress.val = task.videoProgress
-                                        taskInDB.mergeProgress.val = task.mergeProgress
-                                        taskInDB.statusState.val = task.status
-                                    }
-                                })
+                const refresh = () => {
+                    getActiveTask().then(activeTaskList => {
+                        if (!activeTaskList) return
+                        _that.taskList.val.forEach(taskInDB => {
+                            activeTaskList.forEach(task => {
+                                if (taskInDB.id == task.id) {
+                                    taskInDB.audioProgress.val = task.audioProgress
+                                    taskInDB.videoProgress.val = task.videoProgress
+                                    taskInDB.mergeProgress.val = task.mergeProgress
+                                    taskInDB.statusState.val = task.status
+                                }
                             })
                         })
-                    } else {
+                        if (activeTaskList.filter(task => task.status == 'running').length == 0) {
+                            clearInterval(timer)
+                            clearInterval(halper)
+                            return
+                        }
+                    })
+                }
+                refresh()
+                let timer = setInterval(() => {
+                    refresh()
+                }, 1000)
+                let halper = setInterval(() => {
+                    if (now.val.split('/')[0] != 'task') {
+                        clearInterval(halper)
                         clearInterval(timer)
                     }
-                }, 1000)
-
+                })
                 getTaskList(0, 360).then(taskList => {
+                    if (!taskList) return
                     _that.taskList.val = taskList.map(task => ({
                         ...task,
                         audioProgress: van.state(1),
