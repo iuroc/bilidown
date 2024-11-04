@@ -23,6 +23,6 @@
     "p-queue": "^8.0.1",
     "uuid": "^10.0.0",
     "vanjs-core": "^1.5.2",
-    "vanjs-router": "^2.0.8"
+    "vanjs-router": "^2.1.0"
   }
 }

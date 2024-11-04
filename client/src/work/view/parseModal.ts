@@ -121,9 +121,9 @@ export class ParseModalComp implements VanComponent {
                         `[${info.info!.dash.duration}]`
                     ]
                     : [
+                        pagesLength == 1 ? '' : `[${cardTitle.trim()}]`,
                         this.option.workRoute.sectionPages.val.length == 1 ? '' : `[${info.page.bandge.trim()}]`,
                         info.page.part.trim(),
-                        pagesLength == 1 ? '' : `[${cardTitle.trim()}]`,
                         isVideoMode ? `[${owner}]` : '',
                         `[${info.info!.accept_description[info.formatIndex.val]}]`,
                         `[${info.info!.dash.duration}]`

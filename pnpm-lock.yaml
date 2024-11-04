@@ -27,8 +27,8 @@ importers:
         specifier: ^1.5.2
         version: 1.5.2
       vanjs-router:
-        specifier: ^2.0.8
-        version: 2.0.8
+        specifier: ^2.1.0
+        version: 2.1.0
     devDependencies:
       '@types/bootstrap':
         specifier: ^5.2.10
@@ -549,8 +549,8 @@ packages:
   vanjs-core@1.5.2:
     resolution: {integrity: sha512-z9MHAzxYbNFJ6MYP+4j9l9KMxDU3ryI65JjIfUbGQwF1paLfiuqtIiq9Ve1UGKLd774Z7mtdWzd+/FR785dKjQ==, tarball: https://registry.npmjs.org/vanjs-core/-/vanjs-core-1.5.2.tgz}
 
-  vanjs-router@2.0.8:
-    resolution: {integrity: sha512-xuoo7AbhNXLbYJynUlYJPMCjlDUNnJ2UZN9vPl39qJOnb8hPrhWfye1mnwZiyQGimd4v/pJA2OD4KrtlJ7AUqQ==, tarball: https://registry.npmjs.org/vanjs-router/-/vanjs-router-2.0.8.tgz}
+  vanjs-router@2.1.0:
+    resolution: {integrity: sha512-ti9qYYLsPu/GoTYOoZz94T3Abd26rdgFjoiRTI/TkbrtjYa20lAaJ+U7VIGypKB/2rnoKaFR6O9qFwLtuKBCVw==, tarball: https://registry.npmjs.org/vanjs-router/-/vanjs-router-2.1.0.tgz}
 
   varint@6.0.0:
     resolution: {integrity: sha512-cXEIW6cfr15lFv563k4GuVuW/fiwjknytD37jIOLSdSWuOI6WnO/oKwmP2FQTU2l01LP8/M5TSAJpzUaGe3uWg==, tarball: https://registry.npmjs.org/varint/-/varint-6.0.0.tgz}
@@ -985,7 +985,7 @@ snapshots:
 
   vanjs-core@1.5.2: {}
 
-  vanjs-router@2.0.8:
+  vanjs-router@2.1.0:
     dependencies:
       vanjs-core: 1.5.2
 

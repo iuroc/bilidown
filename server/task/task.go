@@ -33,8 +33,6 @@ type TaskInitOption struct {
 	Audio    string             `json:"audio"`
 	Video    string             `json:"video"`
 	Duration int                `json:"duration"`
-	Width    int                `json:"width"`
-	Height   int                `json:"height"`
 }
 
 // TaskInDB 任务数据库中的数据
@@ -327,7 +325,7 @@ func SaveDownloadFolder(db *sql.DB, downloadFolder string) error {
 }
 
 func GetTaskList(db *sql.DB, page int, pageSize int) ([]TaskInDB, error) {
-	var tasks []TaskInDB
+	tasks := []TaskInDB{}
 
 	rows, err := db.Query(`SELECT
 		"id", "bvid", "cid", "format", "title",

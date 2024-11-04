@@ -89,5 +89,5 @@ func GetTaskList(w http.ResponseWriter, r *http.Request) {
 		util.Res{Success: false, Message: err.Error()}.Write(w)
 		return
 	}
-	util.Res{Success: true, Data: tasks}.Write(w)
+	util.Res{Success: true, Message: "获取成功", Data: tasks}.Write(w)
 }

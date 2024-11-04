@@ -1,16 +1,38 @@
 import { ResJSON } from "../mixin"
 import { TaskInDB, TaskStatus, VideoFormat } from "../work/type"
 
+let getActiveTaskController: AbortController | undefined
+
 export const getActiveTask = async (): Promise<ActiveTask[]> => {
-    const res = await fetch('/api/getActiveTask').then(res => res.json()) as ResJSON<ActiveTask[]>
-    if (!res.success) throw new Error(res.message)
-    return res.data
+    getActiveTaskController?.abort()
+    getActiveTaskController = new AbortController()
+    try {
+        const res = await fetch('/api/getActiveTask', {
+            signal: getActiveTaskController.signal
+        }).then(res => res.json()) as ResJSON<ActiveTask[]>
+        if (!res.success) throw new Error(res.message)
+        return res.data
+    } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') return []
+        throw error
+    }
 }
 
+let getTaskListController: AbortController | undefined
+
 export const getTaskList = async (page: number, pageSize: number): Promise<TaskInDB[]> => {
-    const res = await fetch(`/api/getTaskList?page=${page}&pageSize=${pageSize}`).then(res => res.json()) as ResJSON<TaskInDB[]>
-    if (!res.success) throw new Error(res.message)
-    return res.data
+    getTaskListController?.abort()
+    getTaskListController = new AbortController()
+    try {
+        const res = await fetch(`/api/getTaskList?page=${page}&pageSize=${pageSize}`, {
+            signal: getTaskListController.signal
+        }).then(res => res.json()) as ResJSON<TaskInDB[]>
+        if (!res.success) throw new Error(res.message)
+        return res.data
+    } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') return []
+        throw error
+    }
 }
 
 /** 用于刷新任务实时进度 */
