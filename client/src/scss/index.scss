@@ -35,3 +35,12 @@
         }
     }
 }
+
+
+.delete-btn svg {
+    cursor: pointer;
+
+    &:hover {
+        fill: red;
+    }
+}

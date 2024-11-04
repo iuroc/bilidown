@@ -7,6 +7,7 @@ import { IDType, start } from './mixin'
 import { ParseModalComp } from './view/parseModal'
 import InputBox from './view/inputBox'
 import { Modal } from 'bootstrap'
+import { LoadingBox } from '../view'
 
 const { div } = van.tags
 
@@ -44,6 +45,9 @@ export class WorkRoute {
     /** 按钮是否处于 `loading` 状态，如果是则按钮设置为 `disabled` */
     btnLoading = van.state(false)
 
+    /** 页面初始加载的 loading 状态 */
+    initLoading = van.state(true)
+
     sectionTabsActiveIndex = van.state(0)
 
     constructor() {
@@ -68,18 +72,21 @@ export class WorkRoute {
         this.element = Route({
             rule: 'work',
             Loader() {
-                return div({ class: 'vstack gap-3' },
-                    InputBox(_that),
-                    div({ hidden: () => _that.videoInfoCardMode.val == 'hide' || _that.btnLoading.val },
-                        VideoInfoCard(_that),
-                    ),
+                return div(
+                    () => _that.initLoading.val ? LoadingBox() : '',
+                    div({ class: 'vstack gap-3', hidden: _that.initLoading },
+                        InputBox(_that),
+                        div({ hidden: () => _that.videoInfoCardMode.val == 'hide' || _that.btnLoading.val },
+                            VideoInfoCard(_that),
+                        ),
+                    )
                 )
             },
             async onFirst() {
                 if (!await checkLogin()) return
-                const idType = this.args[0] as IDType
-                const value = this.args[1]
-                if (!value) return goto('work')
+                const idType = this.args[0] as IDType || 'bv'
+                const value = this.args[1] || 'BV1LM411h7sZ'
+                if (!value) return goto('work'), _that.initLoading.val = false
                 if (idType == 'bv' && !value.match(/^BV1[a-zA-Z0-9]+$/)) return goto('work')
                 if ((idType == 'ep' || idType == 'ss') && !value.match(/^\d+$/)) return goto('work')
                 if (idType == 'bv') _that.urlValue.val = value
@@ -94,6 +101,9 @@ export class WorkRoute {
                     _that.videoInfoCardMode.val = 'hide'
                 }).finally(() => {
                     _that.btnLoading.val = false
+                    setTimeout(() => {
+                        _that.initLoading.val = false
+                    }, 200)
                 })
             },
             async onLoad() {
