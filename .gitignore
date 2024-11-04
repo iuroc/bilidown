@@ -5,3 +5,4 @@ server/static/
 *.db
 server/*.exe
 download/
+build/

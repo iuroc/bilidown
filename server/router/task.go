@@ -55,6 +55,7 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		_task := task.Task{TaskInDB: item}
+		_task.Title = util.FilterFileName(_task.Title)
 		err = _task.Create(db)
 		if err != nil {
 			util.Res{Success: false, Message: err.Error()}.Write(w)

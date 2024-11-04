@@ -112,7 +112,7 @@ func (task *Task) Start() {
 	GlobalDownloadSem.Release()
 
 	outputPath := filepath.Join(task.Folder,
-		fmt.Sprintf("%s %s.mp4", util.FilterFileName(task.Title),
+		fmt.Sprintf("%s %s.mp4", task.Title,
 			strings.Replace(base64.StdEncoding.EncodeToString([]byte(strconv.FormatInt(task.ID, 10))), "=", "", -1),
 		),
 	)

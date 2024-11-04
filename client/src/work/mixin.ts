@@ -33,7 +33,7 @@ export const start = async (
                                 dimension: k.dimension,
                                 duration: k.duration,
                                 page: index,
-                                part: k.part || j.title,
+                                part: j.title,
                                 bandge: index.toString(),
                                 selected: van.state(bvid == j.bvid)
                             }

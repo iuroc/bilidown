@@ -78,7 +78,7 @@ const ListBox = (pages: State<PageInParseResult[]>) => {
                     class: () => `${bandgeNotNum
                         ? `vstack gap-2 justify-content-center`
                         : `hstack gap-3`
-                        } shadow-sm h-100 user-select-none card card-body video-item-btn bg-success bg-opacity-10 ${active.val ? 'active' : ''}`,
+                        } shadow-sm h-100 text-break user-select-none card card-body video-item-btn bg-success bg-opacity-10 ${active.val ? 'active' : ''}`,
                     onclick() {
                         active.val = !active.val
                     },
