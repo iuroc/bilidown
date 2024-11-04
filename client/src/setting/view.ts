@@ -1,10 +1,11 @@
 import van from 'vanjs-core'
 import { showErrorPage } from '../mixin'
+import { SettingRoute } from '.'
 
 const { a, button, div, input } = van.tags
 
-export const SaveFolderSetting = () => {
-    const saveFolder = van.state('')
+export const SaveFolderSetting = (route: SettingRoute) => {
+    const saveFolder = route.fields.download_folder
     const folderPickerDisabled = van.state(false)
     const buttonText = van.derive(() => folderPickerDisabled.val ? '请在弹窗中选择' : '选择目录')
 

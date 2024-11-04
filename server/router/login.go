@@ -88,3 +88,14 @@ func GetQRStatus(w http.ResponseWriter, r *http.Request) {
 	}
 	util.Res{Success: true, Message: "登录成功"}.Write(w)
 }
+
+func Logout(w http.ResponseWriter, r *http.Request) {
+	db := util.GetDB()
+	defer db.Close()
+	err := bilibili.SaveSessdata(db, "")
+	if err != nil {
+		util.Res{Success: false, Message: err.Error()}.Write(w)
+		return
+	}
+	util.Res{Success: true, Message: "退出成功"}.Write(w)
+}

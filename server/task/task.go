@@ -151,14 +151,9 @@ func (task *Task) MergeMedia(outputPath string, inputPaths ...string) error {
 		inputs = append(inputs, "-i", path)
 	}
 
-	ffmpegPath := "ffmpeg"
-
-	if _, err := os.Stat("bin/ffmpeg.exe"); !os.IsNotExist(err) {
-		ffmpegPath = "bin/ffmpeg"
-	} else if _, err := os.Stat("bin/ffmpeg"); !os.IsNotExist(err) {
-		ffmpegPath = "bin/ffmpeg"
-	} else {
-		return errors.New("ffmpeg not found")
+	ffmpegPath, err := util.GetFFmpegPath()
+	if err != nil {
+		return err
 	}
 
 	cmd := exec.Command(ffmpegPath, append(inputs, "-c:v", "copy", "-c:a", "copy", "-progress", "pipe:1", "-strict", "-2", outputPath)...)

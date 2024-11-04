@@ -121,3 +121,38 @@ SESSDATA 存储在 SQLite，前端每次初始进入页面时，都从 SQLite �
 
 1. `[序号] 主标题 [分集标题，如果同主标题则省略] [发布者] [分辨率] [时长] 随机码`
 2. `长标题 [短标题] [主标题] [分辨率] [时长] 随机码`
+
+## 代码优化说明
+
+1. 把不必要的大写开头导出取消
+2. 保证 log.Fatal 只能在入口层调用，其余层都使用 err 返回值
+3. 适当调整函数封装，完善和修正注释内容
+4. 集中构建错误响应信息，如：
+
+    ```go
+    if r.Method != http.MethodPost {
+    	util.Res{Success: false, Message: "不支持的请求方法"}.Write(w)
+    	return
+    }
+    ```
+
+    改成：
+
+    ```go
+    if r.Method != http.MethodPost {
+    	errutil.write(w, errutil.MethodNotAllow)
+    	return
+    }
+    ```
+
+    ```go
+    package errutil
+
+    const (
+        MethodNotAllow = "不支持的请求方法"
+        ParamsError = "参数错误"
+    )
+    ```
+
+5. 还是不太能区分为 type 增加方法时，对 type 的引用应该用指针还是不用的区别。
+6. 前端增加一些 Loading 动画

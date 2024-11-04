@@ -5,7 +5,6 @@ import (
 	"bilidown/task"
 	"bilidown/util"
 	"database/sql"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -20,7 +19,7 @@ import (
 )
 
 func main() {
-	if _, err := GetFFmpegPath(); err != nil {
+	if _, err := util.GetFFmpegPath(); err != nil {
 		fmt.Println("🚨 FFmpeg is missing. Install it from https://www.ffmpeg.org/download.html or place it in ./bin, then restart the application.")
 		var wg sync.WaitGroup
 		wg.Add(1)
@@ -146,15 +145,3 @@ func InitTables(db *sql.DB) {
 	}
 }
 
-func GetFFmpegPath() (string, error) {
-
-	if err := exec.Command("ffmpeg", "-version").Run(); err == nil {
-		return "ffmpeg", nil
-	}
-
-	if err := exec.Command("bin/ffmpeg", "-version").Run(); err == nil {
-		return "bin/ffmpeg", nil
-	}
-
-	return "", errors.New("ffmpeg not found")
-}

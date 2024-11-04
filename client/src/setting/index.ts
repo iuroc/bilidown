@@ -1,27 +1,68 @@
 import van from 'vanjs-core'
 import { Route, goto } from 'vanjs-router'
-import { checkLogin, GLOBAL_HAS_LOGIN } from '../mixin'
+import { checkLogin, GLOBAL_HAS_LOGIN, VanComponent } from '../mixin'
 import { SaveFolderSetting } from './view'
+import { getFields } from './data'
 
 const { button, div } = van.tags
 
-export default () => {
+export type Fields = Record<keyof SettingRoute['fields'], string>
 
-    return Route({
-        rule: 'setting',
-        Loader() {
-            return div({ class: 'vstack gap-4' },
-                SaveFolderSetting(),
-                div(
-                    button({ class: 'btn btn-outline-danger' }, '退出登录')
+export class SettingRoute implements VanComponent {
+    element: HTMLElement
+
+    fields = {
+        download_folder: van.state('')
+    }
+
+    constructor() {
+        this.element = this.Root()
+    }
+
+    Root() {
+
+        const _that = this
+
+        return Route({
+            rule: 'setting',
+            Loader() {
+                return div({ class: 'vstack gap-4' },
+                    SaveFolderSetting(_that),
+                    div({ class: 'hstack gap-3' },
+                        button({
+                            class: 'btn btn-outline-secondary', onclick() {
+                                if (!confirm('确定要关闭软件吗?')) return
+                                fetch('/api/quit').then(res => res.json()).then(res => {
+                                    if (!res.success) alert(res.message)
+                                    else document.write(`<h2 style="text-align: center; padding: 30px 20px;">软件已关闭</h2>`)
+                                })
+                            }
+                        }, '关闭软件'),
+                        button({
+                            class: 'btn btn-outline-danger', onclick() {
+                                if (!confirm('确定要退出登录吗?')) return
+                                fetch('/api/logout').then(res => res.json()).then(res => {
+                                    if (!res.success) alert(res.message)
+                                    else location.reload()
+                                })
+                            }
+                        }, '退出登录'),
+                    )
                 )
-            )
-        },
-        async onFirst() {
-            if (!await checkLogin()) return
-        },
-        onLoad() {
-            if (!GLOBAL_HAS_LOGIN.val) return goto('login')
-        },
-    })
+            },
+            async onFirst() {
+                if (!await checkLogin()) return
+            },
+            onLoad() {
+                if (!GLOBAL_HAS_LOGIN.val) return goto('login')
+                getFields().then(fields => {
+                    for (const key in fields) {
+                        _that.fields[key as keyof Fields].val = fields[key as keyof Fields]
+                    }
+                })
+            },
+        })
+    }
 }
+
+export default () => new SettingRoute().element

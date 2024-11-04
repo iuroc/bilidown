@@ -4,11 +4,13 @@ import (
 	"bilidown/common"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -93,4 +95,17 @@ func GenerateRandomUserAgent() string {
 	}
 	version := fmt.Sprintf("%d.%d.%d", rand.Intn(10), rand.Intn(10), rand.Intn(10))
 	return fmt.Sprintf("%s%s/%s", firstLetter, sb.String(), version)
+}
+
+func GetFFmpegPath() (string, error) {
+
+	if err := exec.Command("ffmpeg", "-version").Run(); err == nil {
+		return "ffmpeg", nil
+	}
+
+	if err := exec.Command("bin/ffmpeg", "-version").Run(); err == nil {
+		return "bin/ffmpeg", nil
+	}
+
+	return "", errors.New("ffmpeg not found")
 }
