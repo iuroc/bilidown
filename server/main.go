@@ -12,6 +12,8 @@ import (
 	"os/exec"
 	"runtime"
 	"strconv"
+	"sync"
+	"time"
 
 	"github.com/getlantern/systray"
 	_ "github.com/mattn/go-sqlite3"
@@ -30,7 +32,7 @@ func onReady() {
 		log.Fatalln("请将 ffmpeg 安装到环境变量 PATH 中")
 	}
 
-	openBrowserItem := systray.AddMenuItem("进入软件", "进入软件")
+	openBrowserItem := systray.AddMenuItem("打开应用", "打开应用")
 	port := 8098
 	u := fmt.Sprintf("http://127.0.0.1:%d", port)
 	go func() {
@@ -54,11 +56,22 @@ func onReady() {
 	http.Handle("/", http.FileServer(http.Dir("static")))
 	http.Handle("/api/", http.StripPrefix("/api", router.API()))
 
-	fmt.Println(u)
-	err := http.ListenAndServe("127.0.0.1:"+strconv.Itoa(port), nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	go func() {
+		err := http.ListenAndServe("127.0.0.1:"+strconv.Itoa(port), nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+		wg.Done()
+	}()
+
+	time.Sleep(time.Second)
+
+	OpenBrowser(u)
+
+	wg.Wait()
 }
 
 func OpenBrowser(u string) error {
@@ -66,7 +79,7 @@ func OpenBrowser(u string) error {
 	switch runtime.GOOS {
 	case "windows":
 		cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", u)
-	case "darwin": // macOS
+	case "darwin":
 		cmd = exec.Command("open", u)
 	case "linux":
 		cmd = exec.Command("xdg-open", u)
