@@ -148,7 +148,7 @@ func (task *Task) MergeMedia(outputPath string, inputPaths ...string) error {
 	for _, path := range inputPaths {
 		inputs = append(inputs, "-i", path)
 	}
-	cmd := exec.Command("ffmpeg", append(inputs, "-c:v", "copy", "-c:a", "copy", "-progress", "pipe:1", outputPath)...)
+	cmd := exec.Command("ffmpeg", append(inputs, "-c:v", "copy", "-c:a", "copy", "-progress", "pipe:1", "-strict", "-2", outputPath)...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return err
