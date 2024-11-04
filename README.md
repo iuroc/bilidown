@@ -156,3 +156,4 @@ SESSDATA 存储在 SQLite，前端每次初始进入页面时，都从 SQLite �
 
 5. 还是不太能区分为 type 增加方法时，对 type 的引用应该用指针还是不用的区别。
 6. 前端增加一些 Loading 动画
+7. 注意非 Windows 的构建不要包含 exe 文件，这个看能不能在 goreleaser 里去配置，然后 Windows 版本也是可以生成 2 份，分别是带 ffmpeg 和不带的

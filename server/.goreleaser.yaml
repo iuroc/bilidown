@@ -43,7 +43,6 @@ archives:
       files:
           - static/**
           - bin/ffmpeg.exe
-
 changelog:
     sort: asc
     filters:
