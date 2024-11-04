@@ -27,7 +27,7 @@ func API() *http.ServeMux {
 
 // FolderPicker 调用资源管理器选择文件夹
 func FolderPicker(w http.ResponseWriter, r *http.Request) {
-	folderPath, err := dialog.Directory().Title("Select a directory").Browse()
+	folderPath, err := dialog.Directory().Title("您希望下载视频到哪个文件夹？").Browse()
 	if err != nil {
 		util.Res{Success: false, Message: err.Error()}.Write(w)
 		return
