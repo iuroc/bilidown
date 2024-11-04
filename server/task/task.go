@@ -153,11 +153,12 @@ func (task *Task) MergeMedia(outputPath string, inputPaths ...string) error {
 
 	ffmpegPath := "ffmpeg"
 
-	if runtime.GOOS == "windows" {
-		_, err := os.Stat("bin/ffmpeg.exe")
-		if !os.IsNotExist(err) {
-			ffmpegPath = "bin/ffmpeg.exe"
-		}
+	if _, err := os.Stat("bin/ffmpeg.exe"); !os.IsNotExist(err) {
+		ffmpegPath = "bin/ffmpeg"
+	} else if _, err := os.Stat("bin/ffmpeg"); !os.IsNotExist(err) {
+		ffmpegPath = "bin/ffmpeg"
+	} else {
+		return errors.New("ffmpeg not found")
 	}
 
 	cmd := exec.Command(ffmpegPath, append(inputs, "-c:v", "copy", "-c:a", "copy", "-progress", "pipe:1", "-strict", "-2", outputPath)...)
@@ -388,7 +389,7 @@ func GetTaskList(db *sql.DB, page int, pageSize int) ([]TaskInDB, error) {
 	return tasks, nil
 }
 
-// InitHistoryTask 初始化上一次程序退出时未完成的任务，将进度变为 error
+// InitHistoryTask 将上一次程序运行时未完成的任务进度全部变为 error
 func InitHistoryTask(db *sql.DB) error {
 	_, err := db.Exec(`UPDATE "task" SET "status" = 'error' WHERE "status" IN ('waiting', 'running')`)
 	return err

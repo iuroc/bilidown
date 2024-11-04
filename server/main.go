@@ -5,13 +5,13 @@ import (
 	"bilidown/task"
 	"bilidown/util"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
-	"strconv"
 	"sync"
 	"time"
 
@@ -20,25 +20,35 @@ import (
 )
 
 func main() {
+	if _, err := GetFFmpegPath(); err != nil {
+		fmt.Println("🚨 FFmpeg is missing. Install it from https://www.ffmpeg.org/download.html or place it in ./bin, then restart the application.")
+		var wg sync.WaitGroup
+		wg.Add(1)
+		wg.Wait()
+	}
 	systray.Run(onReady, nil)
 }
 
+const HTTP_PORT = 8098
+const HTTP_HOST = "127.0.0.1"
+
 func onReady() {
-	systray.SetIcon(getIcon())
+	if icon, err := getIcon(); err != nil {
+		log.Fatalln(err)
+	} else {
+		systray.SetIcon(icon)
+	}
+
 	systray.SetTitle("Bilidown 视频解析器")
 	systray.SetTooltip("Bilidown 视频解析器")
 
-	if !CheckFfmpegInstalled() {
-		log.Fatalln("请将 ffmpeg 安装到环境变量 PATH 中")
-	}
+	_url := fmt.Sprintf("http://%s:%d", HTTP_HOST, HTTP_PORT)
 
 	openBrowserItem := systray.AddMenuItem("打开应用", "打开应用")
-	port := 8098
-	u := fmt.Sprintf("http://127.0.0.1:%d", port)
 	go func() {
 		for {
 			<-openBrowserItem.ClickedCh
-			OpenBrowser(u)
+			OpenBrowser(_url)
 		}
 	}()
 
@@ -60,42 +70,38 @@ func onReady() {
 	wg.Add(1)
 
 	go func() {
-		err := http.ListenAndServe("127.0.0.1:"+strconv.Itoa(port), nil)
+		err := http.ListenAndServe(fmt.Sprintf("%s:%d", HTTP_HOST, HTTP_PORT), nil)
 		if err != nil {
 			log.Fatal(err)
 		}
 		wg.Done()
 	}()
 
-	time.Sleep(time.Second)
+	time.Sleep(time.Millisecond * 1000)
 
-	OpenBrowser(u)
+	OpenBrowser(_url)
 
 	wg.Wait()
 }
 
-func OpenBrowser(u string) error {
+func OpenBrowser(_url string) error {
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "windows":
-		cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", u)
+		cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", _url)
 	case "darwin":
-		cmd = exec.Command("open", u)
+		cmd = exec.Command("open", _url)
 	case "linux":
-		cmd = exec.Command("xdg-open", u)
+		cmd = exec.Command("xdg-open", _url)
 	default:
 		return fmt.Errorf("不支持的操作系统")
 	}
 	return cmd.Start()
 }
 
-func getIcon() []byte {
+func getIcon() ([]byte, error) {
 	// 读取 static/favicon.ico 文件
-	data, err := os.ReadFile("static/favicon.ico")
-	if err != nil {
-		log.Fatal(err)
-	}
-	return data
+	return os.ReadFile("static/favicon.ico")
 }
 
 // InitTables 初始化数据表
@@ -138,14 +144,17 @@ func InitTables(db *sql.DB) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
 }
 
-func CheckFfmpegInstalled() bool {
-	_, err := os.Stat("bin/ffmpeg.exe")
-	if runtime.GOOS == "windows" && !os.IsNotExist(err) {
-		return true
+func GetFFmpegPath() (string, error) {
+
+	if err := exec.Command("ffmpeg", "-version").Run(); err == nil {
+		return "ffmpeg", nil
 	}
-	err = exec.Command("ffmpeg", "-version").Run()
-	return err == nil
+
+	if err := exec.Command("bin/ffmpeg", "-version").Run(); err == nil {
+		return "bin/ffmpeg", nil
+	}
+
+	return "", errors.New("ffmpeg not found")
 }

@@ -22,6 +22,7 @@ func API() *http.ServeMux {
 	router.HandleFunc("/getActiveTask", GetActiveTask)
 	router.HandleFunc("/getTaskList", GetTaskList)
 	router.HandleFunc("/showFile", ShowFile)
+	router.HandleFunc("/getFields", GetFields)
 	return router
 }
 
@@ -40,4 +41,15 @@ func FolderPicker(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	util.Res{Success: true, Message: "选择成功", Data: folderPath}.Write(w)
+}
+
+func GetFields(w http.ResponseWriter, r *http.Request) {
+	db := util.GetDB()
+	defer db.Close()
+	fields, err := util.GetFields(db, "folder")
+	if err != nil {
+		util.Res{Success: false, Message: err.Error()}.Write(w)
+		return
+	}
+	util.Res{Success: true, Data: fields}.Write(w)
 }
