@@ -134,3 +134,12 @@ func TestGetSessdata(t *testing.T) {
 
 	fmt.Println(sessdata)
 }
+
+func TestGetPopularVideos(t *testing.T) {
+	client := bilibili.BiliClient{SESSDATA: TEST_SESSDATA}
+	videos, err := client.GetPopularVideos()
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Printf("%+v", videos)
+}

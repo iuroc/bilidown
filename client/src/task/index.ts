@@ -1,7 +1,7 @@
 import van, { State } from 'vanjs-core'
 import { Route, goto, now } from 'vanjs-router'
 import { checkLogin, GLOBAL_HAS_LOGIN, GLOBAL_HIDE_PAGE, ResJSON, VanComponent } from '../mixin'
-import { getActiveTask, getTaskList, showFile } from './data'
+import { deleteTask, getActiveTask, getTaskList, showFile } from './data'
 import { TaskInDB, TaskStatus } from '../work/type'
 import { LoadingBox } from '../view'
 
@@ -43,7 +43,7 @@ export class TaskRoute implements VanComponent {
                         _that.taskList.val.map(task => {
                             const filename = `${task.title} ${btoa(task.id.toString()).replace(/=/g, '')}.mp4`
                             return div({
-                                class: () => `list-group-item p-0 hstack user-select-none ${task.opening.val ? 'disabled' : ''}`,
+                                class: () => `list-group-item p-0 hstack user-select-none ${task.opening.val || task.statusState.val != 'done' ? 'disabled' : ''}`,
                             },
                                 div({
                                     class: 'vstack gap-2 list-group-item-action py-2 px-3',
@@ -57,17 +57,21 @@ export class TaskRoute implements VanComponent {
                                         }, 3000)
                                     }
                                 },
-                                    div({ class: '' }, () => task.opening.val ? '正在打开...' : filename),
+                                    div({
+                                        class: () => `${task.statusState.val == 'error' ? 'text-danger' : ''
+                                            } ${task.statusState.val == 'waiting' || task.statusState.val == 'running' ? 'text-primary' : ''}`
+                                    },
+                                        () => task.opening.val ? '正在打开...' : filename),
                                     div({ class: 'text-secondary small' },
                                         () => {
                                             if (task.statusState.val == 'waiting') return '等待下载'
                                             if (task.statusState.val == 'error') return '下载失败'
                                             if (task.videoProgress.val == 0) {
-                                                return '正在下载音频'
+                                                return `正在下载音频 (${(task.audioProgress.val * 100).toFixed(2)}%)`
                                             } else if (task.mergeProgress.val == 0) {
-                                                return '正在下载视频'
+                                                return `正在下载视频 (${(task.videoProgress.val * 100).toFixed(2)}%)`
                                             } else if (task.statusState.val == 'running') {
-                                                return '正在合并音视频'
+                                                return `正在合并音视频 (${(task.mergeProgress.val * 100).toFixed(2)}%)`
                                             } else {
                                                 return task.folder
                                             }
@@ -96,8 +100,19 @@ export class TaskRoute implements VanComponent {
                                 ),
                                 div({
                                     class: 'ps-3 pe-4',
+                                    hidden: task.statusState.val != 'done' || task.opening.val
                                 },
-                                    div({ class: 'delete-btn' },
+                                    div({
+                                        class: 'delete-btn', title: '删除视频',
+                                        onclick() {
+                                            if (!confirm('确定要删除该视频文件吗？')) return
+                                            deleteTask(task.id).then(() => {
+                                                _that.taskList.val = _that.taskList.val.filter(taskInDB => taskInDB.id != task.id)
+                                            }).catch(error => {
+                                                alert(error.message)
+                                            })
+                                        }
+                                    },
                                         _that.DeleteSVG()
                                     )
                                 )
@@ -127,9 +142,8 @@ export class TaskRoute implements VanComponent {
                     const refresh = async () => {
                         const activeTaskList = await getActiveTask()
                         if (!activeTaskList) return false
-                        setTimeout(() => {
-                            _that.loading.val = false
-                        }, 200)
+                        _that.loading.val = false
+
                         _that.taskList.val.forEach(taskInDB => {
                             activeTaskList.forEach(task => {
                                 if (taskInDB.id == task.id) {

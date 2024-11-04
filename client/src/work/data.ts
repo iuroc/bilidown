@@ -61,3 +61,9 @@ export const createTask = async (tasks: TaskInitData[]): Promise<ResJSON> => {
     if (!res.success) throw new Error(res.message)
     return res
 }
+
+export const getPopularVideoBvids = async (): Promise<string[]> => {
+    const res = await fetch('/api/getPopularVideos').then(res => res.json()) as ResJSON<string[]>
+    if (!res.success) throw new Error(res.message)
+    return res.data
+}

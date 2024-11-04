@@ -14,7 +14,11 @@ export const start = async (
         /** 调用来源 */
         from: 'click' | 'onfirst'
     }) => {
-    history.replaceState(null, '', `#/work/${option.idType}/${option.value}`)
+    // 如果初始载入路由时，路由参数不带有视频信息，则会随机选择一个热门视频
+    // 这种情况展示的解析结果，不应该同步修改路由参数，用户直接刷新网页，可以继续随机推荐不同的视频
+    // 而如果是单击按钮或者路由参数带有视频信息，那么实现的解析结果需要同步修改路由参数
+    if (!workRoute.isInitPopular.val)
+        history.replaceState(null, '', `#/work/${option.idType}/${option.value}`)
     workRoute.btnLoading.val = true
     workRoute.sectionTabsActiveIndex.val = 0
     if (option.idType === 'bv') {

@@ -29,6 +29,8 @@ func API() *http.ServeMux {
 	router.HandleFunc("/saveFields", SaveFields)
 	router.HandleFunc("/logout", Logout)
 	router.HandleFunc("/quit", Quit)
+	router.HandleFunc("/getPopularVideos", GetPopularVideos)
+	router.HandleFunc("/deleteTask", DeleteTask)
 	return router
 }
 

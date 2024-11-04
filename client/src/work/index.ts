@@ -8,6 +8,7 @@ import { ParseModalComp } from './view/parseModal'
 import InputBox from './view/inputBox'
 import { Modal } from 'bootstrap'
 import { LoadingBox } from '../view'
+import { getPopularVideoBvids } from './data'
 
 const { div } = van.tags
 
@@ -17,9 +18,7 @@ export class WorkRoute {
     urlInvalid = van.state(false)
     /** 仅作为类名字符串 */
     urlInvalidClass = van.derive(() => this.urlInvalid.val ? 'is-invalid' : '')
-    // urlValue = van.state('https://www.bilibili.com/video/BV1H2yfYQEnc/')
-    // urlValue = van.state('https://www.bilibili.com/bangumi/play/ep775787')
-    urlValue = van.state('https://www.bilibili.com/video/BV1LM411h7sZ/')
+    urlValue = van.state('')
     videoInfocardData = van.state<VideoParseResult>({
         title: '', description: '', cover: '', publishData: '', duration: 0,
         pages: [], owner: { face: '', mid: 0, name: '' },
@@ -47,6 +46,9 @@ export class WorkRoute {
 
     /** 页面初始加载的 loading 状态 */
     initLoading = van.state(true)
+
+    /** 是否是初始的热门推荐结果 */
+    isInitPopular = van.state(false)
 
     sectionTabsActiveIndex = van.state(0)
 
@@ -84,12 +86,18 @@ export class WorkRoute {
             },
             async onFirst() {
                 if (!await checkLogin()) return
-                const idType = this.args[0] as IDType || 'bv'
-                const value = this.args[1] || 'BV1LM411h7sZ'
-                if (!value) return goto('work'), _that.initLoading.val = false
+                let idType = this.args[0] as IDType
+                let value = this.args[1]
+                // if (!value) return goto('work'), _that.initLoading.val = false
+                if (!value) {
+                    _that.isInitPopular.val = true
+                    const popularBvids = await getPopularVideoBvids()
+                    idType = 'bv'
+                    value = popularBvids[Math.floor(Math.random() * popularBvids.length)]
+                }
                 if (idType == 'bv' && !value.match(/^BV1[a-zA-Z0-9]+$/)) return goto('work')
                 if ((idType == 'ep' || idType == 'ss') && !value.match(/^\d+$/)) return goto('work')
-                if (idType == 'bv') _that.urlValue.val = value
+                if (idType == 'bv' && !_that.isInitPopular.val) _that.urlValue.val = value
                 else if (idType == 'ep' || idType == 'ss') _that.urlValue.val = `${idType}${value}`
                 start(_that, {
                     idType,
@@ -101,6 +109,7 @@ export class WorkRoute {
                     _that.videoInfoCardMode.val = 'hide'
                 }).finally(() => {
                     _that.btnLoading.val = false
+                    _that.isInitPopular.val = false
                     setTimeout(() => {
                         _that.initLoading.val = false
                     }, 200)

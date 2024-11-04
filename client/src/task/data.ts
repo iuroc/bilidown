@@ -67,3 +67,8 @@ type ActiveTask = {
     /** 视频时长，秒 */
     duration: number
 }
+
+export const deleteTask = async (id: number) => {
+    const res = await fetch(`/api/deleteTask?id=${id}`).then(res => res.json()) as ResJSON
+    if (!res.success) throw new Error(res.message)
+}

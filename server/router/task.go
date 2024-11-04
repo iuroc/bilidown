@@ -5,6 +5,7 @@ import (
 	"bilidown/util"
 	"encoding/json"
 	"net/http"
+	"os"
 	"os/exec"
 	"runtime"
 	"strconv"
@@ -126,4 +127,35 @@ func ShowFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	util.Res{Success: true, Message: "操作成功"}.Write(w)
+}
+
+func DeleteTask(w http.ResponseWriter, r *http.Request) {
+	taskIDStr := r.FormValue("id")
+	taskID, err := strconv.Atoi(taskIDStr)
+	if err != nil {
+		util.Res{Success: false, Message: "参数错误"}.Write(w)
+		return
+	}
+	db := util.GetDB()
+	defer db.Close()
+
+	_task, err := task.GetTask(db, taskID)
+	if err != nil {
+		util.Res{Success: false, Message: err.Error()}.Write(w)
+		return
+	}
+
+	filePath := _task.FilePath()
+	err = os.Remove(filePath)
+	if err != nil {
+		util.Res{Success: false, Message: err.Error()}.Write(w)
+		return
+	}
+
+	err = task.DeleteTask(db, taskID)
+	if err != nil {
+		util.Res{Success: false, Message: err.Error()}.Write(w)
+		return
+	}
+	util.Res{Success: true, Message: "删除成功"}.Write(w)
 }

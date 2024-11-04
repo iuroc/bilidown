@@ -105,3 +105,18 @@ func GetPlayInfo(w http.ResponseWriter, r *http.Request) {
 	}
 	util.Res{Success: true, Message: "获取成功", Data: playInfo}.Write(w)
 }
+
+
+func GetPopularVideos(w http.ResponseWriter, r *http.Request) {
+	client := bilibili.BiliClient{}
+	videos, err := client.GetPopularVideos()
+	if err != nil {
+		util.Res{Success: false, Message: err.Error()}.Write(w)
+		return
+	}
+	bvids := make([]string, 0)
+	for _, v := range videos {
+		bvids = append(bvids, v.Bvid)
+	}
+	util.Res{Success: true, Message: "获取成功", Data: bvids}.Write(w)
+}

@@ -46,6 +46,14 @@ type TaskInDB struct {
 	CreateAt time.Time `json:"createAt"`
 }
 
+func (task *TaskInDB) FilePath() string {
+	return filepath.Join(task.Folder,
+		fmt.Sprintf("%s %s.mp4", task.Title,
+			strings.Replace(base64.StdEncoding.EncodeToString([]byte(strconv.FormatInt(task.ID, 10))), "=", "", -1),
+		),
+	)
+}
+
 // done | waiting | running | error
 type TaskStatus string
 
@@ -113,11 +121,7 @@ func (task *Task) Start() {
 	}
 	GlobalDownloadSem.Release()
 
-	outputPath := filepath.Join(task.Folder,
-		fmt.Sprintf("%s %s.mp4", task.Title,
-			strings.Replace(base64.StdEncoding.EncodeToString([]byte(strconv.FormatInt(task.ID, 10))), "=", "", -1),
-		),
-	)
+	outputPath := task.TaskInDB.FilePath()
 
 	videoPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".video")
 	audioPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".audio")
@@ -388,4 +392,41 @@ func GetTaskList(db *sql.DB, page int, pageSize int) ([]TaskInDB, error) {
 func InitHistoryTask(db *sql.DB) error {
 	_, err := db.Exec(`UPDATE "task" SET "status" = 'error' WHERE "status" IN ('waiting', 'running')`)
 	return err
+}
+
+func DeleteTask(db *sql.DB, taskID int) error {
+	_, err := db.Exec(`DELETE FROM "task" WHERE "id" = ?`, taskID)
+	return err
+}
+
+func GetTask(db *sql.DB, taskID int) (*TaskInDB, error) {
+	task := TaskInDB{}
+	createAt := ""
+
+	err := db.QueryRow(`SELECT
+		"id", "bvid", "cid", "format", "title",
+		"owner", "cover", "status", "folder", "create_at"
+	FROM "task" WHERE "id" = ?`,
+		taskID,
+	).Scan(
+		&task.ID,
+		&task.Bvid,
+		&task.Cid,
+		&task.Format,
+		&task.Title,
+		&task.Owner,
+		&task.Cover,
+		&task.Status,
+		&task.Folder,
+		&createAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	task.CreateAt, err = time.Parse("2006-01-02 15:04:05", createAt)
+	if err != nil {
+		return nil, err
+	}
+	return &task, nil
 }

@@ -92,3 +92,28 @@ func (client *BiliClient) GetPlayInfo(bvid string, cid int) (*PlayInfo, error) {
 	}
 	return &playInfo, nil
 }
+
+func (client *BiliClient) GetPopularVideos() ([]VideoInfo, error) {
+	response, err := client.SimpleGET("https://api.bilibili.com/x/web-interface/popular", nil)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+	body := BaseResV2{}
+	err = json.NewDecoder(response.Body).Decode(&body)
+	if err != nil {
+		return nil, err
+	}
+	if body.Code != 0 {
+		return nil, errors.New(body.Message)
+	}
+	data := struct {
+		List []VideoInfo `json:"list"`
+	}{}
+
+	err = json.Unmarshal(body.Data, &data)
+	if err != nil {
+		return nil, err
+	}
+	return data.List, nil
+}
