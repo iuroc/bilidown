@@ -54,7 +54,9 @@ const ParseButton = (parent: InputBoxComp, large: boolean, id: string = '') => {
                     goto('work')
                     workRoute.videoInfoCardMode.val = 'hide'
                 }).finally(() => {
-                    workRoute.btnLoading.val = false
+                    setTimeout(() => {
+                        workRoute.btnLoading.val = false
+                    }, 200)
                 })
             } catch (error) {
                 workRoute.urlInvalid.val = true
