@@ -6,6 +6,7 @@ import (
 	"bilidown/util"
 	"bufio"
 	"database/sql"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -16,6 +17,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -110,7 +112,9 @@ func (task *Task) Start() {
 	GlobalDownloadSem.Release()
 
 	outputPath := filepath.Join(task.Folder,
-		fmt.Sprintf("%s %s.mp4", util.FilterFileName(task.Title), common.RandomString(6)),
+		fmt.Sprintf("%s %s.mp4", util.FilterFileName(task.Title),
+			strings.Replace(base64.StdEncoding.EncodeToString([]byte(strconv.FormatInt(task.ID, 10))), "=", "", -1),
+		),
 	)
 
 	videoPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".video")

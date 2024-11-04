@@ -17,7 +17,8 @@ export class WorkRoute {
     /** 仅作为类名字符串 */
     urlInvalidClass = van.derive(() => this.urlInvalid.val ? 'is-invalid' : '')
     // urlValue = van.state('https://www.bilibili.com/video/BV1H2yfYQEnc/')
-    urlValue = van.state('https://www.bilibili.com/bangumi/play/ep775787')
+    // urlValue = van.state('https://www.bilibili.com/bangumi/play/ep775787')
+    urlValue = van.state('https://www.bilibili.com/video/BV1LM411h7sZ/')
     videoInfocardData = van.state<VideoParseResult>({
         title: '', description: '', cover: '', publishData: '', duration: 0,
         pages: [], owner: { face: '', mid: 0, name: '' },

@@ -35,6 +35,11 @@ export const getTaskList = async (page: number, pageSize: number): Promise<TaskI
     }
 }
 
+export const showFile = async (path: string) => {
+    const res = await fetch(`/api/showFile?filePath=${encodeURIComponent(path)}`).then(res => res.json()) as ResJSON
+    if (!res.success) throw new Error(res.message)
+}
+
 /** 用于刷新任务实时进度 */
 type ActiveTask = {
     bvid: string

@@ -1,5 +1,5 @@
 import van, { State } from 'vanjs-core'
-import { VanComponent } from '../../mixin'
+import { VanComponent, formatSeconds } from '../../mixin'
 import { PageInParseResult, PlayInfo, VideoFormat } from '../type'
 import { WorkRoute } from '..'
 import { createTask, getPlayInfo } from '../data'
@@ -126,7 +126,7 @@ export class ParseModalComp implements VanComponent {
                         info.page.part.trim(),
                         isVideoMode ? `[${owner}]` : '',
                         `[${info.info!.accept_description[info.formatIndex.val]}]`,
-                        `[${info.info!.dash.duration}]`
+                        `[${formatSeconds(info.info!.dash.duration)}]`
                     ]).filter(p => p).join(' '),
                 format: info.info!.accept_quality[info.formatIndex.val],
                 owner,

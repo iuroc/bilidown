@@ -5,6 +5,7 @@ import (
 	"bilidown/util"
 	"encoding/json"
 	"net/http"
+	"os/exec"
 	"strconv"
 )
 
@@ -90,4 +91,20 @@ func GetTaskList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	util.Res{Success: true, Message: "获取成功", Data: tasks}.Write(w)
+}
+
+// ShowFile 调用 Explorer 查看文件位置
+func ShowFile(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		util.Res{Success: false, Message: "参数错误"}.Write(w)
+		return
+	}
+	filePath := r.FormValue("filePath")
+	cmd := exec.Command("explorer.exe", "/select,", filePath)
+	err := cmd.Start()
+	if err != nil {
+		util.Res{Success: false, Message: err.Error()}.Write(w)
+		return
+	}
+	util.Res{Success: true, Message: "操作成功"}.Write(w)
 }
