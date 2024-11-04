@@ -3,11 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "dev": "concurrently \"pnpm --silent --prefix client dev\" \"cd server && air\" -raw",
-    "start": "cd server && bilidown",
-    "build": "pnpm --silent --prefix client build && cd server && go build"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
