@@ -52,4 +52,4 @@ goreleaser release --snapshot --clean
 
 ## 待优化部分
 
--   [ ] 文件名应包含 `bvid`，同 `bvid` 多 `cid` 的应包含序号
+-   [ ] 最终保存的文件名应该包含 `bvid`，如果存在多个 `cid` 的（多 P 视频），则应该包含序号，方便通过文件名定位到视频原始链接
