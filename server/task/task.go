@@ -312,27 +312,23 @@ func newProgressBar(total int64) *progressBar {
 
 // GetCurrentFolder 获取数据库中的下载保存路径，如果不存在则将默认路径保存到数据库
 func GetCurrentFolder(db *sql.DB) (string, error) {
-	var filepath string
-	err := db.QueryRow(`SELECT "value" FROM "field" WHERE "name" = 'download_folder'`).Scan(&filepath)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			folder, err := util.GetDefaultDownloadFolder()
-			if err != nil {
-				return "", err
-			}
-			err = os.MkdirAll(folder, os.ModePerm)
-			if err != nil {
-				return "", err
-			}
-			err = SaveDownloadFolder(db, folder)
-			if err != nil {
-				return "", err
-			}
-			return folder, nil
+	var folder string
+	err := db.QueryRow(`SELECT "value" FROM "field" WHERE "name" = 'download_folder'`).Scan(&folder)
+	if err != nil && err == sql.ErrNoRows {
+		folder, err = util.GetDefaultDownloadFolder()
+		if err != nil {
+			return "", err
 		}
+		err = SaveDownloadFolder(db, folder)
+		if err != nil {
+			return "", err
+		}
+	}
+	err = os.MkdirAll(folder, os.ModePerm)
+	if err != nil {
 		return "", err
 	}
-	return filepath, nil
+	return folder, nil
 }
 
 // SaveDownloadFolder 保存下载路径，不存在则自动创建

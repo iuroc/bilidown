@@ -43,10 +43,10 @@ export class TaskRoute implements VanComponent {
                         _that.taskList.val.map(task => {
                             const filename = `${task.title} ${btoa(task.id.toString()).replace(/=/g, '')}.mp4`
                             return div({
-                                class: () => `list-group-item p-0 hstack user-select-none ${task.opening.val || task.statusState.val != 'done' ? 'disabled' : ''}`,
+                                class: () => `list-group-item p-0 hstack user-select-none ${task.statusState.val != 'done' && task.statusState.val != 'error' || task.opening.val ? 'disabled' : ''}`,
                             },
                                 div({
-                                    class: 'vstack gap-2 list-group-item-action py-2 px-3',
+                                    class: 'vstack gap-2 py-2 px-3',
                                     style: `cursor: pointer;`,
                                     onclick() {
                                         if (task.statusState.val != 'done') return
@@ -100,7 +100,7 @@ export class TaskRoute implements VanComponent {
                                 ),
                                 div({
                                     class: 'ps-3 pe-4',
-                                    hidden: task.statusState.val != 'done' || task.opening.val
+                                    hidden: task.statusState.val != 'done' && task.statusState.val != 'error' || task.opening.val
                                 },
                                     div({
                                         class: 'delete-btn', title: '删除视频',

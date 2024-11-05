@@ -147,7 +147,7 @@ func DeleteTask(w http.ResponseWriter, r *http.Request) {
 
 	filePath := _task.FilePath()
 	err = os.Remove(filePath)
-	if err != nil {
+	if err != nil && !os.IsNotExist(err) {
 		util.Res{Success: false, Message: err.Error()}.Write(w)
 		return
 	}

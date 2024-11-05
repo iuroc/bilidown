@@ -10,6 +10,22 @@ const { a, button, div, input } = van.tags
 type Option = {
     workRoute: WorkRoute
 }
+
+const videoFormatMap: Record<VideoFormat, string> = {
+    127: "超高清 8K",
+    126: "杜比视界",
+    125: "真彩 HDR",
+    120: "超清 4K",
+    116: "高清 1080P60",
+    112: "高清 1080P+",
+    80: "高清 1080P",
+    74: "高清 720P60",
+    64: "高清 720P",
+    32: "清晰 480P",
+    16: "流畅 360P",
+    6: "极速 240P",
+}
+
 export class ParseModalComp implements VanComponent {
     element: HTMLElement
 
@@ -79,6 +95,7 @@ export class ParseModalComp implements VanComponent {
                 const controller = new AbortController()
                 this.abortControllers.push(controller)
                 const playInfo = await getPlayInfo(page.bvid, page.cid, controller)
+                playInfo.accept_quality = [...new Set(playInfo.dash.video.map(video => video.id))].sort((a, b) => b - a)
                 this.allPlayInfo.val = this.allPlayInfo.val.concat({
                     page,
                     info: playInfo,
@@ -117,7 +134,7 @@ export class ParseModalComp implements VanComponent {
                         info.page.part.trim(),
                         `[${info.page.bandge.trim()}]`,
                         `[${cardTitle.trim()}]`,
-                        `[${info.info!.accept_description[info.formatIndex.val]}]`,
+                        `[${videoFormatMap[info.info!.accept_quality[info.formatIndex.val]]}]`,
                         `[${info.info!.dash.duration}]`
                     ]
                     : [
@@ -125,7 +142,7 @@ export class ParseModalComp implements VanComponent {
                         this.option.workRoute.sectionPages.val.length == 1 ? '' : `[${info.page.bandge.trim()}]`,
                         info.page.part.trim(),
                         isVideoMode ? `[${owner}]` : '',
-                        `[${info.info!.accept_description[info.formatIndex.val]}]`,
+                        `[${videoFormatMap[info.info!.accept_quality[info.formatIndex.val]]}]`,
                         `[${formatSeconds(info.info!.dash.duration)}]`
                     ]).filter(p => p).join(' '),
                 format: info.info!.accept_quality[info.formatIndex.val],
@@ -179,18 +196,20 @@ export class ParseModalComp implements VanComponent {
                             ),
                             div({ class: 'dropdown' },
                                 div({ class: 'dropdown-toggle py-2 text-primary', 'data-bs-toggle': 'dropdown' },
-                                    () => info.info?.accept_description[info.formatIndex.val]
+                                    () => videoFormatMap[info.info!.accept_quality[info.formatIndex.val]]
                                 ),
-                                () => div({ class: 'dropdown-menu shadow' },
-                                    Array(info.info?.accept_description.length).fill(0).map((_, index) => {
-                                        return div({
-                                            class: () => `dropdown-item ${info.formatIndex.val == index ? 'active' : ''}`,
-                                            onclick() {
-                                                info.formatIndex.val = index
-                                            }
-                                        }, info.info?.accept_description[index])
-                                    })
-                                )
+                                () => {
+                                    return div({ class: 'dropdown-menu shadow' },
+                                        info.info!.accept_quality.map((formatID, index) => {
+                                            return div({
+                                                class: () => `dropdown-item ${info.formatIndex.val == index ? 'active' : ''}`,
+                                                onclick() {
+                                                    info.formatIndex.val = index
+                                                }
+                                            }, videoFormatMap[formatID as VideoFormat])
+                                        })
+                                    )
+                                }
                             )
                         )
                     )

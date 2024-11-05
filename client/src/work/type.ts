@@ -201,8 +201,8 @@ export type Episode = {
 
 export type VideoInfoCardMode = State<"video" | "season" | "hide">
 
-export type Media = {
-    id: number
+export type Media<Type = 'video' | 'audio'> = {
+    id: Type extends 'video' ? VideoFormat : number
     baseUrl: string
     backupUrl: string[]
     bandwidth: number
@@ -215,18 +215,18 @@ export type Media = {
 }
 
 export type PlayInfo = {
-    accept_description: string[]
+    // accept_description: string[]
     accept_quality: VideoFormat[]
-    support_formats: {
-        quality: number
-        format: string
-        new_description: string
-        codecs: string[]
-    }[]
+    // support_formats: {
+    //     quality: number
+    //     format: string
+    //     new_description: string
+    //     codecs: string[]
+    // }[]
     dash: {
         duration: number
-        video: Media[]
-        audio: Media[]
+        video: Media<'video'>[]
+        audio: Media<'audio'>[]
         flac: {
             audio: Media
         } | null
