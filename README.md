@@ -1,159 +1,23 @@
 # Bilidown
 
-> 哔哩哔哩视频解析下载工具
+哔哩哔哩视频解析下载工具，支持 8K 视频、Hi-Res 音频下载、批量解析，可扫码登录，常驻托盘。
 
-![](./docs/2024-11-04_124130.png)
+## 软件特色
 
-![](./docs/2024-11-04_123803.png)
+1. 前端采用 [Bootstrap](https://github.com/twbs/bootstrap) 和 [VanJS](https://github.com/vanjs-org/van) 构建，轻量美观
+2. 后端使用 Go 语言开发，数据库采用 SQlite，简化构建和部署过程
+3. 前端通过 [p-queue](https://github.com/sindresorhus/p-queue) 控制并发请求，加快批量解析速度
 
-## 开发环境
+## 特别感谢
 
-1. 将 `gcc` 命令配置到 `PATH` 环境变量
-2. 设置环境变量 `CGO_ENABLED=1`
-3. 执行下面的代码：
-
-    ```shell
-    go install github.com/air-verse/air@latest
-    npm install pnpm -g
-
-    cd server
-    go mod tidy
-
-    cd ../client
-    pnpm install
-    pnpm dev
-    ```
-
-## 编译运行
-
-```shell
-pnpm build
-pnpm start
-```
-
-## 功能规划
-
-1. 本地启动 HTTP 服务器，并将程序隐藏于托盘
-2. 启动时自动调用默认浏览器打开服务地址
-3. 主页面，进入时会校验二维码有效性，解析按钮按下时也会校验二维码有效性，如果二维码失效，则弹出登录窗口
-4. 使用 Nuxt 开发，尝试使用新的 UI 框架
-5. 主页面，放置地址输入框，右边一个解析按钮，支持解析下面几种链接：
-    1. 普通的 BV1 视频：https://www.bilibili.com/video/BV1NfxMedEUy/
-    2. HDR 视频：https://www.bilibili.com/video/BV1rp4y1e745/
-    3. 番剧：https://www.bilibili.com/video/BV1LZ4oe1EcR/ => 重定向到 => https://www.bilibili.com/bangumi/play/ep835909
-    4. 带分集的 BV1 视频：https://www.bilibili.com/video/BV1KX4y1V7sA/
-6. 主页面输入视频地址，点击解析，如果是单集的视频，直接呈现视频信息和下载界面，如果是多集的，就显示多集列表
-7. 组件列表
-    1. 分集列表
-    2. 单个视频详情卡片
-
-## 关键接口
-
-1. 根据 bvid 获取视频信息（包括基本信息和分集列表，含 bvid 和 cid）：https://api.bilibili.com/x/web-interface/view?bvid=（携带 Cookie）
-2. 根据 bvid 和 cid 获取视频播放地址：https://api.bilibili.com/x/player/wbi/playurl?bvid=&cid=&fnval=4048&fnver=0&fourk=1
-3. 根据 epid 获取番剧信息（包括基本信息和分集列表，含 bvid 和 cid）：https://api.bilibili.com/pgc/view/web/season?ep_id=
-
-## 功能规划（越往下越新）
-
-### 视频解析（/work）
-
-输入框和解析按钮，点击后下面呈现分集列表，如果是只有 1 项的，那就只显示 1 项，点击分集列表项，可以弹出模态框查看视频的详细信息，不管是当个还是批量，都默认全部选中分集结果，然后底部是【打包解析下载】按钮（单个结果时则显示【解析下载】），然后将下载任务以 JSON POST 的方式发给后端，后端向服务器创建一个下载任务，前端会询问（弹出窗口，选择下载到哪个文件夹），然后前端弹出提示，下载任务创建成功，创建任务时，后端向数据库插入任务记录，比如是批量解析的，其实不需要合并为一个组，只需要在批量解析下载时，选择一个统一的目录即可，而存储下载记录时，依然是分开来单个存储的（记录包括：bvid, cid, time 时间, status 进度, path 完整路径，视频标题、封面、下载时间、文件大小、分辨率、UP 主名称），后端 Go 在每次启动 HTTP 服务器时，都将未完成的数据库记录的进度改为失败，HTTP 服务器存活期间，Go 的临时的 Sync Map 数据是持续有效的，适合存储每个任务的实时下载进度，并供前端轮询。前端轮询时，Go 将 Sync Map 中未完成的（已经完成的记录应该等数据库进度更新为完成后就从 Map 删除）记录包括进度一起返回给前端。
-
-### 下载任务（/task）
-
-展示历史下载记录（包括视频标题、封面、下载时间、文件大小、分辨率、UP 主名称）
-
-参考文档：https://socialsisteryi.github.io/bilibili-API-collect/docs/video/videostream_url.html
-
-校验是否登录（携带 Cookie）：https://api.bilibili.com/x/space/myinfo
-
-## 功能规划
-
-SESSDATA 存储在 SQLite，前端每次初始进入页面时，都从 SQLite 请求一次 SESSDATA，后端校验 SESSDATA 有效性，如果无效，则通知前端获取登陆二维码进行登录，扫码登录完成后将 SESSDATA 汇报给后端，前端环境不存储 SESSDATA。
-
-## 数据库结构 `data.db`
-
-### field 字段表
-
--   `key` string
--   `value` string
-
-该表插入 SESSDATA.
-
-### task 任务表
-
--   `title` 视频标题，属于当前 cid
--   `bvid`
--   `cid`
--   `cover` 视频封面
--   `desc` 视频简介
--   `owner` UP 主名称
--   `owner_cover` UP 主头像
--   `create_time` 任务创建时间
--   `duration` 视频时常
--   `path` 保存的绝对路径
--   `status` 任务进度，done, waiting, running, error
-
-## 关于下载
-
-输入视频地址，点击解析按钮，显示详情卡片，如果有多集，底下出现分集标题列表。
-
-如果没有多集的，则同时获取视频的支持格式列表，下拉菜单选择后，底下有一个输入框，里面是保存路径，再下面是下载按钮“点击下载”
-
-保存路径中会显示默认的保存路径，如果路径为空，则下载按钮为灰色。
-
-可以点击边上按钮选择保存的文件夹。
-
-如果是多集的，显示分集标题列表，每项左边都有复选框，底下按钮是“解析选中项目”，点击后，
-按钮变为 loading 状态，并显示 m/n 进度，全部完成后，弹出模态框，是一个列表，里面是刚才选中的全部视频标题，
-
-以及标题右边是一个下拉框，里面包含了该分集视频支持的格式列表，列表的顶部支持为全部视频选择格式，这个下拉菜单的选项，
-则是从全部视频的合并结果来的，有效分集不一定支持，默认情况下，每一项都默认选中本身支持的最高质量，而如果是被顶部下拉菜单
-统一设置，则当分集本身不支持该格式时，选一个最近的格式进行降级。
-
-模态框底部是“开始下载”，会将全部视频的 bvid、cid、期望的格式 ID 发送给后端进行任务创建。
-
-## 等待更新
-
--   移动端的分享链接解析
-
-## 关于文件命名
-
-1. `[序号] 主标题 [分集标题，如果同主标题则省略] [发布者] [分辨率] [时长] 随机码`
-2. `长标题 [短标题] [主标题] [分辨率] [时长] 随机码`
-
-## 代码优化说明
-
-1. 把不必要的大写开头导出取消
-2. 保证 log.Fatal 只能在入口层调用，其余层都使用 err 返回值
-3. 适当调整函数封装，完善和修正注释内容
-4. 集中构建错误响应信息，如：
-
-    ```go
-    if r.Method != http.MethodPost {
-    	util.Res{Success: false, Message: "不支持的请求方法"}.Write(w)
-    	return
-    }
-    ```
-
-    改成：
-
-    ```go
-    if r.Method != http.MethodPost {
-    	errutil.write(w, errutil.MethodNotAllow)
-    	return
-    }
-    ```
-
-    ```go
-    package errutil
-
-    const (
-        MethodNotAllow = "不支持的请求方法"
-        ParamsError = "参数错误"
-    )
-    ```
-
-5. 还是不太能区分为 type 增加方法时，对 type 的引用应该用指针还是不用的区别。
-6. 前端增加一些 Loading 动画
-7. 注意非 Windows 的构建不要包含 exe 文件，这个看能不能在 goreleaser 里去配置，然后 Windows 版本也是可以生成 2 份，分别是带 ffmpeg 和不带的
+-   [bootstrap](https://github.com/twbs/bootstrap) - 前端开发必备的响应式框架，简化页面布局
+-   [van](https://github.com/vanjs-org/van) - 轻量级的前端框架，专注于构建高效应用
+-   [vite](https://github.com/vitejs/vite) - 快速的前端构建工具，基于 ES 模块开发
+-   [bilibili-API-collec](https://github.com/SocialSisterYi/bilibili-API-collect) - B 站 API 集合，支持多种操作接口
+-   [p-queue](https://github.com/sindresorhus/p-queue) - 支持并发限制的 JavaScript 队列处理库
+-   [vanjs-router](https://github.com/iuroc/vanjs-router) - 轻量级前端路由工具，适用于 Van.js 框架
+-   [uuid](https://www.npmjs.com/package/uuid) - 用于生成唯一标识符（UUID）的 JavaScript 库
+-   [systray](https://github.com/getlantern/systray) - 简单的跨平台系统托盘图标库，支持图标管理
+-   [go-sqlite3](https://github.com/mattn/go-sqlite3) - Go 语言的 SQLite3 数据库驱动，轻量高效
+-   [go-qrcode](https://github.com/skip2/go-qrcode) - 生成 QR 码的 Go 语言库，简单易用
+-   [dialog](https://github.com/sqweek/dialog) - 跨平台文件选择和对话框库，提供多种对话框
