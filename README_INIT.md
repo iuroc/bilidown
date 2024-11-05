@@ -1,4 +1,4 @@
-# 项目构建文档
+# 开发文档
 
 ## 开发环境搭建
 
@@ -49,3 +49,7 @@ goreleaser release --clean
 ```bash
 goreleaser release --snapshot --clean
 ```
+
+## 待优化部分
+
+-   [ ] 文件名应包含 `bvid`，同 `bvid` 多 `cid` 的应包含序号

@@ -8,6 +8,11 @@
 2. 后端使用 Go 语言开发，数据库采用 SQlite，简化构建和部署过程
 3. 前端通过 [p-queue](https://github.com/sindresorhus/p-queue) 控制并发请求，加快批量解析速度
 
+## 开发文档
+
+-   [开发环境搭建](./README_INIT.md#开发环境搭建)
+-   [待优化部分](./README_INIT.md#待优化部分)
+
 ## 特别感谢
 
 -   [bootstrap](https://github.com/twbs/bootstrap) - 前端开发必备的响应式框架，简化页面布局
