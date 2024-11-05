@@ -58,8 +58,10 @@ export class TaskRoute implements VanComponent {
                                     }
                                 },
                                     div({
-                                        class: () => `${task.statusState.val == 'error' ? 'text-danger' : ''
-                                            } ${task.statusState.val == 'waiting' || task.statusState.val == 'running' ? 'text-primary' : ''}`
+                                        class: () => `
+                                        ${task.statusState.val == 'error' ? 'text-danger' : ''}
+                                        ${task.statusState.val == 'waiting' || task.statusState.val == 'running'
+                                                ? 'text-primary' : ''}`
                                     },
                                         () => task.opening.val ? '正在打开...' : filename),
                                     div({ class: 'text-secondary small' },
@@ -80,7 +82,7 @@ export class TaskRoute implements VanComponent {
                                     div({
                                         class: `progress`,
                                         style: `height: 5px`,
-                                        hidden: () => task.statusState.val == 'done'
+                                        hidden: () => task.statusState.val == 'done' || task.statusState.val == 'error'
                                     },
                                         div({
                                             class: () => `progress-bar progress-bar-striped progress-bar-animated bg-${(() => {
@@ -135,7 +137,7 @@ export class TaskRoute implements VanComponent {
                         audioProgress: van.state(1),
                         videoProgress: van.state(1),
                         mergeProgress: van.state(1),
-                        statusState: van.state('done'),
+                        statusState: van.state(task.status),
                         opening: van.state(false)
                     }))
 
