@@ -319,10 +319,15 @@ func GetCurrentFolder(db *sql.DB) (string, error) {
 		if err != nil {
 			return "", err
 		}
+		err = os.MkdirAll(folder, os.ModePerm)
+		if err != nil {
+			return "", err
+		}
 		err = SaveDownloadFolder(db, folder)
 		if err != nil {
 			return "", err
 		}
+		return folder, nil
 	}
 	err = os.MkdirAll(folder, os.ModePerm)
 	if err != nil {

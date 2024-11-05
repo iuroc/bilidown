@@ -47,7 +47,7 @@ func onReady() {
 	go func() {
 		for {
 			<-openBrowserItem.ClickedCh
-			OpenBrowser(_url)
+			OpenBrowser(fmt.Sprintf("%s?_=%d", _url, time.Now().UnixNano()))
 		}
 	}()
 
@@ -78,7 +78,7 @@ func onReady() {
 
 	time.Sleep(time.Millisecond * 1000)
 
-	OpenBrowser(_url)
+	OpenBrowser(fmt.Sprintf("%s?_=%d", _url, time.Now().UnixNano()))
 
 	wg.Wait()
 }
@@ -144,4 +144,3 @@ func InitTables(db *sql.DB) {
 		log.Fatalln(err)
 	}
 }
-

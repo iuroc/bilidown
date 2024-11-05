@@ -77,7 +77,7 @@ export default () => {
                         clearTimeout(statusTimer)
                         GLOBAL_HAS_LOGIN.val = true
                         const url = new URL(window.location.href)
-                        url.hash = '/work'
+                        url.hash = ''
                         window.location.href = url.toString()
                     } else {
                         qrStatusMessage.val = status.message
