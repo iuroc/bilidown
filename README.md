@@ -21,3 +21,7 @@
 -   [go-sqlite3](https://github.com/mattn/go-sqlite3) - Go 语言的 SQLite3 数据库驱动，轻量高效
 -   [go-qrcode](https://github.com/skip2/go-qrcode) - 生成 QR 码的 Go 语言库，简单易用
 -   [dialog](https://github.com/sqweek/dialog) - 跨平台文件选择和对话框库，提供多种对话框
+
+## 软件界面
+
+![](./docs/2024-11-05_090604.png)
