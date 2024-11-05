@@ -108,7 +108,15 @@ func GetPlayInfo(w http.ResponseWriter, r *http.Request) {
 
 
 func GetPopularVideos(w http.ResponseWriter, r *http.Request) {
-	client := bilibili.BiliClient{}
+	db := util.GetDB()
+	defer db.Close()
+	sessdata, err := bilibili.GetSessdata(db)
+	if err != nil || sessdata == "" {
+		util.Res{Success: false, Message: "未登录"}.Write(w)
+		return
+	}
+
+	client := bilibili.BiliClient{SESSDATA: sessdata}
 	videos, err := client.GetPopularVideos()
 	if err != nil {
 		util.Res{Success: false, Message: err.Error()}.Write(w)

@@ -95,6 +95,9 @@ func (client *BiliClient) GetPlayInfo(bvid string, cid int) (*PlayInfo, error) {
 }
 
 func (client *BiliClient) GetPopularVideos() ([]VideoInfo, error) {
+	if client.SESSDATA == "" {
+		return nil, errors.New("SESSDATA 不能为空")
+	}
 	urls := []string{
 		"https://api.bilibili.com/x/web-interface/popular",
 		"https://api.bilibili.com/x/web-interface/popular/precious",
@@ -106,6 +109,7 @@ func (client *BiliClient) GetPopularVideos() ([]VideoInfo, error) {
 	}
 	defer response.Body.Close()
 	body := BaseResV2{}
+
 	err = json.NewDecoder(response.Body).Decode(&body)
 	if err != nil {
 		return nil, err
