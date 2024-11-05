@@ -114,32 +114,33 @@ export class ParseModalComp implements VanComponent {
 
     async download() {
         const selectedPlayInfos = this.allPlayInfo.val.filter(info => info.selected.val)
+        const workRoute = this.option.workRoute
         // 需要传递给服务器，需要创建下载任务的数据列表
         createTask(selectedPlayInfos.map(info => {
             const badgeNotNum = !info.page.bandge.match(/^\d+$/)
-            const isVideoMode = this.option.workRoute.videoInfoCardMode.val == 'video'
-            const cardTitle = this.option.workRoute.videoInfocardData.val.title
-            const owner = this.option.workRoute.videoInfocardData.val.staff.length > 0
-                ? this.option.workRoute.videoInfocardData.val.staff[0].split("[")[0].trim()
-                : this.option.workRoute.videoInfocardData.val.owner.name.trim()
+            const isVideoMode = workRoute.videoInfoCardMode.val == 'video'
+            const cardTitle = workRoute.videoInfocardData.val.title
+            const owner = workRoute.videoInfocardData.val.staff.length > 0
+                ? workRoute.videoInfocardData.val.staff[0].split("[")[0].trim()
+                : workRoute.videoInfocardData.val.owner.name.trim()
             const activeVideoInfo = getActiveFormatVideo(info.info!, info.info!.accept_quality[info.formatIndex.val])
-            const pagesLength = this.option.workRoute.videoInfocardData.val.pages.length
+            const pagesLength = workRoute.videoInfocardData.val.pages.length
 
             return ({
                 bvid: info.page.bvid,
                 cid: info.page.cid,
-                cover: this.option.workRoute.videoInfocardData.val.cover,
+                cover: workRoute.videoInfocardData.val.cover,
                 title: (badgeNotNum
                     ? [
                         info.page.part.trim(),
                         `[${info.page.bandge.trim()}]`,
                         `[${cardTitle.trim()}]`,
                         `[${videoFormatMap[info.info!.accept_quality[info.formatIndex.val]]}]`,
-                        `[${info.info!.dash.duration}]`
+                        `[${formatSeconds(info.info!.dash.duration)}]`
                     ]
                     : [
-                        pagesLength == 1 ? '' : `[${cardTitle.trim()}]`,
-                        this.option.workRoute.sectionPages.val.length == 1 ? '' : `[${info.page.bandge.trim()}]`,
+                        pagesLength == 1 ? workRoute.allSection.val[workRoute.sectionTabsActiveIndex.val].title : `[${cardTitle.trim()}]`,
+                        workRoute.sectionPages.val.length == 1 ? '' : `[${info.page.bandge.trim()}]`,
                         info.page.part.trim(),
                         isVideoMode ? `[${owner}]` : '',
                         `[${videoFormatMap[info.info!.accept_quality[info.formatIndex.val]]}]`,
@@ -152,7 +153,7 @@ export class ParseModalComp implements VanComponent {
                 ...activeVideoInfo
             })
         })).then(() => {
-            this.option.workRoute.parseModal.hide()
+            workRoute.parseModal.hide()
         }).catch(error => {
             alert(error.message)
         })

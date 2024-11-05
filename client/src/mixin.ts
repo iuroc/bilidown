@@ -60,17 +60,10 @@ export const formatSeconds = (seconds: number) => {
     const minutes = Math.floor((seconds % 3600) / 60)
     const secs = seconds % 60
 
-    // 格式化为两位数
-    const formattedTime = hours > 0
-        ? [
-            String(hours).padStart(2, '0'),
-            String(minutes).padStart(2, '0'),
-            String(secs).padStart(2, '0')
-        ].join('-')
-        : [
-            String(minutes).padStart(2, '0'),
-            String(secs).padStart(2, '0')
-        ].join('-')
+    let str = ''
+    if (hours > 0) str += `${hours}时`
+    if (minutes > 0) str += `${minutes}分`
+    if (secs > 0) str += `${secs}秒`
 
-    return formattedTime
+    return str
 }
