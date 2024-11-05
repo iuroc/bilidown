@@ -142,7 +142,9 @@ export class TaskRoute implements VanComponent {
                     const refresh = async () => {
                         const activeTaskList = await getActiveTask()
                         if (!activeTaskList) return false
-                        _that.loading.val = false
+                        setTimeout(() => {
+                            _that.loading.val = false
+                        }, 200)
 
                         _that.taskList.val.forEach(taskInDB => {
                             activeTaskList.forEach(task => {

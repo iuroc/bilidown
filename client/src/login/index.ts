@@ -77,6 +77,7 @@ export default () => {
                         clearTimeout(statusTimer)
                         GLOBAL_HAS_LOGIN.val = true
                         goto('work')
+                        location.reload()
                     } else {
                         qrStatusMessage.val = status.message
                     }

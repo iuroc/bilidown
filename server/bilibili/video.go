@@ -3,6 +3,7 @@ package bilibili
 import (
 	"encoding/json"
 	"errors"
+	"math/rand"
 	"strconv"
 )
 
@@ -94,7 +95,12 @@ func (client *BiliClient) GetPlayInfo(bvid string, cid int) (*PlayInfo, error) {
 }
 
 func (client *BiliClient) GetPopularVideos() ([]VideoInfo, error) {
-	response, err := client.SimpleGET("https://api.bilibili.com/x/web-interface/popular", nil)
+	urls := []string{
+		"https://api.bilibili.com/x/web-interface/popular",
+		"https://api.bilibili.com/x/web-interface/popular/precious",
+		"https://api.bilibili.com/x/web-interface/ranking/v2",
+	}
+	response, err := client.SimpleGET(urls[rand.Intn(len(urls))], nil)
 	if err != nil {
 		return nil, err
 	}
