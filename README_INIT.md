@@ -32,6 +32,11 @@ go run main.go
 
 ## 构建发布
 
+```bash
+# 安装 goreleaser
+go install github.com/goreleaser/goreleaser/v2@latest
+```
+
 ### 1. 构建发布版本
 
 ```bash
