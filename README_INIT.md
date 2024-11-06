@@ -55,6 +55,15 @@ goreleaser release --clean
 goreleaser release --snapshot --clean
 ```
 
+### MacOS 版本构建
+
+1. MacOS 用户可修改 `.goreleaser.yaml` 的 `builds -> goos`，增加 `darwin` 字段，然后执行上面的构建过程
+2. Windows 平台可以在 WSL 中安装 [XGO](https://github.com/techknowlogick/xgo)，在 `server` 目录执行 `xgo -targets=darwin/arm64,darwin/amd64 .` 得到 Darwin 平台构建文件
+
+### Linux 版本构建
+
+目前测试实现在 Linux 中，直接在 `server` 目录执行 `go build` 得到构建文件，并通过 `xvfb-run ./bilidown` 来运行。
+
 ## 待优化部分
 
 -   [ ] 最终保存的文件名应该包含 `bvid`，如果存在多个 `cid` 的（多 P 视频），则应该包含序号，方便通过文件名定位到视频原始链接
