@@ -37,7 +37,7 @@ go run main.go
 go install github.com/goreleaser/goreleaser/v2@latest
 ```
 
-### 1. 构建发布版本
+### 1. 构建发布版本（Windows 平台）
 
 ```bash
 # 构建前端
@@ -49,7 +49,7 @@ cd ../server
 goreleaser release --clean
 ```
 
-### 2. 仅构建不发布
+### 2. 仅构建不发布（Windows 平台）
 
 ```bash
 goreleaser release --snapshot --clean
