@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/getlantern/systray"
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 func main() {
@@ -38,12 +38,12 @@ func onReady() {
 		systray.SetIcon(icon)
 	}
 
-	systray.SetTitle("Bilidown 视频解析器")
-	systray.SetTooltip("Bilidown 视频解析器")
+	systray.SetTitle(fmt.Sprintf("Bilidown 视频解析器 (:%d)", HTTP_PORT))
+	systray.SetTooltip(fmt.Sprintf("Bilidown 视频解析器 (:%d)", HTTP_PORT))
 
 	_url := fmt.Sprintf("http://%s:%d", HTTP_HOST, HTTP_PORT)
 
-	openBrowserItem := systray.AddMenuItem("打开应用", "打开应用")
+	openBrowserItem := systray.AddMenuItem("打开应用 [open]", "打开应用 [open]")
 	go func() {
 		for {
 			<-openBrowserItem.ClickedCh
@@ -51,7 +51,15 @@ func onReady() {
 		}
 	}()
 
-	exitItem := systray.AddMenuItem("退出应用", "退出应用")
+	aboutItem := systray.AddMenuItem("项目主页 [github]", "项目主页 [github]")
+	go func() {
+		for {
+			<-aboutItem.ClickedCh
+			OpenBrowser("https://github.com/iuroc/bilidown")
+		}
+	}()
+
+	exitItem := systray.AddMenuItem("退出应用 [quit]", "退出应用 [quit]")
 	go func() {
 		<-exitItem.ClickedCh
 		systray.Quit()

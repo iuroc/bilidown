@@ -17,13 +17,9 @@ before:
 
 builds:
     - env:
-          - CGO_ENABLED=1
+          - CGO_ENABLED=0
       goos:
           - windows
-          # - darwin
-      goarch:
-          - amd64
-          # - 386
       ldflags:
           - -s -w -H windowsgui
 archives:

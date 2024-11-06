@@ -42,7 +42,7 @@ func GetDB(path ...string) *sql.DB {
 	} else {
 		pathStr = path[0]
 	}
-	db, err := sql.Open("sqlite3", pathStr)
+	db, err := sql.Open("sqlite", pathStr)
 	if err != nil {
 		log.Fatalln(err)
 	}
