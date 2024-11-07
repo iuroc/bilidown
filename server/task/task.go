@@ -16,11 +16,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strconv"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 )
 
