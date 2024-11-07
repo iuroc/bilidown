@@ -38,7 +38,7 @@ func onReady() {
 		systray.SetIcon(icon)
 	}
 
-	systray.SetTitle(fmt.Sprintf("Bilidown 视频解析器 (:%d)", HTTP_PORT))
+	systray.SetTitle("Bilidown")
 	systray.SetTooltip(fmt.Sprintf("Bilidown 视频解析器 (:%d)", HTTP_PORT))
 
 	_url := fmt.Sprintf("http://%s:%d", HTTP_HOST, HTTP_PORT)
