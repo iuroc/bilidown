@@ -166,12 +166,6 @@ func (task *Task) MergeMedia(outputPath string, inputPaths ...string) error {
 		return err
 	}
 
-	if runtime.GOOS == "windows" {
-		cmd.SysProcAttr = &syscall.SysProcAttr{
-			HideWindow: true,
-		}
-	}
-
 	if err := cmd.Start(); err != nil {
 		return err
 	}
