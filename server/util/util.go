@@ -5,17 +5,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strconv"
-	"strings"
-	"time"
 )
 
 // 统一的 JSON 响应结构
@@ -80,32 +76,18 @@ func IsValidFormatCode(format common.MediaFormat) bool {
 	return false
 }
 
-// FilterFileName 过滤文件名特殊字符
+// FilterFileName 过滤字符串中的特殊字符，使其允许作为文件名。
 func FilterFileName(fileName string) string {
 	return regexp.MustCompile(`[\\/:*?"<>|\n]`).ReplaceAllString(fileName, "")
 }
 
-func GenerateRandomUserAgent() string {
-	rand.NewSource(time.Now().UnixNano())
-	firstLetter := string(rune(rand.Intn(26) + 'A'))
-	lettersLength := rand.Intn(3) + 4
-	var sb strings.Builder
-	for i := 0; i < lettersLength; i++ {
-		sb.WriteByte(byte(rand.Intn(26) + 'a'))
-	}
-	version := fmt.Sprintf("%d.%d.%d", rand.Intn(10), rand.Intn(10), rand.Intn(10))
-	return fmt.Sprintf("%s%s/%s", firstLetter, sb.String(), version)
-}
-
+// GetFFmpegPath 获取可用的 FFmpeg 执行路径。
 func GetFFmpegPath() (string, error) {
-
 	if err := exec.Command("ffmpeg", "-version").Run(); err == nil {
 		return "ffmpeg", nil
 	}
-
 	if err := exec.Command("bin/ffmpeg", "-version").Run(); err == nil {
 		return "bin/ffmpeg", nil
 	}
-
 	return "", errors.New("ffmpeg not found")
 }

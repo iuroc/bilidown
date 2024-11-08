@@ -2,7 +2,6 @@ package util_test
 
 import (
 	"bilidown/common"
-	"bilidown/util"
 	"testing"
 )
 
@@ -13,12 +12,5 @@ func TestRandomString(t *testing.T) {
 			t.Log(str)
 		}
 		t.Log("\n")
-	}
-}
-
-func TestGenerateRandomUserAgent(t *testing.T) {
-	for i := 0; i < 10; i++ {
-		ua := util.GenerateRandomUserAgent()
-		t.Log(ua)
 	}
 }

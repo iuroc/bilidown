@@ -19,13 +19,18 @@ import (
 )
 
 func main() {
+	checkFFmpeg()
+	systray.Run(onReady, nil)
+}
+
+// checkFFmpeg 检测 ffmpeg 的安装情况，如果未安装则打印提示信息。
+func checkFFmpeg() {
 	if _, err := util.GetFFmpegPath(); err != nil {
 		fmt.Println("🚨 FFmpeg is missing. Install it from https://www.ffmpeg.org/download.html or place it in ./bin, then restart the application.")
 		var wg sync.WaitGroup
 		wg.Add(1)
 		wg.Wait()
 	}
-	systray.Run(onReady, nil)
 }
 
 const HTTP_PORT = 8098
