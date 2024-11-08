@@ -16,4 +16,5 @@ export const saveFields = async (fields: [string, string][]) => {
         }
     }).then(res => res.json()) as ResJSON
     if (!res.success) throw new Error(res.message)
+    return res.message
 }

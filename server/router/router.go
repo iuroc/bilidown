@@ -1,14 +1,11 @@
 package router
 
 import (
-	"bilidown/task"
 	"bilidown/util"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
-
-	"github.com/sqweek/dialog"
 )
 
 func API() *http.ServeMux {
@@ -20,7 +17,6 @@ func API() *http.ServeMux {
 	router.HandleFunc("/getQRStatus", GetQRStatus)
 	router.HandleFunc("/checkLogin", CheckLogin)
 	router.HandleFunc("/getPlayInfo", GetPlayInfo)
-	router.HandleFunc("/folderPicker", FolderPicker)
 	router.HandleFunc("/createTask", CreateTask)
 	router.HandleFunc("/getActiveTask", GetActiveTask)
 	router.HandleFunc("/getTaskList", GetTaskList)
@@ -39,23 +35,6 @@ func Quit(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		os.Exit(0)
 	}()
-}
-
-// FolderPicker 调用资源管理器选择文件夹
-func FolderPicker(w http.ResponseWriter, r *http.Request) {
-	folderPath, err := dialog.Directory().Title("您希望下载视频到哪个文件夹？").Browse()
-	if err != nil {
-		util.Res{Success: false, Message: err.Error()}.Write(w)
-		return
-	}
-	db := util.GetDB()
-	defer db.Close()
-	err = task.SaveDownloadFolder(db, folderPath)
-	if err != nil {
-		util.Res{Success: false, Message: err.Error()}.Write(w)
-		return
-	}
-	util.Res{Success: true, Message: "选择成功", Data: folderPath}.Write(w)
 }
 
 func GetFields(w http.ResponseWriter, r *http.Request) {
@@ -97,7 +76,12 @@ func SaveFields(w http.ResponseWriter, r *http.Request) {
 
 		if d[0] == "download_folder" {
 			if _, err := os.Stat(d[1]); os.IsNotExist(err) {
-				util.Res{Success: false, Message: fmt.Sprintf("文件夹 %s 不存在", d[1])}.Write(w)
+				if err := os.MkdirAll(d[1], os.ModePerm); err != nil {
+					util.Res{Success: false, Message: fmt.Sprintf("目录创建失败：%s", d[1])}.Write(w)
+					return
+				}
+			} else if err != nil {
+				util.Res{Success: false, Message: fmt.Sprintf("路径设置失败：%v", err)}.Write(w)
 				return
 			}
 		}
