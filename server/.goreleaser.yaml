@@ -28,7 +28,7 @@ builds:
           - -s -w
           - >-
               {{- if eq .Os "windows" }}-H windowsgui{{- end }}
-    - id: _
+    - id: bilidown_l
       goos:
           - linux
       goarch:
