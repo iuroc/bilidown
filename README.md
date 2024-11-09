@@ -14,9 +14,13 @@
 2. 后端使用 Go 语言开发，数据库采用 SQlite，简化构建和部署过程
 3. 前端通过 [p-queue](https://github.com/sindresorhus/p-queue) 控制并发请求，加快批量解析速度
 
+## 其他说明
+
+-   本程序不支持也不建议 HTTP 代理，直接使用国内网络访问能提升批量解析的成功率和稳定性。
+
 ## 开发文档
 
--   [开发环境搭建](./README_INIT.md#开发环境搭建)
+-   [打包流程](./README_INIT.md#打包流程)
 -   [待优化部分](./README_INIT.md#待优化部分)
 
 ## 特别感谢
