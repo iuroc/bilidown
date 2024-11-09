@@ -32,7 +32,7 @@
 3. 执行命令开始构建
 
     ```shell
-    goreleaser build --clean
+    goreleaser release --snapshot --clean
     ```
 
 ## 待优化部分

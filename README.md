@@ -2,6 +2,12 @@
 
 哔哩哔哩视频解析下载工具，支持 8K 视频、Hi-Res 音频、杜比视界下载、批量解析，可扫码登录，常驻托盘。
 
+## 使用说明
+
+1. 从 [Releases](https://github.com/iuroc/bilidown/releases) 下载适合您系统版本的安装包
+2. 非 Windows 系统，请先安装 [FFmpeg 工具](https://www.ffmpeg.org/)
+3. 将安装包解压后执行即可
+
 ## 软件特色
 
 1. 前端采用 [Bootstrap](https://github.com/twbs/bootstrap) 和 [VanJS](https://github.com/vanjs-org/van) 构建，轻量美观
