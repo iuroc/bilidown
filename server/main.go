@@ -82,6 +82,7 @@ func onReady() {
 	wg.Add(1)
 
 	go func() {
+		fmt.Println(_url)
 		err := http.ListenAndServe(fmt.Sprintf("%s:%d", HTTP_HOST, HTTP_PORT), nil)
 		if err != nil {
 			log.Fatal(err)
