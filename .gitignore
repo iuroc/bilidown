@@ -1,6 +1,6 @@
 node_modules/
 dist/
-server/tmp/
+tmp/
 server/static/
 *.db
 *.exe
