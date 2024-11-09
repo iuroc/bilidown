@@ -49,7 +49,8 @@ archives:
             format: zip
       files:
           - static/**
-          - bin/ffmpeg.exe
+          - >-
+              {{- if eq .Os "windows" }}bin/ffmpeg.exe{{- end }}
 changelog:
     sort: asc
     filters:
