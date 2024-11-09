@@ -34,7 +34,7 @@ func checkFFmpeg() {
 }
 
 const HTTP_PORT = 8098
-const HTTP_HOST = "127.0.0.1"
+const HTTP_HOST = ""
 
 func onReady() {
 	if icon, err := getIcon(); err != nil {
