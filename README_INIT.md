@@ -29,7 +29,8 @@
 
 1. 构建环境：Ubuntu amd64 24.04
 2. 安装 [`osxcross`](https://github.com/tpoechtrager/osxcross) 和 [`goreleaser`](https://goreleaser.com/install/)
-3. 执行命令开始构建
+3. 将 [`ffmpeg.exe`](https://github.com/iuroc/bilidown/releases/download/v1.0.3/ffmpeg.exe) 放入 `server/bin` 目录
+4. 执行命令开始构建
 
     ```shell
     goreleaser release --snapshot --clean
