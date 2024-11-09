@@ -16,19 +16,22 @@ before:
         - go generate ./...
 
 builds:
-    - env:
+    - id: bilidown_windows
+      env:
           - CGO_ENABLED=1
-          - >-
-              {{- if eq .Os "darwin" }}CC=o64-clang{{- end }}
       goos:
           - windows
+      ldflags:
+          - -s -w -H windowsgui
+    - id: bilidown_darwin
+      env:
+          - CGO_ENABLED=1
+          - CC=o64-clang
+      goos:
           - darwin
-      goarch:
       ldflags:
           - -s -w
-          - >-
-              {{- if eq .Os "windows" }}-H windowsgui{{- end }}
-    - id: bilidown_l
+    - id: bilidown_linux
       goos:
           - linux
       goarch:
@@ -38,7 +41,6 @@ archives:
       # this name template makes the OS and Arch compatible with the results of `uname`.
       name_template: >-
           {{ .ProjectName }}_
-          {{- title .Os }}_
           {{- if eq .Arch "amd64" }}x86_64
           {{- else if eq .Arch "386" }}i386
           {{- else }}{{ .Arch }}{{ end }}
