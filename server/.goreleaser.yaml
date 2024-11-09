@@ -32,10 +32,15 @@ builds:
       ldflags:
           - -s -w
     - id: bilidown_linux
+      env:
+          - CGO_ENABLED=1
+          - >-
+              {{- if eq .Arch "arm64" }}CC=aarch64-linux-gnu-gcc{{ end }}
       goos:
           - linux
       goarch:
           - amd64
+          - arm64
 archives:
     - format: tar.gz
       # this name template makes the OS and Arch compatible with the results of `uname`.
