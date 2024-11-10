@@ -1,7 +1,7 @@
 package res_error
 
 import (
-	"bilidown/server/util"
+	"bilidown/util"
 	"net/http"
 )
 

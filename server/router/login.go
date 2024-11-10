@@ -1,8 +1,8 @@
 package router
 
 import (
-	"bilidown/server/bilibili"
-	"bilidown/server/util"
+	"bilidown/bilibili"
+	"bilidown/util"
 	"encoding/base64"
 	"net/http"
 

@@ -1,8 +1,8 @@
 package router
 
 import (
-	"bilidown/server/task"
-	"bilidown/server/util"
+	"bilidown/task"
+	"bilidown/util"
 	"encoding/json"
 	"fmt"
 	"net/http"

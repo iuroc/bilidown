@@ -1,8 +1,8 @@
 package bilibili_test
 
 import (
-	"bilidown/server/bilibili"
-	"bilidown/server/util"
+	"bilidown/bilibili"
+	"bilidown/util"
 	"encoding/json"
 	"fmt"
 	"testing"

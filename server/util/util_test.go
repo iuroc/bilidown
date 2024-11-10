@@ -1,7 +1,7 @@
 package util_test
 
 import (
-	"bilidown/server/common"
+	"bilidown/common"
 	"testing"
 )
 
