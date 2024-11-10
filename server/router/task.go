@@ -27,7 +27,7 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 	db := util.MustGetDB()
 	defer db.Close()
 	for _, item := range body {
-		if !util.CheckBVID(item.Bvid) {
+		if !util.CheckBvidFormat(item.Bvid) {
 			util.Res{Success: false, Message: "bvid 格式错误"}.Write(w)
 			return
 		}

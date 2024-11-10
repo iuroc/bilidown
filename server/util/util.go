@@ -3,6 +3,7 @@ package util
 import (
 	"bilidown/common"
 	"errors"
+	"net/http"
 	"net/url"
 	"os/exec"
 	"path/filepath"
@@ -10,7 +11,7 @@ import (
 	"strconv"
 )
 
-func CheckBVID(bvid string) bool {
+func CheckBvidFormat(bvid string) bool {
 	return regexp.MustCompile("^BV1[a-zA-Z0-9]+").MatchString(bvid)
 }
 
@@ -55,4 +56,26 @@ func GetFFmpegPath() (string, error) {
 		return "bin/ffmpeg", nil
 	}
 	return "", errors.New("ffmpeg not found")
+}
+
+// GetRedirectedLocation 获取响应头中的 Location，不会自动跟随重定向。
+func GetRedirectedLocation(url string) (string, error) {
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	request, err := http.NewRequest("HEAD", url, nil)
+	if err != nil {
+		return "", err
+	}
+	response, err := client.Do(request)
+	if err != nil {
+		return "", err
+	}
+	if locationURL, err := response.Location(); err != nil {
+		return "", err
+	} else {
+		return locationURL.String(), nil
+	}
 }

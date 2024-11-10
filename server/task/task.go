@@ -16,9 +16,11 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -161,6 +163,10 @@ func (task *Task) MergeMedia(outputPath string, inputPaths ...string) error {
 	}
 
 	cmd := exec.Command(ffmpegPath, append(inputs, "-c:v", "copy", "-c:a", "copy", "-progress", "pipe:1", "-strict", "-2", outputPath)...)
+	if runtime.GOOS == "windows" {
+		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	}
+
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return err

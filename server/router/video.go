@@ -16,7 +16,7 @@ func GetVideoInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	bvid := r.FormValue("bvid")
-	if !util.CheckBVID(bvid) {
+	if !util.CheckBvidFormat(bvid) {
 		res_error.BvidFormatError(w)
 		return
 	}
@@ -82,7 +82,7 @@ func GetPlayInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	bvid := r.FormValue("bvid")
-	if !util.CheckBVID(bvid) {
+	if !util.CheckBvidFormat(bvid) {
 		util.Res{Success: false, Message: "bvid 格式错误"}.Write(w)
 		return
 	}

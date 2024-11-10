@@ -2,6 +2,9 @@ package util_test
 
 import (
 	"bilidown/common"
+	"bilidown/util"
+	"fmt"
+	"os"
 	"testing"
 )
 
@@ -12,5 +15,14 @@ func TestRandomString(t *testing.T) {
 			t.Log(str)
 		}
 		t.Log("\n")
+	}
+}
+
+func TestGetRedirectedLocation(t *testing.T) {
+	os.Setenv("https_proxy", "http://192.168.1.5:9000")
+	if location, err := util.GetRedirectedLocation("https://b23.tv/Ga6sbzT"); err != nil {
+		t.Error(err)
+	} else {
+		fmt.Println(location)
 	}
 }
