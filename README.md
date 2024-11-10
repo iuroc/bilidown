@@ -18,10 +18,57 @@
 
 -   本程序不支持也不建议 HTTP 代理，直接使用国内网络访问能提升批量解析的成功率和稳定性。
 
-## 开发文档
+## 打包可执行文件
 
--   [打包流程](./README_INIT.md#打包流程)
--   [待优化部分](./README_INIT.md#待优化部分)
+```shell
+git clone https://github.com/iuroc/bilidown
+cd bilidown/client
+pnpm install
+pnpm build
+cd ../server
+go mod tidy
+go build
+```
+
+## 交叉编译
+
+### 说明
+
+-   镜像名称：iuroc/cgo-cross-build
+-   支持的系统架构
+    -   `linux/amd64`
+    -   `windows/amd64`
+    -   `windows/386`
+    -   `windows/arm64`
+    -   `darwin/amd64`
+    -   `darwin/arm64`
+
+### 拉取镜像和项目源码
+
+```shell
+docker pull iuroc/cgo-cross-build:latest
+git clone https://github.com/iuroc/bilidown
+```
+
+### 交叉编译发行版
+
+```shell
+cd bilidown/server
+# [交叉编译 Releases]
+docker run --rm -v .:/usr/src/data iuroc/cgo-cross-build goreleaser release --snapshot --clean
+```
+
+### 编译指定系统架构
+
+```shell
+cd bilidown/server
+
+# [DEFAULT: linux-amd64]
+docker run --rm -v .:/usr/src/data iuroc/cgo-cross-build go build -o dist/bilidown-linux-amd64/bilidown
+
+# [darwin-amd64]
+docker run --rm -v .:/usr/src/data -e GOOS=darwin -e GOARCH=amd64 -e CC=o64-clang -e CGO_ENABLED=1 iuroc/cgo-cross-build go build -o dist/bilidown-darwin-amd64/bilidown
+```
 
 ## 特别感谢
 

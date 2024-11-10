@@ -163,7 +163,7 @@ docker run -it -v data:/usr/src/data -w /usr/src/data -d -p 8100:8098 golang
 
 ```shell
 apt update
-apt install -y libayatana-appindicator3-1  # 运行时需要
+apt install -y libayatana-appindicator3-1  # go build 编译需要
 apt install -y ffmpeg  # 运行时需要
 apt install -y vim  # 开发工具，可删除
 apt install -y xvfb  # 虚拟显示器，运行时需要
@@ -193,4 +193,9 @@ apt install -y libssl-dev
 echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list
 apt update
 apt install goreleaser
+```
+
+```shell
+docker pull iuroc/cgo-cross-build:latest
+docker run --rm -v .:/usr/src/data cgo-cross-build goreleaser release --snapshot --clean
 ```
