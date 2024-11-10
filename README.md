@@ -27,14 +27,14 @@ pnpm install
 pnpm build
 cd ../server
 go mod tidy
-go build
+CGO_ENABLED=1 go build
 ```
 
 ## 交叉编译
 
 ### 说明
 
--   镜像名称：iuroc/cgo-cross-build
+-   镜像名称：`iuroc/cgo-cross-build`
 -   支持的系统架构
     -   `linux/amd64`
     -   `windows/amd64`
