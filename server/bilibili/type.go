@@ -1,7 +1,7 @@
 package bilibili
 
 import (
-	"bilidown/common"
+	"bilidown/server/common"
 	"encoding/json"
 )
 

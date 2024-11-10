@@ -1,9 +1,9 @@
 package router
 
 import (
-	"bilidown/bilibili"
-	"bilidown/util"
-	"bilidown/util/res_error"
+	"bilidown/server/bilibili"
+	"bilidown/server/util"
+	"bilidown/server/util/res_error"
 	"fmt"
 	"net/http"
 	"strconv"

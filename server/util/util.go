@@ -1,7 +1,7 @@
 package util
 
 import (
-	"bilidown/common"
+	"bilidown/server/common"
 	"errors"
 	"net/url"
 	"os/exec"

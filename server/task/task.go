@@ -1,9 +1,9 @@
 package task
 
 import (
-	"bilidown/bilibili"
-	"bilidown/common"
-	"bilidown/util"
+	"bilidown/server/bilibili"
+	"bilidown/server/common"
+	"bilidown/server/util"
 	"bufio"
 	"database/sql"
 	"encoding/base64"

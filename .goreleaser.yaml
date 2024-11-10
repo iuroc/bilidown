@@ -17,6 +17,7 @@ before:
 
 builds:
     - id: bilidown_windows
+      main: ./server
       env:
           - CGO_ENABLED=1
       goos:
@@ -24,6 +25,7 @@ builds:
       ldflags:
           - -s -w -H windowsgui
     - id: bilidown_darwin
+      main: ./server
       env:
           - CGO_ENABLED=1
           - CC=o64-clang
@@ -32,6 +34,7 @@ builds:
       ldflags:
           - -s -w
     - id: bilidown_linux
+      main: ./server
       env:
           - CGO_ENABLED=1
           - >-

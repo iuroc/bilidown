@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bilidown/router"
-	"bilidown/util"
+	"bilidown/server/router"
+	"bilidown/server/util"
 	"database/sql"
 	"errors"
 	"fmt"

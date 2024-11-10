@@ -1,7 +1,7 @@
 package bilibili
 
 import (
-	"bilidown/util"
+	"bilidown/server/util"
 	"database/sql"
 	"encoding/json"
 	"errors"
