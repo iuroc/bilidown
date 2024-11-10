@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	_ "modernc.org/sqlite"
 	"github.com/skip2/go-qrcode"
+	_ "modernc.org/sqlite"
 )
 
 const TEST_SESSDATA = "70ca7a2f%2C1745349417%2C51969%2Aa2CjCVKFrX3jG4cXTV2QY3u7NWYDJ9qwHRW5D4ivdRppolKL0a6KL9vmzbrFGcwzN7tSMSVkVuZGtyUVJPNzJGMjEwTTdveGtuZjQ1TU9hSTJSdnA3NHhzTmIxT3dTY3NyYXhRUkxjREVnd0p3NWg2ODh5SVZmZVhlOW9aallOZzN6aVE5M2Y5SldRIIEC"
@@ -105,7 +105,7 @@ func TestGetPlayInfo(t *testing.T) {
 }
 
 func TestSaveSessdata(t *testing.T) {
-	db := util.GetDB("../data.db")
+	db := util.MustGetDB("../data.db")
 	defer db.Close()
 	err := bilibili.SaveSessdata(db, TEST_SESSDATA)
 	if err != nil {
@@ -125,7 +125,7 @@ func TestSaveSessdata(t *testing.T) {
 }
 
 func TestGetSessdata(t *testing.T) {
-	db := util.GetDB("../data.db")
+	db := util.MustGetDB("../data.db")
 	defer db.Close()
 	sessdata, err := bilibili.GetSessdata(db)
 	if err != nil {

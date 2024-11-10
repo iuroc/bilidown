@@ -37,7 +37,7 @@ func Quit(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetFields(w http.ResponseWriter, r *http.Request) {
-	db := util.GetDB()
+	db := util.MustGetDB()
 	defer db.Close()
 
 	fields, err := util.GetFields(db, util.FieldUtil{}.AllowSelect()...)
@@ -62,7 +62,7 @@ func SaveFields(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db := util.GetDB()
+	db := util.MustGetDB()
 	defer db.Close()
 
 	fu := util.FieldUtil{}

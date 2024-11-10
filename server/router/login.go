@@ -37,7 +37,7 @@ func GetQRInfo(w http.ResponseWriter, r *http.Request) {
 
 func CheckLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
-	db := util.GetDB()
+	db := util.MustGetDB()
 	defer db.Close()
 	sessdata, err := bilibili.GetSessdata(db)
 	if err != nil || sessdata == "" {
@@ -79,7 +79,7 @@ func GetQRStatus(w http.ResponseWriter, r *http.Request) {
 		util.Res{Success: false, Message: qrStatus.Message}.Write(w)
 		return
 	}
-	db := util.GetDB()
+	db := util.MustGetDB()
 	defer db.Close()
 	err = bilibili.SaveSessdata(db, sessdata)
 	if err != nil {
@@ -90,7 +90,7 @@ func GetQRStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
-	db := util.GetDB()
+	db := util.MustGetDB()
 	defer db.Close()
 	err := bilibili.SaveSessdata(db, "")
 	if err != nil {

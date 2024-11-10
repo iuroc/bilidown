@@ -3,6 +3,7 @@ package router
 import (
 	"bilidown/bilibili"
 	"bilidown/util"
+	"bilidown/util/res_error"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -11,15 +12,15 @@ import (
 // GetVideoInfo 通过 BV 号获取视频信息
 func GetVideoInfo(w http.ResponseWriter, r *http.Request) {
 	if r.ParseForm() != nil {
-		util.Res{Success: false, Message: "参数错误"}.Write(w)
+		res_error.ParamError(w)
 		return
 	}
 	bvid := r.FormValue("bvid")
 	if !util.CheckBVID(bvid) {
-		util.Res{Success: false, Message: "bvid 格式错误"}.Write(w)
+		res_error.BvidFormatError(w)
 		return
 	}
-	db := util.GetDB()
+	db := util.MustGetDB()
 	defer db.Close()
 
 	sessdata, err := bilibili.GetSessdata(db)
@@ -56,7 +57,7 @@ func GetSeasonInfo(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	db := util.GetDB()
+	db := util.MustGetDB()
 	defer db.Close()
 	sessdata, err := bilibili.GetSessdata(db)
 	if err != nil || sessdata == "" {
@@ -90,7 +91,7 @@ func GetPlayInfo(w http.ResponseWriter, r *http.Request) {
 		util.Res{Success: false, Message: "cid 格式错误"}.Write(w)
 		return
 	}
-	db := util.GetDB()
+	db := util.MustGetDB()
 	defer db.Close()
 	sessdata, err := bilibili.GetSessdata(db)
 	if err != nil || sessdata == "" {
@@ -106,9 +107,8 @@ func GetPlayInfo(w http.ResponseWriter, r *http.Request) {
 	util.Res{Success: true, Message: "获取成功", Data: playInfo}.Write(w)
 }
 
-
 func GetPopularVideos(w http.ResponseWriter, r *http.Request) {
-	db := util.GetDB()
+	db := util.MustGetDB()
 	defer db.Close()
 	sessdata, err := bilibili.GetSessdata(db)
 	if err != nil || sessdata == "" {

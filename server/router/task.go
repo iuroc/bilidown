@@ -4,6 +4,7 @@ import (
 	"bilidown/task"
 	"bilidown/util"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"os/exec"
@@ -23,7 +24,7 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 		util.Res{Success: false, Message: "参数错误"}.Write(w)
 		return
 	}
-	db := util.GetDB()
+	db := util.MustGetDB()
 	defer db.Close()
 	for _, item := range body {
 		if !util.CheckBVID(item.Bvid) {
@@ -53,14 +54,14 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 		item.Folder, err = util.GetCurrentFolder(db)
 		item.Status = "waiting"
 		if err != nil {
-			util.Res{Success: false, Message: err.Error()}.Write(w)
+			util.Res{Success: false, Message: fmt.Sprintf("util.GetCurrentFolder: %v.", err)}.Write(w)
 			return
 		}
 		_task := task.Task{TaskInDB: item}
 		_task.Title = util.FilterFileName(_task.Title)
 		err = _task.Create(db)
 		if err != nil {
-			util.Res{Success: false, Message: err.Error()}.Write(w)
+			util.Res{Success: false, Message: fmt.Sprintf("_task.Create: %v.", err)}.Write(w)
 			return
 		}
 		go _task.Start()
@@ -78,7 +79,7 @@ func GetTaskList(w http.ResponseWriter, r *http.Request) {
 		util.Res{Success: false, Message: "参数错误"}.Write(w)
 		return
 	}
-	db := util.GetDB()
+	db := util.MustGetDB()
 	defer db.Close()
 	page, err := strconv.Atoi(r.FormValue("page"))
 	if err != nil {
@@ -136,7 +137,7 @@ func DeleteTask(w http.ResponseWriter, r *http.Request) {
 		util.Res{Success: false, Message: "参数错误"}.Write(w)
 		return
 	}
-	db := util.GetDB()
+	db := util.MustGetDB()
 	defer db.Close()
 
 	_task, err := task.GetTask(db, taskID)

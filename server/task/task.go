@@ -68,6 +68,8 @@ var GlobalDownloadSem = util.NewSemaphore(3)
 var GlobalMergeSem = util.NewSemaphore(3)
 
 func (task *Task) Create(db *sql.DB) error {
+	util.SqliteLock.Lock()
+	defer util.SqliteLock.Unlock()
 	result, err := db.Exec(`INSERT INTO "task" ("bvid", "cid", "format", "title", "owner", "cover", "status", "folder", "duration")
 	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		task.Bvid,
@@ -94,7 +96,7 @@ func (task *Task) Start() {
 	GlobalTaskMux.Lock()
 	GlobalTaskList = append(GlobalTaskList, task)
 	GlobalTaskMux.Unlock()
-	db := util.GetDB()
+	db := util.MustGetDB()
 	defer db.Close()
 	sessdata, err := bilibili.GetSessdata(db)
 	if err != nil {
@@ -223,12 +225,14 @@ func GetAudioURL(dash *bilibili.Dash) string {
 }
 
 func (task *Task) UpdateStatus(db *sql.DB, status TaskStatus, errs ...error) error {
+	util.SqliteLock.Lock()
+	defer util.SqliteLock.Unlock()
 	_, err := db.Exec(`UPDATE "task" SET "status" = ? WHERE "id" = ?`, status, task.ID)
 	for _, err := range errs {
 		if err != nil {
 			err = util.CreateLog(db, fmt.Sprintf("Task-%d-Error: %v", task.ID, err))
 			if err != nil {
-				log.Fatalln(err)
+				log.Fatalln("CreateLog:", err)
 			}
 		}
 	}
@@ -303,6 +307,8 @@ func newProgressBar(total int64) *progressBar {
 }
 
 func GetTaskList(db *sql.DB, page int, pageSize int) ([]TaskInDB, error) {
+	util.SqliteLock.Lock()
+	defer util.SqliteLock.Unlock()
 	tasks := []TaskInDB{}
 
 	rows, err := db.Query(`SELECT
@@ -343,14 +349,16 @@ func GetTaskList(db *sql.DB, page int, pageSize int) ([]TaskInDB, error) {
 	return tasks, nil
 }
 
-
-
 func DeleteTask(db *sql.DB, taskID int) error {
+	util.SqliteLock.Lock()
+	defer util.SqliteLock.Unlock()
 	_, err := db.Exec(`DELETE FROM "task" WHERE "id" = ?`, taskID)
 	return err
 }
 
 func GetTask(db *sql.DB, taskID int) (*TaskInDB, error) {
+	util.SqliteLock.Lock()
+	defer util.SqliteLock.Unlock()
 	task := TaskInDB{}
 	createAt := ""
 
