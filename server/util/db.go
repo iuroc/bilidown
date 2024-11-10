@@ -3,6 +3,7 @@ package util
 import (
 	"database/sql"
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -109,4 +110,46 @@ func (f FieldUtil) IsAllowSelect(names ...string) bool {
 
 func (f FieldUtil) IsAllowUpdate(names ...string) bool {
 	return f.IsAllow(f.AllowUpdate(), names...)
+}
+
+// GetCurrentFolder 获取数据库中的下载保存路径，如果不存在则将默认路径保存到数据库
+func GetCurrentFolder(db *sql.DB) (string, error) {
+	var folder string
+	err := db.QueryRow(`SELECT "value" FROM "field" WHERE "name" = 'download_folder'`).Scan(&folder)
+	if err != nil && err == sql.ErrNoRows {
+		folder, err = GetDefaultDownloadFolder()
+		if err != nil {
+			return "", err
+		}
+		err = os.MkdirAll(folder, os.ModePerm)
+		if err != nil {
+			return "", err
+		}
+		err = SaveDownloadFolder(db, folder)
+		if err != nil {
+			return "", err
+		}
+		return folder, nil
+	}
+	err = os.MkdirAll(folder, os.ModePerm)
+	if err != nil {
+		return "", err
+	}
+	return folder, nil
+}
+
+// SaveDownloadFolder 保存下载路径，不存在则自动创建
+func SaveDownloadFolder(db *sql.DB, downloadFolder string) error {
+	_, err := os.Stat(downloadFolder)
+	if err != nil {
+		if os.IsNotExist(err) {
+			err = os.MkdirAll(downloadFolder, os.ModePerm)
+			if err != nil {
+				return err
+			}
+		}
+		return err
+	}
+	_, err = db.Exec(`INSERT OR REPLACE INTO "field" ("name", "value") VALUES ('download_folder', ?)`, downloadFolder)
+	return err
 }

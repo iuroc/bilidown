@@ -2,9 +2,9 @@ package main
 
 import (
 	"bilidown/router"
-	"bilidown/task"
 	"bilidown/util"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -17,6 +17,15 @@ import (
 	"github.com/getlantern/systray"
 	_ "modernc.org/sqlite"
 )
+
+const (
+	HTTP_PORT = 8098
+	HTTP_HOST = ""
+	VERSION   = "v2.0.8"
+)
+
+var urlLocal = fmt.Sprintf("http://127.0.0.1:%d", HTTP_PORT)
+var urlLocalUnix = fmt.Sprintf("%s?___%d", urlLocal, time.Now().UnixMilli())
 
 func main() {
 	checkFFmpeg()
@@ -33,71 +42,39 @@ func checkFFmpeg() {
 	}
 }
 
-const HTTP_PORT = 8098
-const HTTP_HOST = ""
-
 func onReady() {
-	if icon, err := getIcon(); err != nil {
-		log.Fatalln(err)
-	} else {
-		systray.SetIcon(icon)
-	}
+	setIcon()
+	setTitle()
+	setMenuItem()
+	initTables()
+	setServer()
+	time.Sleep(time.Millisecond * 1000)
+	openBrowser(urlLocalUnix)
+	keepWait()
+}
 
-	systray.SetTitle("Bilidown")
-	systray.SetTooltip(fmt.Sprintf("Bilidown 视频解析器 (:%d)", HTTP_PORT))
-
-	_url := fmt.Sprintf("http://%s:%d", HTTP_HOST, HTTP_PORT)
-
-	openBrowserItem := systray.AddMenuItem("打开应用 [open]", "打开应用 [open]")
-	go func() {
-		for {
-			<-openBrowserItem.ClickedCh
-			OpenBrowser(fmt.Sprintf("%s?_=%d", _url, time.Now().UnixNano()))
-		}
-	}()
-
-	aboutItem := systray.AddMenuItem("项目主页 [github]", "项目主页 [github]")
-	go func() {
-		for {
-			<-aboutItem.ClickedCh
-			OpenBrowser("https://github.com/iuroc/bilidown")
-		}
-	}()
-
-	exitItem := systray.AddMenuItem("退出应用 [quit]", "退出应用 [quit]")
-	go func() {
-		<-exitItem.ClickedCh
-		systray.Quit()
-	}()
-
-	db := util.GetDB()
-	InitTables(db)
-	task.InitHistoryTask(db)
-	db.Close()
-
-	http.Handle("/", http.FileServer(http.Dir("static")))
-	http.Handle("/api/", http.StripPrefix("/api", router.API()))
-
+// keepWait 阻塞终端
+func keepWait() {
 	var wg sync.WaitGroup
 	wg.Add(1)
-
-	go func() {
-		fmt.Println(_url)
-		err := http.ListenAndServe(fmt.Sprintf("%s:%d", HTTP_HOST, HTTP_PORT), nil)
-		if err != nil {
-			log.Fatal(err)
-		}
-		wg.Done()
-	}()
-
-	time.Sleep(time.Millisecond * 1000)
-
-	OpenBrowser(fmt.Sprintf("%s?_=%d", _url, time.Now().UnixNano()))
-
 	wg.Wait()
 }
 
-func OpenBrowser(_url string) error {
+func setServer() {
+	// 前端打包文件
+	http.Handle("/", http.FileServer(http.Dir("static")))
+	// 后端接口服务
+	http.Handle("/api/", http.StripPrefix("/api", router.API()))
+	// 启动 HTTP 服务器
+	go func() {
+		err := http.ListenAndServe(fmt.Sprintf("%s:%d", HTTP_HOST, HTTP_PORT), nil)
+		if err != nil {
+			log.Fatal("http.ListenAndServe:", err)
+		}
+	}()
+}
+
+func openBrowser(_url string) {
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "windows":
@@ -107,36 +84,90 @@ func OpenBrowser(_url string) error {
 	case "linux":
 		cmd = exec.Command("xdg-open", _url)
 	default:
-		return fmt.Errorf("不支持的操作系统")
+		log.Printf("openBrowser: %v.", errors.New("unsupported operating system"))
 	}
-	return cmd.Start()
+	if err := cmd.Start(); err != nil {
+		log.Printf("openBrowser: %v.", err)
+	}
+	fmt.Printf("Opened in default browser: %s.\n", _url)
 }
 
-func getIcon() ([]byte, error) {
-	// 读取 static/favicon.ico 文件
-	return os.ReadFile("static/favicon.ico")
+func setIcon() {
+	var path string
+	if runtime.GOOS == "windows" {
+		path = "static/favicon.ico"
+	} else {
+		path = "static/favicon-32x32.png"
+	}
+	systray.SetIcon(mustReadFile(path))
 }
 
-// InitTables 初始化数据表
-func InitTables(db *sql.DB) {
-	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS "field" (
+func mustReadFile(path string) []byte {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		log.Fatalln("os.ReadFile:", err)
+	}
+	return data
+}
+
+func setTitle() {
+	title := "Bilidown"
+	tooltip := fmt.Sprintf("%s 视频解析器 %s (port:%d)", title, VERSION, HTTP_PORT)
+	// only available on Mac and Linux.
+	systray.SetTitle(title)
+	// only available on Mac and Windows.
+	systray.SetTooltip(tooltip)
+}
+
+func setMenuItem() {
+	openBrowserItemText := fmt.Sprintf("打开主界面 (port:%d)", HTTP_PORT)
+	openBrowserItem := systray.AddMenuItem(openBrowserItemText, openBrowserItemText)
+	go func() {
+		for {
+			<-openBrowserItem.ClickedCh
+			openBrowser(urlLocalUnix)
+		}
+	}()
+
+	aboutItemText := "Github 项目主页"
+	aboutItem := systray.AddMenuItem(aboutItemText, aboutItemText)
+	go func() {
+		for {
+			<-aboutItem.ClickedCh
+			openBrowser("https://github.com/iuroc/bilidown")
+		}
+	}()
+
+	exitItemText := "退出应用"
+	exitItem := systray.AddMenuItem(exitItemText, exitItemText)
+	go func() {
+		<-exitItem.ClickedCh
+		log.Printf("Bilidown has exited.")
+		systray.Quit()
+	}()
+}
+
+// initTables 初始化数据表
+func initTables() {
+	db := util.GetDB()
+	defer db.Close()
+
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS "field" (
 		"name" TEXT PRIMARY KEY NOT NULL,
 		"value" TEXT
-	)`)
-	if err != nil {
-		log.Fatalln(err)
+	)`); err != nil {
+		log.Fatalln("create table field:", err)
 	}
 
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS "log" (
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS "log" (
 		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
 		"content" TEXT NOT NULL,
 		"create_at" text NOT NULL DEFAULT CURRENT_TIMESTAMP
-	)`)
-	if err != nil {
-		log.Fatalln(err)
+	)`); err != nil {
+		log.Fatalln("create table log:", err)
 	}
 
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS "task" (
+	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS "task" (
 		"id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
 		"bvid" text NOT NULL,
 		"cid" integer NOT NULL,
@@ -148,13 +179,21 @@ func InitTables(db *sql.DB) {
 		"folder" text NOT NULL,
 		"duration" integer NOT NULL,
 		"create_at" text NOT NULL DEFAULT CURRENT_TIMESTAMP
-	)`)
-	if err != nil {
-		log.Fatalln(err)
+	)`); err != nil {
+		log.Fatalln("create table task:", err)
 	}
 
-	_, err = task.GetCurrentFolder(db)
-	if err != nil {
-		log.Fatalln(err)
+	if _, err := util.GetCurrentFolder(db); err != nil {
+		log.Fatalln("util.GetCurrentFolder:", err)
 	}
+
+	if err := initHistoryTask(db); err != nil {
+		log.Fatalln("initHistoryTask:", err)
+	}
+}
+
+// initHistoryTask 将上一次程序运行时未完成的任务进度全部变为 error
+func initHistoryTask(db *sql.DB) error {
+	_, err := db.Exec(`UPDATE "task" SET "status" = 'error' WHERE "status" IN ('waiting', 'running')`)
+	return err
 }

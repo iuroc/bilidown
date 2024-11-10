@@ -10,7 +10,6 @@ import (
 
 func API() *http.ServeMux {
 	router := http.NewServeMux()
-
 	router.HandleFunc("/getVideoInfo", GetVideoInfo)
 	router.HandleFunc("/getSeasonInfo", GetSeasonInfo)
 	router.HandleFunc("/getQRInfo", GetQRInfo)

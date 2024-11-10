@@ -50,7 +50,7 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 			util.Res{Success: false, Message: "清晰度代码错误"}.Write(w)
 			return
 		}
-		item.Folder, err = task.GetCurrentFolder(db)
+		item.Folder, err = util.GetCurrentFolder(db)
 		item.Status = "waiting"
 		if err != nil {
 			util.Res{Success: false, Message: err.Error()}.Write(w)
