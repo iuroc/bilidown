@@ -27,7 +27,6 @@ builds:
       env:
           - CGO_ENABLED=1
           - CC=o64-clang
-          - MACOSX_DEPLOYMENT_TARGET=13.3
       goos:
           - darwin
       ldflags:
@@ -41,7 +40,8 @@ builds:
           - linux
       goarch:
           - amd64
-          #   - arm64
+      ldflags:
+          - -s -w
 archives:
     - format: tar.gz
       # this name template makes the OS and Arch compatible with the results of `uname`.
