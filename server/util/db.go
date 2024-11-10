@@ -12,14 +12,13 @@ import (
 
 func CreateLog(db *sql.DB, content string) error {
 	SqliteLock.Lock()
-	defer SqliteLock.Unlock()
 	_, err := db.Exec(`INSERT INTO "log" ("content") VALUES (?)`, content)
+	SqliteLock.Unlock()
 	return err
 }
 
 func GetFields(db *sql.DB, names ...string) (map[string]string, error) {
-	SqliteLock.Lock()
-	defer SqliteLock.Unlock()
+
 	if len(names) == 0 {
 		return nil, nil
 	}
@@ -34,8 +33,9 @@ func GetFields(db *sql.DB, names ...string) (map[string]string, error) {
 	for i := 0; i < len(names); i++ {
 		values[i] = names[i]
 	}
-
+	SqliteLock.Lock()
 	row, err := db.Query(query, values...)
+	SqliteLock.Unlock()
 	if err != nil {
 		return nil, err
 	}
@@ -52,8 +52,7 @@ func GetFields(db *sql.DB, names ...string) (map[string]string, error) {
 }
 
 func SaveFields(db *sql.DB, data [][2]string) error {
-	SqliteLock.Lock()
-	defer SqliteLock.Unlock()
+
 	if len(data) == 0 {
 		return nil
 	}
@@ -77,21 +76,22 @@ func SaveFields(db *sql.DB, data [][2]string) error {
 	defer stmt.Close()
 
 	for _, d := range data {
+		SqliteLock.Lock()
 		_, err = stmt.Exec(d[0], d[1])
+		SqliteLock.Unlock()
 		if err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
 
 // GetCurrentFolder 获取数据库中的下载保存路径，如果不存在则将默认路径保存到数据库
 func GetCurrentFolder(db *sql.DB) (string, error) {
-	SqliteLock.Lock()
-	defer SqliteLock.Unlock()
 	var folder string
+	SqliteLock.Lock()
 	err := db.QueryRow(`SELECT "value" FROM "field" WHERE "name" = 'download_folder'`).Scan(&folder)
+	SqliteLock.Unlock()
 	if err != nil && err == sql.ErrNoRows {
 		folder, err = GetDefaultDownloadFolder()
 		if err != nil {
@@ -116,8 +116,6 @@ func GetCurrentFolder(db *sql.DB) (string, error) {
 
 // SaveDownloadFolder 保存下载路径，不存在则自动创建
 func SaveDownloadFolder(db *sql.DB, downloadFolder string) error {
-	SqliteLock.Lock()
-	defer SqliteLock.Unlock()
 	_, err := os.Stat(downloadFolder)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -128,7 +126,9 @@ func SaveDownloadFolder(db *sql.DB, downloadFolder string) error {
 		}
 		return err
 	}
+	SqliteLock.Lock()
 	_, err = db.Exec(`INSERT OR REPLACE INTO "field" ("name", "value") VALUES ('download_folder', ?)`, downloadFolder)
+	SqliteLock.Unlock()
 	return err
 }
 

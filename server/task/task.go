@@ -69,7 +69,6 @@ var GlobalMergeSem = util.NewSemaphore(3)
 
 func (task *Task) Create(db *sql.DB) error {
 	util.SqliteLock.Lock()
-	defer util.SqliteLock.Unlock()
 	result, err := db.Exec(`INSERT INTO "task" ("bvid", "cid", "format", "title", "owner", "cover", "status", "folder", "duration")
 	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		task.Bvid,
@@ -82,6 +81,7 @@ func (task *Task) Create(db *sql.DB) error {
 		task.Folder,
 		task.Duration,
 	)
+	util.SqliteLock.Unlock()
 	if err != nil {
 		return err
 	}
@@ -226,8 +226,11 @@ func GetAudioURL(dash *bilibili.Dash) string {
 
 func (task *Task) UpdateStatus(db *sql.DB, status TaskStatus, errs ...error) error {
 	util.SqliteLock.Lock()
-	defer util.SqliteLock.Unlock()
 	_, err := db.Exec(`UPDATE "task" SET "status" = ? WHERE "id" = ?`, status, task.ID)
+	util.SqliteLock.Unlock()
+	if err != nil {
+		return nil
+	}
 	for _, err := range errs {
 		if err != nil {
 			err = util.CreateLog(db, fmt.Sprintf("Task-%d-Error: %v", task.ID, err))
@@ -307,16 +310,15 @@ func newProgressBar(total int64) *progressBar {
 }
 
 func GetTaskList(db *sql.DB, page int, pageSize int) ([]TaskInDB, error) {
-	util.SqliteLock.Lock()
-	defer util.SqliteLock.Unlock()
 	tasks := []TaskInDB{}
-
+	util.SqliteLock.Lock()
 	rows, err := db.Query(`SELECT
 		"id", "bvid", "cid", "format", "title",
 		"owner", "cover", "status", "folder", "create_at"
 	FROM "task" ORDER BY "id" DESC LIMIT ?, ?`,
 		page*pageSize, pageSize,
 	)
+	util.SqliteLock.Unlock()
 	if err != nil {
 		return nil, err
 	}
@@ -351,17 +353,15 @@ func GetTaskList(db *sql.DB, page int, pageSize int) ([]TaskInDB, error) {
 
 func DeleteTask(db *sql.DB, taskID int) error {
 	util.SqliteLock.Lock()
-	defer util.SqliteLock.Unlock()
 	_, err := db.Exec(`DELETE FROM "task" WHERE "id" = ?`, taskID)
+	util.SqliteLock.Unlock()
 	return err
 }
 
 func GetTask(db *sql.DB, taskID int) (*TaskInDB, error) {
-	util.SqliteLock.Lock()
-	defer util.SqliteLock.Unlock()
 	task := TaskInDB{}
 	createAt := ""
-
+	util.SqliteLock.Lock()
 	err := db.QueryRow(`SELECT
 		"id", "bvid", "cid", "format", "title",
 		"owner", "cover", "status", "folder", "create_at"
@@ -379,6 +379,7 @@ func GetTask(db *sql.DB, taskID int) (*TaskInDB, error) {
 		&task.Folder,
 		&createAt,
 	)
+	util.SqliteLock.Unlock()
 	if err != nil {
 		return nil, err
 	}

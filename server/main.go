@@ -195,7 +195,7 @@ func initTables() {
 // initHistoryTask 将上一次程序运行时未完成的任务进度全部变为 error
 func initHistoryTask(db *sql.DB) error {
 	util.SqliteLock.Lock()
-	defer util.SqliteLock.Unlock()
 	_, err := db.Exec(`UPDATE "task" SET "status" = 'error' WHERE "status" IN ('waiting', 'running')`)
+	util.SqliteLock.Unlock()
 	return err
 }
