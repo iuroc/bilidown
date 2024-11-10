@@ -22,8 +22,26 @@ builds:
       goos:
           - windows
       ldflags:
+          - -s -w -H windowsgui
+    - id: bilidown_darwin
+      env:
+          - CGO_ENABLED=1
+          - CC=o64-clang
+      goos:
+          - darwin
+      ldflags:
+          - -s -w
+    - id: bilidown_linux
+      env:
+          - CGO_ENABLED=1
+          - >-
+              {{- if eq .Arch "arm64" }}CC=aarch64-linux-gnu-gcc{{ end }}
+      goos:
+          - linux
       goarch:
           - amd64
+      ldflags:
+          - -s -w
 archives:
     - format: tar.gz
       # this name template makes the OS and Arch compatible with the results of `uname`.
