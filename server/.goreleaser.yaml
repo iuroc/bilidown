@@ -19,6 +19,9 @@ builds:
     - id: bilidown_windows
       env:
           - CGO_ENABLED=1
+          - >-
+              {{- if eq .Arch "amd64" }}CC=x86_64-w64-mingw32-gcc{{ end }}
+              {{- if eq .Arch "386" }}CC=i686-w64-mingw32-gcc{{ end }}
       goos:
           - windows
       ldflags:

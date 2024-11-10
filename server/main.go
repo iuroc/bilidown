@@ -19,9 +19,9 @@ import (
 )
 
 const (
-	HTTP_PORT = 8098
-	HTTP_HOST = ""
-	VERSION   = "v2.0.8"
+	HTTP_PORT = 8098     // 限定 HTTP 服务器端口
+	HTTP_HOST = ""       // 限定 HTTP 服务器主机
+	VERSION   = "v2.0.8" // 软件版本号，将影响托盘标题显示
 )
 
 var urlLocal = fmt.Sprintf("http://127.0.0.1:%d", HTTP_PORT)
@@ -29,7 +29,26 @@ var urlLocalUnix = fmt.Sprintf("%s?___%d", urlLocal, time.Now().UnixMilli())
 
 func main() {
 	checkFFmpeg()
+	// 启动托盘程序
 	systray.Run(onReady, nil)
+}
+
+func onReady() {
+	// 设置托盘图标
+	setIcon()
+	// 设置托盘标题
+	setTitle()
+	// 设置托盘菜单
+	setMenuItem()
+	// 初始化数据表
+	mustInitTables()
+	// 配置和启动 HTTP 服务器
+	mustRunServer()
+	// 调用默认浏览器访问端口
+	time.Sleep(time.Millisecond * 1000)
+	openBrowser(urlLocalUnix)
+	// 保持运行
+	keepWait()
 }
 
 // checkFFmpeg 检测 ffmpeg 的安装情况，如果未安装则打印提示信息。
@@ -42,17 +61,6 @@ func checkFFmpeg() {
 	}
 }
 
-func onReady() {
-	setIcon()
-	setTitle()
-	setMenuItem()
-	initTables()
-	setServer()
-	time.Sleep(time.Millisecond * 1000)
-	openBrowser(urlLocalUnix)
-	keepWait()
-}
-
 // keepWait 阻塞终端
 func keepWait() {
 	var wg sync.WaitGroup
@@ -60,7 +68,8 @@ func keepWait() {
 	wg.Wait()
 }
 
-func setServer() {
+// 配置和启动 HTTP 服务器
+func mustRunServer() {
 	// 前端打包文件
 	http.Handle("/", http.FileServer(http.Dir("static")))
 	// 后端接口服务
@@ -74,22 +83,23 @@ func setServer() {
 	}()
 }
 
-func openBrowser(_url string) {
+// openBrowser 调用系统默认浏览器打开指定 URL
+func openBrowser(url string) {
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "windows":
-		cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", _url)
+		cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
 	case "darwin":
-		cmd = exec.Command("open", _url)
+		cmd = exec.Command("open", url)
 	case "linux":
-		cmd = exec.Command("xdg-open", _url)
+		cmd = exec.Command("xdg-open", url)
 	default:
 		log.Printf("openBrowser: %v.", errors.New("unsupported operating system"))
 	}
 	if err := cmd.Start(); err != nil {
 		log.Printf("openBrowser: %v.", err)
 	}
-	fmt.Printf("Opened in default browser: %s.\n", _url)
+	fmt.Printf("Opened in default browser: %s.\n", url)
 }
 
 func setIcon() {
@@ -147,8 +157,8 @@ func setMenuItem() {
 	}()
 }
 
-// initTables 初始化数据表
-func initTables() {
+// mustInitTables 初始化数据表
+func mustInitTables() {
 	db := util.MustGetDB()
 	defer db.Close()
 
