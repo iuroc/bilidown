@@ -154,3 +154,43 @@ SESSDATA 存储在 SQLite，前端每次初始进入页面时，都从 SQLite �
 6. 前端增加一些 Loading 动画
 7. 注意非 Windows 的构建不要包含 exe 文件，这个看能不能在 goreleaser 里去配置，然后 Windows 版本也是可以生成 2 份，分别是带 ffmpeg 和不带的
 8. 支持手机分享链接解析
+
+## 容器操作
+
+```shell
+docker run -it -v data:/usr/src/data -w /usr/src/data -d -p 8100:8098 golang
+```
+
+```shell
+apt update
+apt install -y libayatana-appindicator3-1  # 运行时需要
+apt install -y ffmpeg  # 运行时需要
+apt install -y vim  # 开发工具，可删除
+apt install -y xvfb  # 虚拟显示器，运行时需要
+apt install -y dbus-x11  # 运行时需要
+wget -qO- https://get.pnpm.io/install.sh | ENV="$HOME/.bashrc" SHELL="$(which bash)" bash -  # 安装 pnpm
+source $HOME/.bashrc  # 使 pnpm 生效
+apt install -y nodejs  # 前端编译需要
+apt install -y libayatana-appindicator3-dev  # go build 编译需要
+```
+
+```shell
+# 运行程序
+Xvfb :99 -screen 0 1920x1080x24 &
+export DISPLAY=:99
+eval $(dbus-launch --sh-syntax)
+export DBUS_SESSION_BUS_ADDRESS
+./bilidown
+```
+
+```shell
+cd /usr/src
+git clone https://github.com/tpoechtrager/osxcross
+cd osxcross
+wget -P tarballs https://github.com/alexey-lysiuk/macos-sdk/releases/download/14.5/MacOSX14.5.tar.xz
+apt install clang cmake -y
+apt install -y libssl-dev
+echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | sudo tee /etc/apt/sources.list.d/goreleaser.list
+apt update
+apt install goreleaser
+```

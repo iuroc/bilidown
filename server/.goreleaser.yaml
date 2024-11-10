@@ -27,6 +27,7 @@ builds:
       env:
           - CGO_ENABLED=1
           - CC=o64-clang
+          - MACOSX_DEPLOYMENT_TARGET=13.3
       goos:
           - darwin
       ldflags:
