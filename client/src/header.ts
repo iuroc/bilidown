@@ -8,7 +8,7 @@ export default () => {
     const classStr = (name: string) => van.derive(() => `text-nowrap nav-link ${now.val.split('/')[0] == name ? 'active' : ''}`)
 
     return div({ class: 'hstack gap-4' },
-        div({ class: 'fs-4 fw-bold' }, 'Bilidown'),
+        div({ class: 'fs-4 fw-bold text-nowrap' }, 'Bilidown'),
         div({ class: 'nav nav-underline flex-nowrap overflow-auto' },
             div({ class: 'nav-item', hidden: () => !GLOBAL_HAS_LOGIN.val },
                 a({ class: classStr('work'), href: '#/work' }, '视频解析')
