@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/iuroc/bilidown/server/router"
-	"github.com/iuroc/bilidown/server/util"
+	"bilidown/router"
+	"bilidown/util"
 
 	"github.com/getlantern/systray"
 	_ "modernc.org/sqlite"

@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/iuroc/bilidown/server/common"
+	"bilidown/common"
 )
 
 func CheckBvidFormat(bvid string) bool {

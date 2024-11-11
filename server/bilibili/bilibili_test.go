@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/iuroc/bilidown/server/bilibili"
-	"github.com/iuroc/bilidown/server/util"
+	"bilidown/bilibili"
+	"bilidown/util"
 
 	"github.com/skip2/go-qrcode"
 	_ "modernc.org/sqlite"

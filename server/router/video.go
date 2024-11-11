@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/iuroc/bilidown/server/bilibili"
-	"github.com/iuroc/bilidown/server/util"
-	"github.com/iuroc/bilidown/server/util/res_error"
+	"bilidown/bilibili"
+	"bilidown/util"
+	"bilidown/util/res_error"
 )
 
 // GetVideoInfo 通过 BV 号获取视频信息
