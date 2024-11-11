@@ -3,6 +3,8 @@ package router
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"bilidown/bilibili"
@@ -129,3 +131,22 @@ func GetPopularVideos(w http.ResponseWriter, r *http.Request) {
 	}
 	util.Res{Success: true, Message: "获取成功", Data: bvids}.Write(w)
 }
+
+var DownloadVideo = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	if r.ParseForm() != nil {
+		res_error.ParamError(w)
+		return
+	}
+	path := r.FormValue("path")
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		res_error.FileNotExist(w, path)
+		return
+	} else if err != nil {
+		res_error.SystemError(w)
+		return
+	} else if filepath.Ext(path) != ".mp4" {
+		res_error.FileTypeNotAllow(w)
+		return
+	}
+	http.ServeFile(w, r, path)
+})

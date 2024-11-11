@@ -2,6 +2,7 @@ package res_error
 
 import (
 	"net/http"
+	"strings"
 
 	"bilidown/util"
 )
@@ -28,4 +29,20 @@ func MethodNotAllow(w http.ResponseWriter) {
 
 func NoRedirectedLocation(w http.ResponseWriter) {
 	sendError(w, "未发现重定向目标")
+}
+
+func FileNotExist(w http.ResponseWriter, path ...string) {
+	message := "文件不存在"
+	if len(path) > 0 {
+		message += ": " + strings.Join(path, ", ")
+	}
+	sendError(w, message)
+}
+
+func SystemError(w http.ResponseWriter) {
+	sendError(w, "系统错误")
+}
+
+func FileTypeNotAllow(w http.ResponseWriter) {
+	sendError(w, "不支持的文件类型")
 }
