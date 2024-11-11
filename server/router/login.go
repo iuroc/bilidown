@@ -4,8 +4,8 @@ import (
 	"encoding/base64"
 	"net/http"
 
-	"github.com/iuroc/server/bilidown/bilibili"
-	"github.com/iuroc/server/bilidown/util"
+	"github.com/iuroc/bilidown/server/bilibili"
+	"github.com/iuroc/bilidown/server/util"
 
 	"github.com/skip2/go-qrcode"
 )

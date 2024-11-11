@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/iuroc/server/bilidown/common"
-	"github.com/iuroc/server/bilidown/util"
+	"github.com/iuroc/bilidown/server/common"
+	"github.com/iuroc/bilidown/server/util"
 )
 
 func TestRandomString(t *testing.T) {

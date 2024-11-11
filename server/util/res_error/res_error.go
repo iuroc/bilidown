@@ -3,7 +3,7 @@ package res_error
 import (
 	"net/http"
 
-	"github.com/iuroc/server/bilidown/util"
+	"github.com/iuroc/bilidown/server/util"
 )
 
 func sendError(w http.ResponseWriter, message string) {

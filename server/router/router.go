@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/iuroc/server/bilidown/util"
-	"github.com/iuroc/server/bilidown/util/res_error"
+	"github.com/iuroc/bilidown/server/util"
+	"github.com/iuroc/bilidown/server/util/res_error"
 )
 
 func API() *http.ServeMux {
