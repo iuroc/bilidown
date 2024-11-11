@@ -56,6 +56,10 @@ git clone https://github.com/iuroc/bilidown
 cd bilidown/server
 # [交叉编译 Releases]
 docker run --rm -v .:/usr/src/data iuroc/cgo-cross-build goreleaser release --snapshot --clean
+
+# [交互式终端]
+cd bilidown
+docker run --rm -it -v .:/usr/src/data iuroc/cgo-cross-build
 ```
 
 ### 编译指定系统架构
