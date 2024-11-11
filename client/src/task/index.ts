@@ -4,6 +4,7 @@ import { checkLogin, GLOBAL_HAS_LOGIN, GLOBAL_HIDE_PAGE, ResJSON, VanComponent }
 import { deleteTask, getActiveTask, getTaskList, showFile } from './data'
 import { TaskInDB, TaskStatus } from '../work/type'
 import { LoadingBox } from '../view'
+import { PlayerModalComp } from './playerModal'
 
 const { div } = van.tags
 
@@ -11,6 +12,8 @@ const { svg, path } = van.tags('http://www.w3.org/2000/svg')
 
 export class TaskRoute implements VanComponent {
     element: HTMLElement
+    /** 包含视频播放器的模态框 */
+    playerModalComp = new PlayerModalComp()
 
     loading = van.state(false)
 
@@ -25,6 +28,8 @@ export class TaskRoute implements VanComponent {
         statusState: State<TaskStatus>
         /** 是否正在打开 */
         opening: State<boolean>
+        /** 是否正在删除 */
+        deleting: State<boolean>
     })[]> = van.state([])
 
     constructor() {
@@ -44,17 +49,17 @@ export class TaskRoute implements VanComponent {
                             const filename = `${task.title} ${btoa(task.id.toString()).replace(/=/g, '')}.mp4`
                             return div({
                                 class: () => `list-group-item p-0 hstack user-select-none ${task.statusState.val != 'done' && task.statusState.val != 'error' || task.opening.val ? 'disabled' : ''}`,
+                                hidden: task.deleting,
                             },
                                 div({
                                     class: 'vstack gap-2 py-2 px-3',
                                     style: `cursor: pointer;`,
                                     onclick() {
                                         if (task.statusState.val != 'done') return
-                                        showFile(`${task.folder}\\${filename}`)
-                                        task.opening.val = true
-                                        setTimeout(() => {
-                                            task.opening.val = false
-                                        }, 3000)
+                                        _that.playerModalComp.modal.show()
+                                        _that.playerModalComp.playerComp.src.val = `/api/downloadVideo?path=${encodeURIComponent(
+                                            `${task.folder}\\${filename}`
+                                        )}`
                                     }
                                 },
                                     div({
@@ -63,7 +68,7 @@ export class TaskRoute implements VanComponent {
                                         ${task.statusState.val == 'waiting' || task.statusState.val == 'running'
                                                 ? 'text-primary' : ''}`
                                     },
-                                        () => task.opening.val ? '正在打开...' : filename),
+                                        () => task.opening.val ? '正在打开文件位置...' : filename),
                                     div({ class: 'text-secondary small' },
                                         () => {
                                             if (task.statusState.val == 'waiting') return '等待下载'
@@ -101,13 +106,35 @@ export class TaskRoute implements VanComponent {
                                     )
                                 ),
                                 div({
-                                    class: 'ps-3 pe-4',
-                                    hidden: task.statusState.val != 'done' && task.statusState.val != 'error' || task.opening.val
+                                    class: 'me-4',
+                                    hidden: task.statusState.val != 'done'
+                                        || task.opening.val  // 正在打开文件位置时，不应该显示删除按钮
+                                        || task.deleting.val  // 正在删除时，不应该显示删除按钮
                                 },
                                     div({
-                                        class: 'delete-btn', title: '删除视频',
+                                        class: 'hover-btn', title: '打开文件位置',
                                         onclick() {
-                                            if (!confirm('确定要删除该视频文件吗？')) return
+                                            showFile(`${task.folder}\\${filename}`)
+                                            task.opening.val = true
+                                            setTimeout(() => {
+                                                task.opening.val = false
+                                            }, 3000)
+                                        }
+                                    },
+                                        _that.FolderSVG()
+                                    )
+                                ),
+                                div({
+                                    class: 'me-4',
+                                    hidden: task.statusState.val != 'done'
+                                        && task.statusState.val != 'error'
+                                        || task.opening.val  // 正在打开文件位置时，不应该显示删除按钮
+                                        || task.deleting.val  // 正在删除时，不应该显示删除按钮
+                                },
+                                    div({
+                                        class: 'hover-btn', title: '删除视频',
+                                        onclick() {
+                                            task.deleting.val = true
                                             deleteTask(task.id).then(() => {
                                                 _that.taskList.val = _that.taskList.val.filter(taskInDB => taskInDB.id != task.id)
                                             }).catch(error => {
@@ -117,7 +144,7 @@ export class TaskRoute implements VanComponent {
                                     },
                                         _that.DeleteSVG()
                                     )
-                                )
+                                ),
                             )
                         })
                     )
@@ -138,7 +165,8 @@ export class TaskRoute implements VanComponent {
                         videoProgress: van.state(1),
                         mergeProgress: van.state(1),
                         statusState: van.state(task.status),
-                        opening: van.state(false)
+                        opening: van.state(false),
+                        deleting: van.state(false)
                     }))
 
                     const refresh = async () => {
@@ -184,6 +212,12 @@ export class TaskRoute implements VanComponent {
     DeleteSVG() {
         return svg({ style: `width: 1em; height: 1em`, fill: "currentColor", class: "bi bi-trash3", viewBox: "0 0 16 16" },
             path({ "d": "M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5" }),
+        )
+    }
+
+    FolderSVG() {
+        return svg({ style: `width: 1em; height: 1em`, fill: "currentColor", class: "bi bi-folder2", viewBox: "0 0 16 16" },
+            path({ "d": "M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v7a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 12.5zM2.5 3a.5.5 0 0 0-.5.5V6h12v-.5a.5.5 0 0 0-.5-.5H9c-.964 0-1.71-.629-2.174-1.154C6.374 3.334 5.82 3 5.264 3zM14 7H2v5.5a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5z" }),
         )
     }
 }

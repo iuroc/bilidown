@@ -20,6 +20,9 @@ importers:
       p-queue:
         specifier: ^8.0.1
         version: 8.0.1
+      plyr:
+        specifier: ^3.7.8
+        version: 3.7.8
       uuid:
         specifier: ^10.0.0
         version: 10.0.0
@@ -317,6 +320,12 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
+  core-js@3.39.0:
+    resolution: {integrity: sha512-raM0ew0/jJUqkJ0E6e8UDtl+y/7ktFivgWvqw8dNSQeNWoSDLvQ1H/RN3aPXB9tBd4/FhyR4RDPGhsNIMsAn7g==, tarball: https://registry.npmjs.org/core-js/-/core-js-3.39.0.tgz}
+
+  custom-event-polyfill@1.0.7:
+    resolution: {integrity: sha512-TDDkd5DkaZxZFM8p+1I3yAlvM3rSr1wbrOliG4yJiwinMZN8z/iGL7BTlDkrJcYTmgUSb4ywVCc3ZaUtOtC76w==, tarball: https://registry.npmjs.org/custom-event-polyfill/-/custom-event-polyfill-1.0.7.tgz}
+
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==, tarball: https://registry.npmjs.org/emoji-regex/-/emoji-regex-8.0.0.tgz}
 
@@ -352,6 +361,9 @@ packages:
     resolution: {integrity: sha512-zymm5+u+sCsSWyD9qNaejV3DFvhCKclKdizYaJUuHA83RLjb7nSuGnddCHGv0hk+KY7BMAlsWeK4Ueg6EV6XQg==, tarball: https://registry.npmjs.org/is-fullwidth-code-point/-/is-fullwidth-code-point-3.0.0.tgz}
     engines: {node: '>=8'}
 
+  loadjs@4.3.0:
+    resolution: {integrity: sha512-vNX4ZZLJBeDEOBvdr2v/F+0aN5oMuPu7JTqrMwp+DtgK+AryOlpy6Xtm2/HpNr+azEa828oQjOtWsB6iDtSfSQ==, tarball: https://registry.npmjs.org/loadjs/-/loadjs-4.3.0.tgz}
+
   lodash@4.17.21:
     resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==, tarball: https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz}
 
@@ -371,9 +383,15 @@ packages:
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==, tarball: https://registry.npmjs.org/picocolors/-/picocolors-1.1.1.tgz}
 
+  plyr@3.7.8:
+    resolution: {integrity: sha512-yG/EHDobwbB/uP+4Bm6eUpJ93f8xxHjjk2dYcD1Oqpe1EcuQl5tzzw9Oq+uVAzd2lkM11qZfydSiyIpiB8pgdA==, tarball: https://registry.npmjs.org/plyr/-/plyr-3.7.8.tgz}
+
   postcss@8.4.47:
     resolution: {integrity: sha512-56rxCq7G/XfB4EkXq9Egn5GCqugWvDFjafDOThIdMBsI15iqPqR5r15TfSr1YPYeEI19YeaXMCbY6u88Y76GLQ==, tarball: https://registry.npmjs.org/postcss/-/postcss-8.4.47.tgz}
     engines: {node: ^10 || ^12 || >=14}
+
+  rangetouch@2.0.1:
+    resolution: {integrity: sha512-sln+pNSc8NGaHoLzwNBssFSf/rSYkqeBXzX1AtJlkJiUaVSJSbRAWJk+4omsXkN+EJalzkZhWQ3th1m0FpR5xA==, tarball: https://registry.npmjs.org/rangetouch/-/rangetouch-2.0.1.tgz}
 
   require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==, tarball: https://registry.npmjs.org/require-directory/-/require-directory-2.1.1.tgz}
@@ -541,6 +559,9 @@ packages:
 
   tslib@2.7.0:
     resolution: {integrity: sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA==, tarball: https://registry.npmjs.org/tslib/-/tslib-2.7.0.tgz}
+
+  url-polyfill@1.1.12:
+    resolution: {integrity: sha512-mYFmBHCapZjtcNHW0MDq9967t+z4Dmg5CJ0KqysK3+ZbyoNOWQHksGCTWwDhxGXllkWlOc10Xfko6v4a3ucM6A==, tarball: https://registry.npmjs.org/url-polyfill/-/url-polyfill-1.1.12.tgz}
 
   uuid@10.0.0:
     resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==, tarball: https://registry.npmjs.org/uuid/-/uuid-10.0.0.tgz}
@@ -774,6 +795,10 @@ snapshots:
       tree-kill: 1.2.2
       yargs: 17.7.2
 
+  core-js@3.39.0: {}
+
+  custom-event-polyfill@1.0.7: {}
+
   emoji-regex@8.0.0: {}
 
   esbuild@0.21.5:
@@ -817,6 +842,8 @@ snapshots:
 
   is-fullwidth-code-point@3.0.0: {}
 
+  loadjs@4.3.0: {}
+
   lodash@4.17.21: {}
 
   nanoid@3.3.7: {}
@@ -830,11 +857,21 @@ snapshots:
 
   picocolors@1.1.1: {}
 
+  plyr@3.7.8:
+    dependencies:
+      core-js: 3.39.0
+      custom-event-polyfill: 1.0.7
+      loadjs: 4.3.0
+      rangetouch: 2.0.1
+      url-polyfill: 1.1.12
+
   postcss@8.4.47:
     dependencies:
       nanoid: 3.3.7
       picocolors: 1.1.1
       source-map-js: 1.2.1
+
+  rangetouch@2.0.1: {}
 
   require-directory@2.1.1: {}
 
@@ -980,6 +1017,8 @@ snapshots:
   tree-kill@1.2.2: {}
 
   tslib@2.7.0: {}
+
+  url-polyfill@1.1.12: {}
 
   uuid@10.0.0: {}
 

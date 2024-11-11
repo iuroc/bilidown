@@ -10,6 +10,7 @@ import { redirect } from 'vanjs-router'
 import { GLOBAL_HIDE_PAGE } from './mixin'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './scss/index.scss'
+import { PlayerModalComp } from './task/playerModal'
 
 const { div } = van.tags
 

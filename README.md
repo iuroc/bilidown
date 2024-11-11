@@ -1,6 +1,5 @@
 # Bilidown
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/iuroc/bilidown)](https://goreportcard.com/report/github.com/iuroc/bilidown)
 [![GitHub Release](https://img.shields.io/github/v/release/iuroc/bilidown)](https://github.com/iuroc/bilidown/releases)
 
 哔哩哔哩视频解析下载工具，支持 8K 视频、Hi-Res 音频、杜比视界下载、批量解析，可扫码登录，常驻托盘。

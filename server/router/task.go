@@ -1,6 +1,7 @@
 package router
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -142,21 +143,24 @@ func DeleteTask(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	_task, err := task.GetTask(db, taskID)
-	if err != nil {
-		util.Res{Success: false, Message: err.Error()}.Write(w)
+	if err == sql.ErrNoRows {
+		util.Res{Success: true, Message: "数据库中没有该条记录，所以本次操作被忽略，可以算作成功。"}.Write(w)
 		return
 	}
-
+	if err != nil {
+		util.Res{Success: false, Message: fmt.Sprintf("task.GetTask: %v", err)}.Write(w)
+		return
+	}
 	filePath := _task.FilePath()
 	err = os.Remove(filePath)
 	if err != nil && !os.IsNotExist(err) {
-		util.Res{Success: false, Message: err.Error()}.Write(w)
+		util.Res{Success: false, Message: fmt.Sprintf("文件删除失败 os.Remove: %v", err)}.Write(w)
 		return
 	}
 
 	err = task.DeleteTask(db, taskID)
 	if err != nil {
-		util.Res{Success: false, Message: err.Error()}.Write(w)
+		util.Res{Success: false, Message: fmt.Sprintf("task.DeleteTask: %v", err)}.Write(w)
 		return
 	}
 	util.Res{Success: true, Message: "删除成功"}.Write(w)

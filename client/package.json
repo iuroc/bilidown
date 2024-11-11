@@ -21,6 +21,7 @@
   "dependencies": {
     "bootstrap": "^5.3.3",
     "p-queue": "^8.0.1",
+    "plyr": "^3.7.8",
     "uuid": "^10.0.0",
     "vanjs-core": "^1.5.2",
     "vanjs-router": "^2.1.0"
