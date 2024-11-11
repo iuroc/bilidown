@@ -2,6 +2,7 @@ package router
 
 import (
 	"bilidown/util"
+	"bilidown/util/res_error"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -26,7 +27,28 @@ func API() *http.ServeMux {
 	router.HandleFunc("/quit", Quit)
 	router.HandleFunc("/getPopularVideos", GetPopularVideos)
 	router.HandleFunc("/deleteTask", DeleteTask)
+	router.HandleFunc("/getRedirectedLocation", GetRedirectedLocation)
+
 	return router
+}
+
+func GetRedirectedLocation(w http.ResponseWriter, r *http.Request) {
+	if r.ParseForm() != nil {
+		res_error.ParamError(w)
+		return
+	}
+	url := r.FormValue("url")
+	if !util.IsValidURL(url) {
+		res_error.URLFormatError(w)
+		return
+	}
+	if location, err := util.GetRedirectedLocation(url); err != nil {
+		res_error.NoRedirectedLocation(w)
+		return
+	} else {
+		util.Res{Success: true, Message: "获取成功", Data: location}.Write(w)
+		return
+	}
 }
 
 func Quit(w http.ResponseWriter, r *http.Request) {

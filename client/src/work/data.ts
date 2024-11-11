@@ -67,3 +67,12 @@ export const getPopularVideoBvids = async (): Promise<string[]> => {
     if (!res.success) throw new Error(res.message)
     return res.data
 }
+
+export const getRedirectedLocation = async (url: string): Promise<string> => {
+    return fetch(`/api/getRedirectedLocation?url=${encodeURIComponent(url)}`)
+        .then(res => res.json())
+        .then((data: ResJSON<string>) => {
+            if (!data.success) throw new Error(data.message)
+            return data.data
+        })
+}
