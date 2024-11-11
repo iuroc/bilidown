@@ -1,8 +1,9 @@
 package bilibili
 
 import (
-	"bilidown/common"
 	"encoding/json"
+
+	"github.com/iuroc/bilidown/common"
 )
 
 // BaseRes 来自 Bilibili 的接口响应，Message 字段为 msg

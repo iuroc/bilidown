@@ -1,12 +1,13 @@
 package router
 
 import (
-	"bilidown/bilibili"
-	"bilidown/util"
-	"bilidown/util/res_error"
 	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/iuroc/bilidown/bilibili"
+	"github.com/iuroc/bilidown/util"
+	"github.com/iuroc/bilidown/util/res_error"
 )
 
 // GetVideoInfo 通过 BV 号获取视频信息

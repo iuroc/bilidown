@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bilidown/router"
-	"bilidown/util"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -13,6 +11,9 @@ import (
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/iuroc/bilidown/router"
+	"github.com/iuroc/bilidown/util"
 
 	"github.com/getlantern/systray"
 	_ "modernc.org/sqlite"

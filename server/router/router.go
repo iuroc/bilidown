@@ -1,12 +1,13 @@
 package router
 
 import (
-	"bilidown/util"
-	"bilidown/util/res_error"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
+
+	"github.com/iuroc/bilidown/util"
+	"github.com/iuroc/bilidown/util/res_error"
 )
 
 func API() *http.ServeMux {

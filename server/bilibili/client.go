@@ -1,12 +1,13 @@
 package bilibili
 
 import (
-	"bilidown/util"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"net/http"
 	"net/url"
+
+	"github.com/iuroc/bilidown/util"
 )
 
 type BiliClient struct {

@@ -1,8 +1,6 @@
 package router
 
 import (
-	"bilidown/task"
-	"bilidown/util"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -10,6 +8,9 @@ import (
 	"os/exec"
 	"runtime"
 	"strconv"
+
+	"github.com/iuroc/bilidown/task"
+	"github.com/iuroc/bilidown/util"
 )
 
 func CreateTask(w http.ResponseWriter, r *http.Request) {

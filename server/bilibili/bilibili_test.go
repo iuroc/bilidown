@@ -1,12 +1,13 @@
 package bilibili_test
 
 import (
-	"bilidown/bilibili"
-	"bilidown/util"
 	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/iuroc/bilidown/bilibili"
+	"github.com/iuroc/bilidown/util"
 
 	"github.com/skip2/go-qrcode"
 	_ "modernc.org/sqlite"

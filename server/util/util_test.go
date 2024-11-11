@@ -1,11 +1,12 @@
 package util_test
 
 import (
-	"bilidown/common"
-	"bilidown/util"
 	"fmt"
 	"os"
 	"testing"
+
+	"github.com/iuroc/bilidown/common"
+	"github.com/iuroc/bilidown/util"
 )
 
 func TestRandomString(t *testing.T) {

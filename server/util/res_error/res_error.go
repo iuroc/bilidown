@@ -1,8 +1,9 @@
 package res_error
 
 import (
-	"bilidown/util"
 	"net/http"
+
+	"github.com/iuroc/bilidown/util"
 )
 
 func sendError(w http.ResponseWriter, message string) {

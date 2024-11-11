@@ -1,7 +1,6 @@
 package util
 
 import (
-	"bilidown/common"
 	"errors"
 	"net/http"
 	"net/url"
@@ -9,6 +8,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+
+	"github.com/iuroc/bilidown/common"
 )
 
 func CheckBvidFormat(bvid string) bool {

@@ -1,10 +1,11 @@
 package router
 
 import (
-	"bilidown/bilibili"
-	"bilidown/util"
 	"encoding/base64"
 	"net/http"
+
+	"github.com/iuroc/bilidown/bilibili"
+	"github.com/iuroc/bilidown/util"
 
 	"github.com/skip2/go-qrcode"
 )
