@@ -54,6 +54,8 @@ git clone https://github.com/iuroc/bilidown
 
 ### 交叉编译发行版
 
+-   执行 `goreleaser` 命令时将自动执行 `pnpm build` 和 `go mod tidy`
+
 ```shell
 cd bilidown/server
 # [交叉编译 Releases]
