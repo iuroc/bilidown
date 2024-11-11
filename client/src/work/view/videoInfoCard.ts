@@ -182,7 +182,7 @@ const InputGroup = (title: Val<string>, value: State<string>, option?: {
     disabled?: Val<boolean>
     elementType?: 'input' | 'textarea'
 }) => {
-    return div({ class: 'input-group input-group-sm shadow-sm' },
+    return div({ class: 'input-group input-group-sm shadow-sm rounded' },
         div({ class: 'input-group-text' }, title),
         van.tags[option?.elementType || 'input']({
             class: 'form-control bg-white',
