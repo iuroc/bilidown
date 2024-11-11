@@ -18,14 +18,13 @@ class InputBoxComp implements VanComponent {
                     input({
                         class: () => `form-control border-3 ${workRoute.urlInvalidClass.val}`,
                         placeholder: '请输入待解析的视频链接',
-                        type: 'url',
                         value: workRoute.urlValue,
                         oninput: event => workRoute.urlValue.val = event.target.value,
                         onkeyup: event => {
                             if (event.key === 'Enter') document.getElementById(this.btnID)?.click()
                         }
                     }),
-                    label('请输入视频链接或 BV/EP/SS 号')
+                    label({ class: 'w-100' }, '请输入视频链接或 BV/EP/SS 号')
                 ),
                 ParseButton(this, false, this.btnID),
                 ParseButton(this, true)
@@ -42,6 +41,7 @@ const ParseButton = (parent: InputBoxComp, large: boolean, id: string = '') => {
         class: `btn btn-success text-nowrap ${large ? `btn-lg d-none d-md-block` : 'd-md-none'}`,
         async onclick() {
             try {
+                workRoute.urlValue.val = workRoute.urlValue.val.trim()
                 const handleB23Result = await handleB23(workRoute.urlValue.val)
                 if (handleB23Result) workRoute.urlValue.val = handleB23Result
                 const { type, value } = checkURL(workRoute.urlValue.val)
