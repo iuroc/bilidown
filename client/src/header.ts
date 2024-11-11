@@ -5,11 +5,11 @@ import { GLOBAL_HAS_LOGIN } from './mixin'
 const { a, div } = van.tags
 
 export default () => {
-    const classStr = (name: string) => van.derive(() => `nav-link ${now.val.split('/')[0] == name ? 'active' : ''}`)
+    const classStr = (name: string) => van.derive(() => `text-nowrap nav-link ${now.val.split('/')[0] == name ? 'active' : ''}`)
 
     return div({ class: 'hstack gap-4' },
         div({ class: 'fs-4 fw-bold' }, 'Bilidown'),
-        div({ class: 'nav nav-underline' },
+        div({ class: 'nav nav-underline flex-nowrap overflow-auto' },
             div({ class: 'nav-item', hidden: () => !GLOBAL_HAS_LOGIN.val },
                 a({ class: classStr('work'), href: '#/work' }, '视频解析')
             ),
