@@ -14,7 +14,6 @@ before:
         - go mod tidy
         # you may remove this if you don't need go generate
         - go generate ./...
-        - pnpm --prefix ../client build
 
 builds:
     - id: bilidown_windows
