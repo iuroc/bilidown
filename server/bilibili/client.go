@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/iuroc/bilidown/util"
+	"github.com/iuroc/server/bilidown/util"
 )
 
 type BiliClient struct {

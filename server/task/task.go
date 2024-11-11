@@ -18,9 +18,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/iuroc/bilidown/bilibili"
-	"github.com/iuroc/bilidown/common"
-	"github.com/iuroc/bilidown/util"
+	"github.com/iuroc/server/bilidown/bilibili"
+	"github.com/iuroc/server/bilidown/common"
+	"github.com/iuroc/server/bilidown/util"
 )
 
 // TaskInitOption 创建任务时需要从 POST 请求获取的参数

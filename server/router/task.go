@@ -9,8 +9,8 @@ import (
 	"runtime"
 	"strconv"
 
-	"github.com/iuroc/bilidown/task"
-	"github.com/iuroc/bilidown/util"
+	"github.com/iuroc/server/bilidown/task"
+	"github.com/iuroc/server/bilidown/util"
 )
 
 func CreateTask(w http.ResponseWriter, r *http.Request) {

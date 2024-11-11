@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/iuroc/bilidown/router"
-	"github.com/iuroc/bilidown/util"
+	"github.com/iuroc/server/bilidown/router"
+	"github.com/iuroc/server/bilidown/util"
 
 	"github.com/getlantern/systray"
 	_ "modernc.org/sqlite"
@@ -124,8 +124,6 @@ func mustReadFile(path string) []byte {
 func setTitle() {
 	title := "Bilidown"
 	tooltip := fmt.Sprintf("%s 视频解析器 %s (port:%d)", title, VERSION, HTTP_PORT)
-	// only available on Mac and Linux.
-	systray.SetTitle(title)
 	// only available on Mac and Windows.
 	systray.SetTooltip(tooltip)
 }

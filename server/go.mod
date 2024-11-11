@@ -1,4 +1,4 @@
-module github.com/iuroc/bilidown
+module github.com/iuroc/server/bilidown
 
 go 1.23.0
 
