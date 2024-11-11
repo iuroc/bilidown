@@ -138,7 +138,7 @@ var DownloadVideo = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request
 		return
 	}
 	path := r.FormValue("path")
-	if _, err := os.Stat(path); os.IsNotExist(err) {
+	if info, err := os.Stat(path); os.IsNotExist(err) {
 		res_error.FileNotExist(w, path)
 		return
 	} else if err != nil {
@@ -147,6 +147,12 @@ var DownloadVideo = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request
 	} else if filepath.Ext(path) != ".mp4" {
 		res_error.FileTypeNotAllow(w)
 		return
+	} else {
+		file, err := os.Open(path)
+		if err != nil {
+			res_error.SystemError(w)
+			return
+		}
+		http.ServeContent(w, r, file.Name(), info.ModTime(), file)
 	}
-	http.ServeFile(w, r, path)
 })
