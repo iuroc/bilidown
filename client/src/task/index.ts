@@ -60,6 +60,7 @@ export class TaskRoute implements VanComponent {
                                         _that.playerModalComp.playerComp.src.val = `/api/downloadVideo?path=${encodeURIComponent(
                                             `${task.folder}\\${filename}`
                                         )}`
+                                        _that.playerModalComp.playerComp.filename.val = task.title
                                     }
                                 },
                                     div({
