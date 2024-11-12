@@ -66,24 +66,24 @@ export class PlayerModalComp implements VanComponent {
                         button({ class: `btn-close`, 'data-bs-dismiss': `modal` })
                     ),
                     div({ class: 'modal-body p-0' },
-                        this.playerComp.element,
+                        div({ class: 'ratio ratio-16x9' }, this.playerComp.element),
                         div({ class: 'vstack p-3 gap-3' },
-                            div({}, that.playerComp.filename),
-                            div({ class: 'hstack gap-3 justify-content-end' },
-                                button({ class: 'btn btn-secondary', 'data-bs-dismiss': `modal` }, '关闭'),
-                                button({
-                                    class: 'btn btn-primary', onclick() {
-                                        const link = a({
-                                            download: () => that.playerComp.filename.val + '.mp4',
-                                            href: that.playerComp.src
-                                        })
-                                        that.modal.hide()
-                                        link.click()
-                                    }
-                                }, '下载')
-                            )
+                            div({}, that.playerComp.filename)
                         )
                     ),
+                    div({ class: 'modal-footer' },
+                        button({ class: 'btn btn-secondary', 'data-bs-dismiss': `modal` }, '关闭'),
+                        button({
+                            class: 'btn btn-primary', onclick() {
+                                const link = a({
+                                    download: () => that.playerComp.filename.val + '.mp4',
+                                    href: that.playerComp.src
+                                })
+                                that.modal.hide()
+                                link.click()
+                            }
+                        }, '下载')
+                    )
                 )
             )
         )
