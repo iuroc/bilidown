@@ -103,6 +103,7 @@ func openBrowser(url string) {
 	fmt.Printf("Opened in default browser: %s.\n", url)
 }
 
+// setIcon 设置托盘图标
 func setIcon() {
 	var path string
 	if runtime.GOOS == "windows" {
@@ -113,6 +114,7 @@ func setIcon() {
 	systray.SetIcon(mustReadFile(path))
 }
 
+// mustReadFile 返回文件字节内容
 func mustReadFile(path string) []byte {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -121,6 +123,7 @@ func mustReadFile(path string) []byte {
 	return data
 }
 
+// setTitle 设置托盘标题和工具提示
 func setTitle() {
 	title := "Bilidown"
 	tooltip := fmt.Sprintf("%s 视频解析器 %s (port:%d)", title, VERSION, HTTP_PORT)
@@ -128,6 +131,7 @@ func setTitle() {
 	systray.SetTooltip(tooltip)
 }
 
+// setMenuItem 设置托盘菜单
 func setMenuItem() {
 	openBrowserItemText := fmt.Sprintf("打开主界面 (port:%d)", HTTP_PORT)
 	openBrowserItem := systray.AddMenuItem(openBrowserItemText, openBrowserItemText)
