@@ -12,40 +12,39 @@ import (
 
 func API() *http.ServeMux {
 	router := http.NewServeMux()
-	router.HandleFunc("/getVideoInfo", GetVideoInfo)
-	router.HandleFunc("/getSeasonInfo", GetSeasonInfo)
-	router.HandleFunc("/getQRInfo", GetQRInfo)
-	router.HandleFunc("/getQRStatus", GetQRStatus)
-	router.HandleFunc("/checkLogin", CheckLogin)
-	router.HandleFunc("/getPlayInfo", GetPlayInfo)
-	router.HandleFunc("/createTask", CreateTask)
-	router.HandleFunc("/getActiveTask", GetActiveTask)
-	router.HandleFunc("/getTaskList", GetTaskList)
-	router.HandleFunc("/showFile", ShowFile)
-	router.HandleFunc("/getFields", GetFields)
-	router.HandleFunc("/saveFields", SaveFields)
-	router.HandleFunc("/logout", Logout)
-	router.HandleFunc("/quit", Quit)
-	router.HandleFunc("/getPopularVideos", GetPopularVideos)
-	router.HandleFunc("/deleteTask", DeleteTask)
-	router.HandleFunc("/getRedirectedLocation", GetRedirectedLocation)
-	router.HandleFunc("/downloadVideo", DownloadVideo)
-
+	router.HandleFunc("/getVideoInfo", getVideoInfo)
+	router.HandleFunc("/getSeasonInfo", getSeasonInfo)
+	router.HandleFunc("/getQRInfo", getQRInfo)
+	router.HandleFunc("/getQRStatus", getQRStatus)
+	router.HandleFunc("/checkLogin", checkLogin)
+	router.HandleFunc("/getPlayInfo", getPlayInfo)
+	router.HandleFunc("/createTask", createTask)
+	router.HandleFunc("/getActiveTask", getActiveTask)
+	router.HandleFunc("/getTaskList", getTaskList)
+	router.HandleFunc("/showFile", showFile)
+	router.HandleFunc("/getFields", getFields)
+	router.HandleFunc("/saveFields", saveFields)
+	router.HandleFunc("/logout", logout)
+	router.HandleFunc("/quit", quit)
+	router.HandleFunc("/getPopularVideos", getPopularVideos)
+	router.HandleFunc("/deleteTask", deleteTask)
+	router.HandleFunc("/getRedirectedLocation", getRedirectedLocation)
+	router.HandleFunc("/downloadVideo", downloadVideo)
 	return router
 }
 
-func GetRedirectedLocation(w http.ResponseWriter, r *http.Request) {
+func getRedirectedLocation(w http.ResponseWriter, r *http.Request) {
 	if r.ParseForm() != nil {
-		res_error.ParamError(w)
+		res_error.Send(w, res_error.ParamError)
 		return
 	}
 	url := r.FormValue("url")
 	if !util.IsValidURL(url) {
-		res_error.URLFormatError(w)
+		res_error.Send(w, res_error.URLFormatError)
 		return
 	}
 	if location, err := util.GetRedirectedLocation(url); err != nil {
-		res_error.NoRedirectedLocation(w)
+		res_error.Send(w, res_error.NoLocationError)
 		return
 	} else {
 		util.Res{Success: true, Message: "获取成功", Data: location}.Write(w)
@@ -53,14 +52,14 @@ func GetRedirectedLocation(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func Quit(w http.ResponseWriter, r *http.Request) {
+func quit(w http.ResponseWriter, r *http.Request) {
 	util.Res{Success: true, Message: "退出成功"}.Write(w)
 	go func() {
 		os.Exit(0)
 	}()
 }
 
-func GetFields(w http.ResponseWriter, r *http.Request) {
+func getFields(w http.ResponseWriter, r *http.Request) {
 	db := util.MustGetDB()
 	defer db.Close()
 
@@ -72,7 +71,7 @@ func GetFields(w http.ResponseWriter, r *http.Request) {
 	util.Res{Success: true, Data: fields}.Write(w)
 }
 
-func SaveFields(w http.ResponseWriter, r *http.Request) {
+func saveFields(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		util.Res{Success: false, Message: "不支持的请求方法"}.Write(w)
 		return

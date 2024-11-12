@@ -10,7 +10,7 @@ import (
 	"github.com/skip2/go-qrcode"
 )
 
-func GetQRInfo(w http.ResponseWriter, r *http.Request) {
+func getQRInfo(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	client := bilibili.BiliClient{}
 	qrInfo, err := client.NewQRInfo()
@@ -36,7 +36,7 @@ func GetQRInfo(w http.ResponseWriter, r *http.Request) {
 		}}.Write(w)
 }
 
-func CheckLogin(w http.ResponseWriter, r *http.Request) {
+func checkLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
 	db := util.MustGetDB()
 	defer db.Close()
@@ -58,8 +58,8 @@ func CheckLogin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GetQRStatus 获取二维码状态
-func GetQRStatus(w http.ResponseWriter, r *http.Request) {
+// getQRStatus 获取二维码状态
+func getQRStatus(w http.ResponseWriter, r *http.Request) {
 	if r.ParseForm() != nil {
 		util.Res{Success: false, Message: "参数错误"}.Write(w)
 		return
@@ -90,7 +90,7 @@ func GetQRStatus(w http.ResponseWriter, r *http.Request) {
 	util.Res{Success: true, Message: "登录成功"}.Write(w)
 }
 
-func Logout(w http.ResponseWriter, r *http.Request) {
+func logout(w http.ResponseWriter, r *http.Request) {
 	db := util.MustGetDB()
 	defer db.Close()
 	err := bilibili.SaveSessdata(db, "")

@@ -3,7 +3,6 @@ package router
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strconv"
 
@@ -12,15 +11,15 @@ import (
 	"bilidown/util/res_error"
 )
 
-// GetVideoInfo 通过 BV 号获取视频信息
-func GetVideoInfo(w http.ResponseWriter, r *http.Request) {
+// getVideoInfo 通过 BV 号获取视频信息
+func getVideoInfo(w http.ResponseWriter, r *http.Request) {
 	if r.ParseForm() != nil {
-		res_error.ParamError(w)
+		res_error.Send(w, res_error.ParamError)
 		return
 	}
 	bvid := r.FormValue("bvid")
 	if !util.CheckBvidFormat(bvid) {
-		res_error.BvidFormatError(w)
+		res_error.Send(w, res_error.BvidFormatError)
 		return
 	}
 	db := util.MustGetDB()
@@ -40,8 +39,8 @@ func GetVideoInfo(w http.ResponseWriter, r *http.Request) {
 	util.Res{Success: true, Message: "获取成功", Data: videoInfo}.Write(w)
 }
 
-// GetSeasonInfo 通过 EP 号或 SS 号获取视频信息
-func GetSeasonInfo(w http.ResponseWriter, r *http.Request) {
+// getSeasonInfo 通过 EP 号或 SS 号获取视频信息
+func getSeasonInfo(w http.ResponseWriter, r *http.Request) {
 	if r.ParseForm() != nil {
 		util.Res{Success: false, Message: "参数错误"}.Write(w)
 		return
@@ -77,8 +76,8 @@ func GetSeasonInfo(w http.ResponseWriter, r *http.Request) {
 	util.Res{Success: true, Message: "获取成功", Data: seasonInfo}.Write(w)
 }
 
-// GetPlayInfo 通过 BVID 和 CID 获取视频播放信息
-func GetPlayInfo(w http.ResponseWriter, r *http.Request) {
+// getPlayInfo 通过 BVID 和 CID 获取视频播放信息
+func getPlayInfo(w http.ResponseWriter, r *http.Request) {
 	if r.ParseForm() != nil {
 		util.Res{Success: false, Message: "参数错误"}.Write(w)
 		return
@@ -110,7 +109,7 @@ func GetPlayInfo(w http.ResponseWriter, r *http.Request) {
 	util.Res{Success: true, Message: "获取成功", Data: playInfo}.Write(w)
 }
 
-func GetPopularVideos(w http.ResponseWriter, r *http.Request) {
+func getPopularVideos(w http.ResponseWriter, r *http.Request) {
 	db := util.MustGetDB()
 	defer db.Close()
 	sessdata, err := bilibili.GetSessdata(db)
@@ -132,27 +131,8 @@ func GetPopularVideos(w http.ResponseWriter, r *http.Request) {
 	util.Res{Success: true, Message: "获取成功", Data: bvids}.Write(w)
 }
 
-var DownloadVideo = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-	if r.ParseForm() != nil {
-		res_error.ParamError(w)
-		return
-	}
-	path := r.FormValue("path")
-	if info, err := os.Stat(path); os.IsNotExist(err) {
-		res_error.FileNotExist(w, path)
-		return
-	} else if err != nil {
-		res_error.SystemError(w)
-		return
-	} else if filepath.Ext(path) != ".mp4" {
-		res_error.FileTypeNotAllow(w)
-		return
-	} else {
-		file, err := os.Open(path)
-		if err != nil {
-			res_error.SystemError(w)
-			return
-		}
-		http.ServeContent(w, r, file.Name(), info.ModTime(), file)
-	}
+var downloadVideo = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.Query().Get("path")
+	safePath := filepath.Clean(path)
+	http.ServeFile(w, r, safePath)
 })

@@ -14,7 +14,7 @@ import (
 	"bilidown/util"
 )
 
-func CreateTask(w http.ResponseWriter, r *http.Request) {
+func createTask(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	if r.Method != http.MethodPost {
 		util.Res{Success: false, Message: "不支持的请求方法"}.Write(w)
@@ -71,11 +71,11 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 	util.Res{Success: true, Message: "创建成功"}.Write(w)
 }
 
-func GetActiveTask(w http.ResponseWriter, r *http.Request) {
+func getActiveTask(w http.ResponseWriter, r *http.Request) {
 	util.Res{Success: true, Data: task.GlobalTaskList}.Write(w)
 }
 
-func GetTaskList(w http.ResponseWriter, r *http.Request) {
+func getTaskList(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		util.Res{Success: false, Message: "参数错误"}.Write(w)
@@ -99,8 +99,8 @@ func GetTaskList(w http.ResponseWriter, r *http.Request) {
 	util.Res{Success: true, Message: "获取成功", Data: tasks}.Write(w)
 }
 
-// ShowFile 调用 Explorer 查看文件位置
-func ShowFile(w http.ResponseWriter, r *http.Request) {
+// showFile 调用 Explorer 查看文件位置
+func showFile(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		util.Res{Success: false, Message: "参数错误"}.Write(w)
 		return
@@ -132,7 +132,7 @@ func ShowFile(w http.ResponseWriter, r *http.Request) {
 	util.Res{Success: true, Message: "操作成功"}.Write(w)
 }
 
-func DeleteTask(w http.ResponseWriter, r *http.Request) {
+func deleteTask(w http.ResponseWriter, r *http.Request) {
 	taskIDStr := r.FormValue("id")
 	taskID, err := strconv.Atoi(taskIDStr)
 	if err != nil {
