@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
-	"sync"
 	"time"
 
 	"bilidown/router"
@@ -55,18 +54,13 @@ func onReady() {
 // checkFFmpeg 检测 ffmpeg 的安装情况，如果未安装则打印提示信息。
 func checkFFmpeg() {
 	if _, err := util.GetFFmpegPath(); err != nil {
-		fmt.Println("🚨 FFmpeg is missing. Install it from https://www.ffmpeg.org/download.html or place it in ./bin, then restart the application.")
-		var wg sync.WaitGroup
-		wg.Add(1)
-		wg.Wait()
+		log.Fatalln("🚨 FFmpeg is missing. Install it from https://www.ffmpeg.org/download.html or place it in ./bin, then restart the application.")
 	}
 }
 
 // keepWait 阻塞终端
 func keepWait() {
-	var wg sync.WaitGroup
-	wg.Add(1)
-	wg.Wait()
+	select()
 }
 
 // 配置和启动 HTTP 服务器
@@ -100,7 +94,7 @@ func openBrowser(url string) {
 	if err := cmd.Start(); err != nil {
 		log.Printf("openBrowser: %v.", err)
 	}
-	fmt.Printf("Opened in default browser: %s.\n", url)
+	log.Printf("Opened in default browser: %s.\n", url)
 }
 
 // setIcon 设置托盘图标
