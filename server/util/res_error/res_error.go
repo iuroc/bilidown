@@ -22,4 +22,5 @@ const (
 	FileNotFountError     = "文件不存在"
 	FileTypeNotAllowError = "不允许的文件类型"
 	SystemError           = "系统错误"
+	NotLogin              = "未登录"
 )

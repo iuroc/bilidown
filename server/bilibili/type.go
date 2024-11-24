@@ -234,3 +234,18 @@ type Media struct {
 	FrameRate string             `json:"frameRate"`
 	Codecid   int                `json:"codecid"`
 }
+
+type FavList []struct {
+	Title    string `json:"title"`
+	Cover    string `json:"cover"`
+	Intro    string `json:"intro"`
+	Duration int    `json:"duration"`
+	Upper    struct {
+		Mid  int    `json:"mid"`
+		Name string `json:"name"`
+		Face string `json:"face"`
+	} `json:"upper"`
+	PubTime int    `json:"pubtime"`
+	Bvid    string `json:"bvid"`
+	Aid     int    `json:"id"`
+}

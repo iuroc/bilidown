@@ -27,7 +27,7 @@ func getVideoInfo(w http.ResponseWriter, r *http.Request) {
 
 	sessdata, err := bilibili.GetSessdata(db)
 	if err != nil || sessdata == "" {
-		util.Res{Success: false, Message: "未登录"}.Write(w)
+		res_error.Send(w, res_error.NotLogin)
 		return
 	}
 	client := bilibili.BiliClient{SESSDATA: sessdata}
@@ -63,7 +63,7 @@ func getSeasonInfo(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 	sessdata, err := bilibili.GetSessdata(db)
 	if err != nil || sessdata == "" {
-		util.Res{Success: false, Message: "未登录"}.Write(w)
+		res_error.Send(w, res_error.NotLogin)
 		return
 	}
 
@@ -97,7 +97,7 @@ func getPlayInfo(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 	sessdata, err := bilibili.GetSessdata(db)
 	if err != nil || sessdata == "" {
-		util.Res{Success: false, Message: "未登录"}.Write(w)
+		res_error.Send(w, res_error.NotLogin)
 		return
 	}
 	client := bilibili.BiliClient{SESSDATA: sessdata}
@@ -114,7 +114,7 @@ func getPopularVideos(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 	sessdata, err := bilibili.GetSessdata(db)
 	if err != nil || sessdata == "" {
-		util.Res{Success: false, Message: "未登录"}.Write(w)
+		res_error.Send(w, res_error.NotLogin)
 		return
 	}
 
@@ -156,4 +156,26 @@ var getSeasonsArchivesListFirstBvid = http.HandlerFunc(func(w http.ResponseWrite
 		return
 	}
 	util.Res{Success: true, Message: "获取成功", Data: bvid}.Write(w)
+})
+
+var getFavList = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	mediaId, err := strconv.Atoi(r.URL.Query().Get("mediaId"))
+	if err != nil {
+		res_error.Send(w, res_error.ParamError)
+		return
+	}
+	db := util.MustGetDB()
+	defer db.Close()
+	sessdata, err := bilibili.GetSessdata(db)
+	if err != nil || sessdata == "" {
+		res_error.Send(w, res_error.NotLogin)
+		return
+	}
+	client := bilibili.BiliClient{SESSDATA: sessdata}
+	favList, err := client.GetFavlist(mediaId)
+	if err != nil {
+		res_error.Send(w, err.Error())
+		return
+	}
+	util.Res{Success: true, Message: "获取成功", Data: favList}.Write(w)
 })

@@ -3,8 +3,10 @@ package bilibili
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math/rand"
 	"strconv"
+	"strings"
 )
 
 // GetBVInfo 根据 BVID 获取视频信息
@@ -163,4 +165,64 @@ func (client *BiliClient) GetSeasonsArchivesListFirstBvid(mid int, seasonId int)
 		return "", errors.New("视频列表为空")
 	}
 	return data.Archives[0].Bvid, nil
+}
+
+func (client *BiliClient) GetFavlist(mediaId int) (*FavList, error) {
+	if client.SESSDATA == "" {
+		return nil, errors.New("SESSDATA 不能为空")
+	}
+	page := 0
+	retry := 0
+	allFavList := FavList{}
+	for {
+		favList, hasMore, err := client.GetFavlistByPage(mediaId, page, 40)
+		if err != nil {
+			fmt.Println(err.Error())
+			if retry == 5 || strings.HasPrefix(err.Error(), "body.Code not 0") {
+				return nil, err
+			}
+			retry++
+			continue
+		}
+		allFavList = append(allFavList, *favList...)
+		if !hasMore {
+			break
+		}
+		page++
+	}
+	return &allFavList, nil
+}
+
+func (client *BiliClient) GetFavlistByPage(mediaId int, page int, pageSize int) (favlist *FavList, hasMore bool, err error) {
+	if client.SESSDATA == "" {
+		return nil, false, errors.New("SESSDATA 不能为空")
+	}
+	response, err := client.SimpleGET("https://api.bilibili.com/x/v3/fav/resource/list", map[string]string{
+		"media_id": strconv.Itoa(mediaId),
+		"pn":       strconv.Itoa(page + 1),
+		"ps":       strconv.Itoa(pageSize),
+		"order":    "mtime",
+		"type":     "0",
+		"tid":      "0",
+		"platform": "web",
+	})
+	if err != nil {
+		return nil, false, err
+	}
+	defer response.Body.Close()
+	body := BaseResV2{}
+	if err = json.NewDecoder(response.Body).Decode(&body); err != nil {
+		return nil, false, err
+	}
+	if body.Code != 0 {
+		return nil, false, fmt.Errorf("body.Code not 0, %s", body.Message)
+	}
+	data := struct {
+		Medias  FavList `json:"medias"`
+		HasMore bool    `json:"has_more"`
+	}{}
+	if err = json.Unmarshal(body.Data, &data); err != nil {
+		return nil, false, err
+	}
+	return &data.Medias, data.HasMore, nil
 }
