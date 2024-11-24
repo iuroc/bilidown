@@ -6,10 +6,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 	"sync"
-	"time"
 )
 
 func CreateLog(db *sql.DB, content string) error {
@@ -150,31 +148,4 @@ func MustGetDB(path ...string) *sql.DB {
 		log.Fatalln("sql.Open:", err)
 	}
 	return db
-}
-
-// GetWbiKey 从数据库中获取 imgKey 和 subKey，如果数据库中不存在记录或记录过期，则返回空字符串但不返回错误
-func GetWbiKey(db *sql.DB) (imgKey string, subKey string, err error) {
-	fields, err := GetFields(db, "wbi_img_key", "wbi_sub_key", "wbi_key_update_at")
-	if err != nil {
-		return "", "", err
-	}
-	// 获取上次更新时间的时间戳，单位是秒
-	updateAt, err := strconv.ParseInt(fields["wbi_key_update_at"], 10, 64)
-	if err != nil {
-		return "", "", nil
-	}
-	// 注意 key_update_at 单位是秒，判断上次刷新时间是否超过 1 天
-	if time.Now().Unix()-updateAt > 24*60*60 {
-		return "", "", nil
-	}
-	return fields["wbi_img_key"], fields["wbi_sub_key"], nil
-}
-
-// SaveWbiKey 保存 imgKey 和 subKey 到数据库
-func SaveWbiKey(db *sql.DB, imgKey string, subKey string) error {
-	return SaveFields(db, [][2]string{
-		{"wbi_img_key", imgKey},
-		{"wbi_sub_key", subKey},
-		{"wbi_key_update_at", strconv.FormatInt(time.Now().Unix(), 10)},
-	})
 }

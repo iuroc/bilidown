@@ -1,6 +1,8 @@
 package util
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"errors"
 	"net/http"
 	"net/url"
@@ -79,4 +81,12 @@ func GetRedirectedLocation(url string) (string, error) {
 	} else {
 		return locationURL.String(), nil
 	}
+}
+
+func MD5Hash(str string) string {
+	hasher := md5.New()
+	hasher.Write([]byte(str))
+	hash := hasher.Sum(nil)
+	hashString := hex.EncodeToString(hash)
+	return hashString
 }

@@ -1,9 +1,10 @@
-package bilibili_test
+package bilibili
 
 import (
-	"bilidown/bilibili"
 	"bilidown/util"
 	"fmt"
+	"net/url"
+	"strings"
 	"testing"
 	"time"
 )
@@ -11,30 +12,49 @@ import (
 func TestGetWbiKey(t *testing.T) {
 	db := util.MustGetDB("../data.db")
 	defer db.Close()
-	sessdata, err := bilibili.GetSessdata(db)
+	sessdata, err := GetSessdata(db)
 	if err != nil {
 		t.Error(err)
 	}
-	client := bilibili.BiliClient{SESSDATA: sessdata}
-	imgKey, subKey, err := util.GetWbiKey(db)
+	client := BiliClient{SESSDATA: sessdata}
+	mixinKey, err := client.GetMixinKey(db)
 	if err != nil {
 		t.Error(err)
 	}
-	if imgKey == "" || subKey == "" {
-		// 更新数据库中的 WebKey
-		if imgKey, subKey, err = client.GetWbiKey(); err != nil {
-			t.Error(err)
-		}
-		if err = util.SaveWbiKey(db, imgKey, subKey); err != nil {
-			t.Error(err)
-		}
-		fmt.Println("更新缓存")
-	} else {
-		fmt.Println("读取缓存")
-	}
-	fmt.Println(imgKey, subKey)
+	fmt.Println(mixinKey)
 }
 
 func TestTime(t *testing.T) {
 	fmt.Println(time.Now().Unix())
+}
+
+func TestURLEncode(t *testing.T) {
+	str := url.Values{
+		"foo": {"one one four"},
+		"bar": {"五一四"},
+		"baz": {"1919810"},
+	}.Encode()
+	str = strings.ReplaceAll(str, "+", "%20")
+	fmt.Println(str)
+}
+
+func TestWbiSign(t *testing.T) {
+	db := util.MustGetDB("../data.db")
+	defer db.Close()
+	sessdata, err := GetSessdata(db)
+	if err != nil {
+		t.Error(err)
+	}
+	client := BiliClient{SESSDATA: sessdata}
+	mixinKey, err := client.GetMixinKey(db)
+	if err != nil {
+		t.Error(err)
+	}
+	newParams := WbiSign(map[string]string{
+		"foo": "114",
+		"bar": "514",
+		"zab": "1919810",
+	}, mixinKey)
+
+	fmt.Printf("%+v", newParams)
 }
