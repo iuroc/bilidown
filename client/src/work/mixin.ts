@@ -141,6 +141,7 @@ export const handleB23 = async (url: string): Promise<string | false> => {
 }
 
 export const handleSeasonsArchivesList = async (url: string): Promise<string | false> => {
+    try { new URL(url) } catch { return false }
     const _url = new URL(url)
     const mid = _url.pathname.match(/^\/(\d+)\/channel\/collectiondetail$/)?.[1]
     const seasonId = parseInt(_url.searchParams.get('sid') || '')
