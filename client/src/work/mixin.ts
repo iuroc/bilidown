@@ -20,7 +20,6 @@ export const start = async (
     // 而如果是单击按钮或者路由参数带有视频信息，那么实现的解析结果需要同步修改路由参数
     if (!workRoute.isInitPopular.val)
         history.replaceState(null, '', `#/work/${option.idType}/${option.value}`)
-    workRoute.btnLoading.val = true
     workRoute.sectionTabsActiveIndex.val = 0
     if (option.idType === 'bv') {
         const bvid = option.value as string

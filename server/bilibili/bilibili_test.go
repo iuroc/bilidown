@@ -13,7 +13,7 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-const TEST_SESSDATA = "70ca7a2f%2C1745349417%2C51969%2Aa2CjCVKFrX3jG4cXTV2QY3u7NWYDJ9qwHRW5D4ivdRppolKL0a6KL9vmzbrFGcwzN7tSMSVkVuZGtyUVJPNzJGMjEwTTdveGtuZjQ1TU9hSTJSdnA3NHhzTmIxT3dTY3NyYXhRUkxjREVnd0p3NWg2ODh5SVZmZVhlOW9aallOZzN6aVE5M2Y5SldRIIEC"
+const TEST_SESSDATA = ""
 const TEST_BVID = "BV1KX4y1V7sA"     // 普通合集
 const TEST_CID = 305542578           // 普通分集
 const TEST_BVID_HDR = "BV1rp4y1e745" // HDR 合集

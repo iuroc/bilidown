@@ -41,6 +41,7 @@ const ParseButton = (parent: InputBoxComp, large: boolean, id: string = '') => {
         class: `btn btn-success text-nowrap ${large ? `btn-lg d-none d-md-block` : 'd-md-none'}`,
         async onclick() {
             try {
+                workRoute.btnLoading.val = true
                 workRoute.urlValue.val = workRoute.urlValue.val.trim()
                 try {
                     const handleB23Result = await handleB23(workRoute.urlValue.val)
@@ -65,13 +66,13 @@ const ParseButton = (parent: InputBoxComp, large: boolean, id: string = '') => {
                     alert(errorMessage)
                     goto('work')
                     workRoute.videoInfoCardMode.val = 'hide'
-                }).finally(() => {
-                    setTimeout(() => {
-                        workRoute.btnLoading.val = false
-                    }, 200)
                 })
             } catch (error) {
                 workRoute.urlInvalid.val = true
+            } finally {
+                setTimeout(() => {
+                    workRoute.btnLoading.val = false
+                }, 200)
             }
         },
         id,

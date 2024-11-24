@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"regexp"
 
 	"bilidown/util"
 )
@@ -81,6 +82,37 @@ func (client *BiliClient) NewQRInfo() (*QRInfo, error) {
 		return nil, err
 	}
 	return &qrInfo, nil
+}
+
+func (client *BiliClient) GetWbiKey() (imgKey string, subKey string, err error) {
+	if client.SESSDATA == "" {
+		return "", "", errors.New("SESSDATA 不能为空")
+	}
+	response, err := client.SimpleGET("https://api.bilibili.com/x/web-interface/nav", nil)
+	if err != nil {
+		return "", "", err
+	}
+	defer response.Body.Close()
+	body := BaseResV2{}
+	if err = json.NewDecoder(response.Body).Decode(&body); err != nil {
+		return "", "", err
+	}
+	var data struct {
+		WbiImg struct {
+			ImgURL string `json:"img_url"`
+			SubURL string `json:"sub_url"`
+		} `json:"wbi_img"`
+	}
+	if err = json.Unmarshal(body.Data, &data); err != nil {
+		return "", "", err
+	}
+	match := regexp.MustCompile(`/bfs/wbi/([a-z0-9]+)\.`)
+	imgKey = match.FindStringSubmatch(data.WbiImg.ImgURL)[1]
+	subKey = match.FindStringSubmatch(data.WbiImg.SubURL)[1]
+	if imgKey == "" || subKey == "" {
+		return "", "", errors.New("regexp.MustCompile(`/bfs/wbi/([a-z0-9])\\.`)")
+	}
+	return imgKey, subKey, nil
 }
 
 // GetQRStatus 获取二维码状态
