@@ -4,6 +4,13 @@
 
 哔哩哔哩视频解析下载工具，支持 8K 视频、Hi-Res 音频、杜比视界下载、批量解析，可扫码登录，常驻托盘。
 
+## 支持解析的链接类型
+
+-   【单个视频】https://www.bilibili.com/video/BV1LLDCYJEU3/
+-   【番剧和影视剧】https://www.bilibili.com/bangumi/play/ss48831
+-   【视频合集】https://space.bilibili.com/282565107/channel/collectiondetail?sid=1427135
+-   【收藏夹】https://space.bilibili.com/1176277996/favlist?fid=1234122612
+
 ## 使用说明
 
 1. 从 [Releases](https://github.com/iuroc/bilidown/releases) 下载适合您系统版本的安装包
