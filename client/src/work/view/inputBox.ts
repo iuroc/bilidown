@@ -57,7 +57,7 @@ const ParseButton = (parent: InputBoxComp, large: boolean, id: string = '') => {
                 }
                 const { type, value } = checkURL(workRoute.urlValue.val)
                 workRoute.urlInvalid.val = false
-                start(workRoute, {
+                await start(workRoute, {
                     idType: type,
                     value,
                     from: 'click'

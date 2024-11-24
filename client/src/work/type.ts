@@ -255,3 +255,22 @@ export type TaskInDB = TaskInitData & {
 }
 
 export type TaskStatus = 'done' | 'waiting' | 'running' | 'error'
+
+export type FavList = FavListItem[]
+
+export type FavListItem = {
+    title: string
+    cover: string
+    intro: string
+    duration: number
+    upper: {
+        mid: number
+        name: string
+        face: string
+    }
+    pubtime: number
+    bvid: string
+    ugc: {
+        first_cid: number
+    }
+}

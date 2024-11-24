@@ -1,5 +1,5 @@
 import { ResJSON, timeoutController } from '../mixin'
-import { PlayInfo, SeasonInfo, TaskInitData, VideoInfo } from './type'
+import { FavList, PlayInfo, SeasonInfo, TaskInitData, VideoInfo } from './type'
 
 /**
  * 获取视频信息
@@ -74,5 +74,15 @@ export const getRedirectedLocation = async (url: string): Promise<string> => {
         .then((data: ResJSON<string>) => {
             if (!data.success) throw new Error(data.message)
             return data.data
+        })
+}
+
+/** 获取收藏夹内视频列表 */
+export const getFavList = async (mediaId: number): Promise<FavList> => {
+    return fetch(`/api/getFavList?mediaId=${mediaId}`)
+        .then(res => res.json())
+        .then((body: ResJSON<FavList>) => {
+            if (!body.success) throw new Error(body.message)
+            return body.data
         })
 }

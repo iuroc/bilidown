@@ -1,7 +1,7 @@
-import { getRedirectedLocation, getSeasonInfo, getVideoInfo } from './data'
+import { getFavList, getRedirectedLocation, getSeasonInfo, getVideoInfo } from './data'
 import { WorkRoute } from '.'
 import van from 'vanjs-core'
-import { Episode, PageInParseResult } from './type'
+import { Episode, PageInParseResult, VideoParseResult } from './type'
 import { ResJSON } from '../mixin'
 
 /** 点击按钮开始解析 */
@@ -90,6 +90,36 @@ export const start = async (
             }
             workRoute.videoInfoCardMode.val = 'season'
         })
+    } else if (option.idType == 'fav') {
+        const mediaId = option.value as number
+        await getFavList(mediaId).then(favList => {
+            workRoute.videoInfocardData.val = {
+                areas: [],
+                cover: favList[0].cover,
+                description: favList[0].intro,
+                dimension: { height: 0, width: 0, rotate: 0 },
+                duration: favList[0].duration,
+                owner: favList[0].upper,
+                pages: favList.map((info, index) => ({
+                    bandge: (index + 1).toString(),
+                    selected: van.state(index == 0),
+                    bvid: info.bvid,
+                    cid: info.ugc.first_cid,
+                    dimension: { height: 0, width: 0, rotate: 0 },
+                    duration: info.duration,
+                    page: index,
+                    part: info.title,
+                })),
+                publishData: new Date(favList[0].pubtime * 1000).toLocaleString(),
+                section: [],
+                staff: [],
+                status: '',
+                styles: [],
+                targetURL: `https://www.bilibili.com/video/${favList[0].bvid}`,
+                title: favList[0].title
+            }
+            workRoute.videoInfoCardMode.val = 'video'
+        })
     }
 }
 
@@ -106,7 +136,7 @@ const episodeToPage = (episode: Episode, index: number): PageInParseResult => {
     }
 }
 
-export type IDType = 'bv' | 'ep' | 'ss'
+export type IDType = 'bv' | 'ep' | 'ss' | 'fav'
 
 /**
  * 校验用户输入的待解析的视频链接
@@ -123,6 +153,15 @@ export const checkURL = (url: string): {
     const matchSeason = url.match(/^(?:https?:\/\/www\.bilibili\.com\/bangumi\/play\/)?(ep|ss)(\d+)/)
     if (matchSeason) return { type: matchSeason[1] as 'ep' | 'ss', value: parseInt(matchSeason[2]) }
 
+    try {
+        const _url = new URL(url)
+        const mediaId = parseInt(_url.searchParams.get('fid') || '')
+        if (_url.hostname == 'space.bilibili.com' && _url.pathname.match(/^\/\d+\/favlist$/) && !isNaN(mediaId)) {
+            return { type: 'fav', value: mediaId }
+        }
+        const mlMatch = url.match(/^https:\/\/www.bilibili.com\/medialist\/detail\/ml(\d+)/)
+        if (mlMatch) return { type: 'fav', value: mlMatch[1] }
+    } catch { }
     throw new Error('您输入的视频链接格式错误')
 }
 

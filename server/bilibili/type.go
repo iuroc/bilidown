@@ -247,5 +247,7 @@ type FavList []struct {
 	} `json:"upper"`
 	PubTime int    `json:"pubtime"`
 	Bvid    string `json:"bvid"`
-	Aid     int    `json:"id"`
+	Ugc     struct {
+		FirstCid int `json:"first_cid"`
+	} `json:"ugc"`
 }

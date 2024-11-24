@@ -96,7 +96,8 @@ export class WorkRoute {
                     value = popularBvids[Math.floor(Math.random() * popularBvids.length)]
                 }
                 if (idType == 'bv' && !value.match(/^BV1[a-zA-Z0-9]+$/)) return goto('work')
-                if ((idType == 'ep' || idType == 'ss') && !value.match(/^\d+$/)) return goto('work')
+                if ((idType == 'ep' || idType == 'ss' || idType == 'fav')
+                    && !value.match(/^\d+$/)) return goto('work')
                 if (idType == 'bv' && !_that.isInitPopular.val) _that.urlValue.val = value
                 else if (idType == 'ep' || idType == 'ss') _that.urlValue.val = `${idType}${value}`
                 start(_that, {
