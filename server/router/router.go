@@ -30,6 +30,7 @@ func API() *http.ServeMux {
 	router.HandleFunc("/deleteTask", deleteTask)
 	router.HandleFunc("/getRedirectedLocation", getRedirectedLocation)
 	router.HandleFunc("/downloadVideo", downloadVideo)
+	router.HandleFunc("/getSeasonsArchivesListFirstBvid", getSeasonsArchivesListFirstBvid)
 	return router
 }
 

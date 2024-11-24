@@ -2,6 +2,7 @@ import { getRedirectedLocation, getSeasonInfo, getVideoInfo } from './data'
 import { WorkRoute } from '.'
 import van from 'vanjs-core'
 import { Episode, PageInParseResult } from './type'
+import { ResJSON } from '../mixin'
 
 /** 点击按钮开始解析 */
 export const start = async (
@@ -136,13 +137,21 @@ export const handleB23 = async (url: string): Promise<string | false> => {
     if (!url.match(/^https:\/\/b23.tv\//)) return false
     const epMatch = url.match(/^https:\/\/b23.tv\/(ep|ss)(\d+)/)
     if (epMatch) return `https://www.bilibili.com/bangumi/play/${epMatch[1]}${epMatch[2]}`
-    try {
-        const location = await getRedirectedLocation(url)
-        return location
-    } catch (error) {
-        if (error instanceof Error && error.message != 'Failed to fetch') {
-            return false
-        }
-        throw error
+    const location = await getRedirectedLocation(url)
+    return location
+}
+
+export const handleSeasonsArchivesList = async (url: string): Promise<string | false> => {
+    const _url = new URL(url)
+    const mid = _url.pathname.match(/^\/(\d+)\/channel\/collectiondetail$/)?.[1]
+    const seasonId = parseInt(_url.searchParams.get('sid') || '')
+    if (_url.hostname == 'space.bilibili.com' && mid && !isNaN(seasonId)) {
+        return fetch(`/api/getSeasonsArchivesListFirstBvid?mid=${mid}&seasonId=${seasonId}`)
+            .then(res => res.json())
+            .then((body: ResJSON<string>) => {
+                if (!body.success) throw new Error(body.message)
+                return body.data
+            })
     }
+    return false
 }

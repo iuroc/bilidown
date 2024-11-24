@@ -127,3 +127,40 @@ func (client *BiliClient) GetPopularVideos() ([]VideoInfo, error) {
 	}
 	return data.List, nil
 }
+
+// GetSeasonsArchivesList 获取合集中的第一个视频的 BVID
+func (client *BiliClient) GetSeasonsArchivesListFirstBvid(mid int, seasonId int) (string, error) {
+	url := "https://api.bilibili.com/x/polymer/web-space/seasons_archives_list"
+	params := map[string]string{
+		"mid":       strconv.Itoa(mid),
+		"season_id": strconv.Itoa(seasonId),
+		"page_num":  "1",
+		"page_size": "1",
+	}
+
+	response, err := client.SimpleGET(url, params)
+	if err != nil {
+		return "", err
+	}
+	defer response.Body.Close()
+
+	body := BaseResV2{}
+	if err = json.NewDecoder(response.Body).Decode(&body); err != nil {
+		return "", err
+	}
+	if body.Code != 0 {
+		return "", errors.New(body.Message)
+	}
+	var data struct {
+		Archives []struct {
+			Bvid string `json:"bvid"`
+		} `json:"archives"`
+	}
+	if err = json.Unmarshal(body.Data, &data); err != nil {
+		return "", nil
+	}
+	if len(data.Archives) == 0 {
+		return "", errors.New("视频列表为空")
+	}
+	return data.Archives[0].Bvid, nil
+}

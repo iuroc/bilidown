@@ -14,6 +14,8 @@ func Send(w http.ResponseWriter, message string) {
 const (
 	BvidFormatError       = "错误的 Bvid 格式"
 	URLFormatError        = "错误的 URL 格式"
+	MidFormatError        = "错误的 Mid 格式"
+	SeasonIdFormatError   = "错误的 SeasonId 格式"
 	ParamError            = "参数错误"
 	MethodNotAllowError   = "不允许的请求方式"
 	NoLocationError       = "无重定向目标地址"

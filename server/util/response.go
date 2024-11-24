@@ -21,4 +21,3 @@ func (r Res) Write(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(bs)
 }
-

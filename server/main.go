@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
-	"sync"
 	"time"
 
 	"bilidown/router"
@@ -49,24 +48,15 @@ func onReady() {
 	time.Sleep(time.Millisecond * 1000)
 	openBrowser(urlLocalUnix)
 	// 保持运行
-	keepWait()
+	select {}
 }
 
 // checkFFmpeg 检测 ffmpeg 的安装情况，如果未安装则打印提示信息。
 func checkFFmpeg() {
 	if _, err := util.GetFFmpegPath(); err != nil {
 		fmt.Println("🚨 FFmpeg is missing. Install it from https://www.ffmpeg.org/download.html or place it in ./bin, then restart the application.")
-		var wg sync.WaitGroup
-		wg.Add(1)
-		wg.Wait()
+		select {}
 	}
-}
-
-// keepWait 阻塞终端
-func keepWait() {
-	var wg sync.WaitGroup
-	wg.Add(1)
-	wg.Wait()
 }
 
 // 配置和启动 HTTP 服务器

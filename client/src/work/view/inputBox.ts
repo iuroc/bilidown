@@ -1,7 +1,7 @@
 import van from 'vanjs-core'
 import { goto } from 'vanjs-router'
 import { v4 } from 'uuid'
-import { checkURL, handleB23, start } from '../mixin'
+import { checkURL, handleB23, handleSeasonsArchivesList, start } from '../mixin'
 import { WorkRoute } from '..'
 import { VanComponent } from '../../mixin'
 
@@ -42,8 +42,18 @@ const ParseButton = (parent: InputBoxComp, large: boolean, id: string = '') => {
         async onclick() {
             try {
                 workRoute.urlValue.val = workRoute.urlValue.val.trim()
-                const handleB23Result = await handleB23(workRoute.urlValue.val)
-                if (handleB23Result) workRoute.urlValue.val = handleB23Result
+                try {
+                    const handleB23Result = await handleB23(workRoute.urlValue.val)
+                    if (handleB23Result) workRoute.urlValue.val = handleB23Result
+                } catch (error) {
+                    if (error instanceof Error) return alert(error.message)
+                }
+                try {
+                    const handleSeasonsArchivesListResult = await handleSeasonsArchivesList(workRoute.urlValue.val)
+                    if (handleSeasonsArchivesListResult) workRoute.urlValue.val = handleSeasonsArchivesListResult
+                } catch (error) {
+                    if (error instanceof Error) return alert(error.message)
+                }
                 const { type, value } = checkURL(workRoute.urlValue.val)
                 workRoute.urlInvalid.val = false
                 start(workRoute, {

@@ -136,3 +136,24 @@ var downloadVideo = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request
 	safePath := filepath.Clean(path)
 	http.ServeFile(w, r, safePath)
 })
+
+var getSeasonsArchivesListFirstBvid = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	var mid int
+	var seasonId int
+	var err error
+	if mid, err = strconv.Atoi(r.URL.Query().Get("mid")); err != nil {
+		res_error.Send(w, res_error.MidFormatError)
+		return
+	}
+	if seasonId, err = strconv.Atoi(r.URL.Query().Get("seasonId")); err != nil {
+		res_error.Send(w, res_error.SeasonIdFormatError)
+		return
+	}
+	client := bilibili.BiliClient{}
+	bvid, err := client.GetSeasonsArchivesListFirstBvid(mid, seasonId)
+	if err != nil {
+		res_error.Send(w, fmt.Sprintf("client.GetSeasonsArchivesList: %v", err))
+		return
+	}
+	util.Res{Success: true, Message: "获取成功", Data: bvid}.Write(w)
+})
