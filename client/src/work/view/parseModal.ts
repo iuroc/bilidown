@@ -43,6 +43,9 @@ export class ParseModalComp implements VanComponent {
         formatIndex: State<number>
     }[]> = van.state([])
 
+    /** 该属性用于在点击“开始下载”按钮后使按钮变为禁用状态，防止多次点击 */
+    downloadBtnDisabled = van.state(false)
+
     errorList: State<string[]> = van.state([])
 
     constructor(public option: Option) {
@@ -112,9 +115,10 @@ export class ParseModalComp implements VanComponent {
         await queue.onIdle()
     }
 
-    async download() {
+    download() {
         const selectedPlayInfos = this.allPlayInfo.val.filter(info => info.selected.val)
         const workRoute = this.option.workRoute
+        this.downloadBtnDisabled.val = true
         // 需要传递给服务器，需要创建下载任务的数据列表
         createTask(selectedPlayInfos.map(info => {
             const badgeNotNum = !info.page.bandge.match(/^\d+$/)
@@ -156,6 +160,8 @@ export class ParseModalComp implements VanComponent {
             workRoute.parseModal.hide()
         }).catch(error => {
             alert(error.message)
+        }).finally(() => {
+            this.downloadBtnDisabled.val = false
         })
     }
 
@@ -254,7 +260,7 @@ export class ParseModalComp implements VanComponent {
                     _that.download()
                 },
                 hidden: () => !allFinish.val,
-                disabled: () => selectedCount.val <= 0
+                disabled: () => selectedCount.val <= 0 || _that.downloadBtnDisabled.val
             }, '开始下载'),
         )
     }

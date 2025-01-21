@@ -89,6 +89,7 @@ docker run --rm -v .:/usr/src/data -e GOOS=darwin -e GOARCH=amd64 -e CC=o64-clan
 
 ```bash
 # client
+pnpm install
 pnpm dev
 # server
 go build && ./bilidown
