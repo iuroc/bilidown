@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
-
+	"strings"
 	"bilidown/bilibili"
 	"bilidown/util"
 	"bilidown/util/res_error"
@@ -134,6 +134,7 @@ func getPopularVideos(w http.ResponseWriter, r *http.Request) {
 var downloadVideo = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Query().Get("path")
 	safePath := filepath.Clean(path)
+	safePath = strings.ReplaceAll(safePath, "\\", "/")
 	http.ServeFile(w, r, safePath)
 })
 
