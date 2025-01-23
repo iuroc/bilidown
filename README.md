@@ -85,6 +85,8 @@ docker run --rm -v .:/usr/src/data iuroc/cgo-cross-build go build -o dist/bilido
 docker run --rm -v .:/usr/src/data -e GOOS=darwin -e GOARCH=amd64 -e CC=o64-clang -e CGO_ENABLED=1 iuroc/cgo-cross-build go build -o dist/bilidown-darwin-amd64/bilidown
 ```
 
+### 非 Docker 环境编译
+
 在 Linux amd64 平台上执行 `go build` 时，您可能需要安装以下依赖包：  
 
 ```bash
