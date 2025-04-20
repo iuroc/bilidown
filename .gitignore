@@ -1,9 +1,0 @@
-node_modules/
-dist/
-tmp/
-static/
-*.db
-*.exe
-download/
-build/
-.VSCodeCounter/
