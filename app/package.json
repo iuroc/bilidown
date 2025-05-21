@@ -7,12 +7,32 @@
     "scripts": {
         "start": "electron .",
         "dev:ts": "tsc -w",
-        "build:ts": "tsc -w"
+        "build:ts": "tsc -w",
+        "build": "electron-builder"
     },
-    "dependencies": {},
+    "build": {
+        "appId": "com.iuroc.bilidown",
+        "productName": "Bilidown",
+        "files": [
+            "**/*"
+        ],
+        "directories": {
+            "buildResources": "assets"
+        },
+        "win": {
+            "target": "nsis"
+        },
+        "mac": {
+            "target": "dmg"
+        },
+        "linux": {
+            "target": "AppImage"
+        }
+    },
     "devDependencies": {
         "@types/node": "^22.15.21",
         "electron": "^36.2.1",
+        "electron-builder": "^26.0.12",
         "typescript": "^5.8.3"
     },
     "homepage": "https://github.com/iuroc/bilidown#readme",
