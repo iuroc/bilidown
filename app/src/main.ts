@@ -1,5 +1,4 @@
 import { BrowserWindow, app } from 'electron'
-import { writeFileSync } from 'fs'
 import squirrelStartup from 'electron-squirrel-startup'
 
 if (squirrelStartup) app.quit()
