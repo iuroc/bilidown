@@ -1,18 +1,49 @@
 {
-  "type": "module",
-  "main": "js/main.js",
-  "name": "bilidown",
-  "author": "iuroc",
-  "description": "哈哈",
-  "scripts": {
-    "start": "electron .",
-    "dev:ts": "tsc -w",
-    "build:ts": "tsc -w"
-  },
-  "devDependencies": {
-    "@types/node": "^22.15.21",
-    "electron": "^36.2.1",
-    "typescript": "^5.8.3"
-  },
-  "version": "3.0.1"
+    "name": "bilidown",
+    "version": "3.0.1",
+    "description": "哔哩哔哩视频解析下载工具",
+    "type": "module",
+    "main": "js/main.js",
+    "scripts": {
+        "start": "electron .",
+        "dev:ts": "tsc -w",
+        "build:ts": "tsc -w"
+    },
+    "dependencies": {},
+    "devDependencies": {
+        "@types/node": "^22.15.21",
+        "electron": "^36.2.1",
+        "typescript": "^5.8.3"
+    },
+    "homepage": "https://github.com/iuroc/bilidown#readme",
+    "bugs": {
+        "url": "https://github.com/iuroc/bilidown/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/iuroc/bilidown.git"
+    },
+    "license": "Apache-2.0",
+    "author": "iuroc",
+    "keywords": [
+        "electron",
+        "bilibili",
+        "video",
+        "download",
+        "audio",
+        "4k",
+        "8k",
+        "hdr",
+        "dolby-atoms",
+        "dolby-vision",
+        "mp4",
+        "hevc",
+        "hi-res",
+        "sqlite",
+        "typeorm",
+        "bootstrap",
+        "nodejs",
+        "typescript",
+        "ffmpeg"
+    ]
 }
