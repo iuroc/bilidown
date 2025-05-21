@@ -8,5 +8,6 @@ cd web; npm run dev
 cd app; npm run dev:ts
 
 # 创建终端，启动 Electron 程序
-cd app; npm run start
+cd app
+npm run start
 ```

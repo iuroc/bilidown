@@ -1,6 +1,5 @@
 {
     "name": "bilidown",
-    "version": "3.0.1",
     "description": "哔哩哔哩视频解析下载工具",
     "keywords": [
         "electron",

@@ -1,13 +1,18 @@
 {
   "type": "module",
   "main": "js/main.js",
+  "name": "bilidown",
+  "author": "iuroc",
+  "description": "哈哈",
   "scripts": {
     "start": "electron .",
     "dev:ts": "tsc -w",
     "build:ts": "tsc -w"
   },
   "devDependencies": {
+    "@types/node": "^22.15.21",
     "electron": "^36.2.1",
     "typescript": "^5.8.3"
-  }
+  },
+  "version": "3.0.1"
 }
