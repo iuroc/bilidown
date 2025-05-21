@@ -27,6 +27,18 @@ export default {
             config: {},
         },
     ],
+    publishers: [
+        {
+            name: '@electron-forge/publisher-github',
+            config: {
+                repository: {
+                    owner: 'iuroc',
+                    name: 'bilidown'
+                },
+                draft: true
+            }
+        }
+    ],
     plugins: [
         {
             name: '@electron-forge/plugin-auto-unpack-natives',
