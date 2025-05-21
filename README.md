@@ -11,3 +11,8 @@ cd app; npm run dev:ts
 cd app
 npm run start
 ```
+
+## 源码说明
+
+- `app`：Node.js 环境开发
+- `web`：浏览器环境开发
