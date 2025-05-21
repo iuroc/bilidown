@@ -1,6 +1,7 @@
 import { FusesPlugin } from '@electron-forge/plugin-fuses'
 import { FuseV1Options, FuseVersion } from '@electron/fuses'
 import type { ForgeConfig } from '@electron-forge/shared-types'
+import type { PublisherGithub } from '@electron-forge/publisher-github'
 
 export default {
     packagerConfig: {
@@ -37,7 +38,7 @@ export default {
                 },
                 draft: true
             }
-        }
+        } as PublisherGithub
     ],
     plugins: [
         {

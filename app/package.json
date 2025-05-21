@@ -60,6 +60,7 @@
         "ffmpeg"
     ],
     "dependencies": {
+        "@electron-forge/publisher-github": "^7.8.1",
         "electron-squirrel-startup": "^1.0.1"
     }
 }
