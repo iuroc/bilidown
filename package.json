@@ -1,9 +1,41 @@
 {
-  "type": "commonjs",
-  "dependencies": {
-    "gede-book-api": "^1.0.22"
-  },
-  "scripts": {
-    "bin-win-x64": "tsc && node -e \"require('fs').copyFileSync(process.execPath, 'bilidown.exe')\" && node --experimental-sea-config sea-config.json && postject bilidown.exe NODE_SEA_BLOB sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2"
-  }
+    "name": "bilidown",
+    "version": "3.0.1",
+    "description": "哔哩哔哩视频解析下载工具",
+    "keywords": [
+        "electron",
+        "bilibili",
+        "video",
+        "download",
+        "audio",
+        "4k",
+        "8k",
+        "hdr",
+        "dolby-atoms",
+        "dolby-vision",
+        "mp4",
+        "hevc",
+        "hi-res",
+        "sqlite",
+        "typeorm",
+        "bootstrap",
+        "nodejs",
+        "typescript",
+        "ffmpeg"
+    ],
+    "homepage": "https://github.com/iuroc/bilidown#readme",
+    "bugs": {
+        "url": "https://github.com/iuroc/bilidown/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/iuroc/bilidown.git"
+    },
+    "license": "Apache-2.0",
+    "author": "iuroc",
+    "type": "module",
+    "main": "main.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    }
 }
