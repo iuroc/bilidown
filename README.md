@@ -1,15 +1,36 @@
 ## 开发环境启动指南
 
-```powershell
-# 创建终端，启动前端开发服务
-cd web; npm run dev
+- 创建终端（进入 `web` 目录）
 
-# 创建终端，启动后端 TS 开发服务
-cd app; npm run dev:ts
+    ```bash
+    # 启动前端开发服务
+    npm run dev
+    ```
 
-# 创建终端，启动 Electron 程序
-cd app
-npm run start
+- 创建终端（进入 `app` 目录）
+
+    ```bash
+    # 更新 Electron Forge 配置文件
+    tsc forge.config.ts
+
+    # 启动后端 TS 自动编译
+    npm run dev:ts
+    
+    # 启动项目
+    npm run start
+    ```
+
+## 打包发布
+
+```bash
+# 更新 Electron Forge 配置文件
+tsc forge.config.ts
+
+# 生成可执行文件
+npm run package
+
+# 生成安装包
+npm run make
 ```
 
 ## 源码说明
