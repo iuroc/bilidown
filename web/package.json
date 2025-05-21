@@ -1,0 +1,15 @@
+{
+  "devDependencies": {
+    "vite": "^6.3.5"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "preview": "vite preview",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "vanjs-core": "^1.5.5",
+    "vanjs-router": "^2.1.4"
+  }
+}

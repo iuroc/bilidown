@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "module": "NodeNext",
+        "target": "ESNext",
+        "moduleResolution": "nodenext",
+        "outDir": "js"
+    },
+    "include": [
+        "src",
+    ]
+}
