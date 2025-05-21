@@ -1,38 +1,30 @@
 {
     "name": "bilidown",
+    "productName": "Bilidown",
     "version": "3.0.1",
     "description": "哔哩哔哩视频解析下载工具",
-    "type": "module",
+    "type": "commonjs",
     "main": "js/main.js",
     "scripts": {
-        "start": "electron .",
+        "start": "electron-forge start",
         "dev:ts": "tsc -w",
-        "build:ts": "tsc -w",
-        "build": "electron-builder"
-    },
-    "build": {
-        "appId": "com.iuroc.bilidown",
-        "productName": "Bilidown",
-        "files": [
-            "**/*"
-        ],
-        "directories": {
-            "buildResources": "assets"
-        },
-        "win": {
-            "target": "nsis"
-        },
-        "mac": {
-            "target": "dmg"
-        },
-        "linux": {
-            "target": "AppImage"
-        }
+        "build:ts": "tsc",
+        "package": "electron-forge package",
+        "make": "electron-forge make"
     },
     "devDependencies": {
+        "@electron-forge/cli": "^7.8.1",
+        "@electron-forge/maker-deb": "^7.8.1",
+        "@electron-forge/maker-rpm": "^7.8.1",
+        "@electron-forge/maker-squirrel": "^7.8.1",
+        "@electron-forge/maker-zip": "^7.8.1",
+        "@electron-forge/plugin-auto-unpack-natives": "^7.8.1",
+        "@electron-forge/plugin-fuses": "^7.8.1",
+        "@electron/fuses": "^1.8.0",
+        "@types/electron-squirrel-startup": "^1.0.2",
         "@types/node": "^22.15.21",
         "electron": "^36.2.1",
-        "electron-builder": "^26.0.12",
+        "rxjs": "^7.8.2",
         "typescript": "^5.8.3"
     },
     "homepage": "https://github.com/iuroc/bilidown#readme",
@@ -44,7 +36,7 @@
         "url": "git+https://github.com/iuroc/bilidown.git"
     },
     "license": "Apache-2.0",
-    "author": "iuroc",
+    "author": "github.com/iuroc",
     "keywords": [
         "electron",
         "bilibili",
@@ -65,5 +57,8 @@
         "nodejs",
         "typescript",
         "ffmpeg"
-    ]
+    ],
+    "dependencies": {
+        "electron-squirrel-startup": "^1.0.1"
+    }
 }

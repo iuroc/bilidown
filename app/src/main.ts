@@ -1,5 +1,8 @@
 import { BrowserWindow, app } from 'electron'
 import { writeFileSync } from 'fs'
+import squirrelStartup from 'electron-squirrel-startup'
+
+if (squirrelStartup) app.quit()
 
 app.whenReady().then(() => {
     const mainWindows = new BrowserWindow({
@@ -11,5 +14,5 @@ app.whenReady().then(() => {
 
     // mainWindows.loadFile('../web/dist/index.html')
     // mainWindows.loadURL('http://localhost:5173/')  // 开发环境
-    mainWindows.loadURL('https://tag.iuroc.com')
+    mainWindows.loadURL('https://www.iuroc.com')
 })
