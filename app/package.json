@@ -1,7 +1,7 @@
 {
     "name": "bilidown",
     "productName": "Bilidown",
-    "version": "3.0.1",
+    "version": "1.0.1",
     "description": "哔哩哔哩视频解析下载工具",
     "type": "commonjs",
     "main": "js/main.js",
@@ -61,9 +61,9 @@
         "ffmpeg"
     ],
     "dependencies": {
-        "@electron-forge/publisher-github": "^7.8.1",
         "electron-squirrel-startup": "^1.0.1",
-        "electron-updater": "^6.6.2",
-        "update-electron-app": "^3.1.1"
+        "octokit": "^5.0.2",
+        "semver": "^7.7.2",
+        "undici": "^7.10.0"
     }
 }

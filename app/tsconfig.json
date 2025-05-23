@@ -4,7 +4,10 @@
         "module": "NodeNext",
         "target": "ESNext",
         "moduleResolution": "nodenext",
-        "outDir": "js"
+        "outDir": "js",
+        "types": [
+            "node"
+        ]
     },
     "include": [
         "src"

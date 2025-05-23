@@ -8,10 +8,7 @@ app.whenReady().then(() => {
         webPreferences: {
             // preload: ''
         },
-        autoHideMenuBar: true,
     })
 
-    // mainWindows.loadFile('../web/dist/index.html')
-    // mainWindows.loadURL('http://localhost:5173/')  // 开发环境
-    mainWindows.loadURL('https://www.iuroc.com')
+    mainWindows.loadURL('http://localhost:5173/')  // 开发环境
 })
