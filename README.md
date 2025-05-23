@@ -10,12 +10,15 @@
 - 创建终端（进入 `app` 目录）
 
     ```bash
+    # 启动后端 TS 自动编译
+    npm run dev:ts
+
+- 创建终端（进入 `app` 目录）
+
+    ```bash
     # 更新 Electron Forge 配置文件
     tsc forge.config.ts
 
-    # 启动后端 TS 自动编译
-    npm run dev:ts
-    
     # 启动项目
     npm run start
     ```
