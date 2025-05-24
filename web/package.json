@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@types/node": "^22.15.21",
+    "bootstrap": "^5.3.6",
     "vanjs-core": "^1.5.5"
   }
 }
