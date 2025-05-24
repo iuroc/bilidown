@@ -36,6 +36,9 @@ npm run package
 
 # 生成安装包
 npm run make
+
+# 发布版本到 Github
+npm run publish
 ```
 
 ## 源码说明
