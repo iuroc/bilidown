@@ -11,13 +11,13 @@ let downloadWindow: BrowserWindow | null = null
 const isDev = !app.isPackaged
 
 export function openWorkWindow() {
-    // if (workWindow && !workWindow.isDestroyed()) {
-    //     workWindow.focus()
-    //     // 窗口可能最小化了，尝试恢复窗口显示
-    //     workWindow.restore()
-    //     return
-    // }
-    const workWindow = new BrowserWindow({
+    if (workWindow && !workWindow.isDestroyed()) {
+        workWindow.focus()
+        // 窗口可能最小化了，尝试恢复窗口显示
+        workWindow.restore()
+        return
+    }
+    workWindow = new BrowserWindow({
         webPreferences: {
             preload: join(__dirname, '../js/preloads/work.js')
         },
@@ -25,13 +25,17 @@ export function openWorkWindow() {
         height: 800,
         show: false,
     })
-    workWindow.loadURL(isDev ? 'http://localhost:5173/src/windows/work/index.html' : '../web/src/windows/work/index.html')
+    if (isDev) {
+        workWindow.loadURL('http://localhost:5173/src/windows/work/index.html')
+    } else {
+        workWindow.loadFile(join(__dirname, '../../web/dist/src/windows/work/index.html'))
+    }
     workWindow.on('ready-to-show', () => {
         workWindow!.show()
     })
-    // workWindow.on('closed', () => {
-    //     workWindow = null
-    // })
+    workWindow.on('closed', () => {
+        workWindow = null
+    })
 }
 
 export function openSettingsWindow() {
@@ -48,7 +52,11 @@ export function openSettingsWindow() {
         show: false,
         autoHideMenuBar: true
     })
-    settingsWindow.loadURL(isDev ? 'http://localhost:5173/src/windows/settings/index.html' : '../web/src/windows/settings/index.html')
+    if (isDev) {
+        settingsWindow.loadURL('http://localhost:5173/src/windows/settings/index.html')
+    } else {
+        settingsWindow.loadFile(join(__dirname, '../../web/dist/src/windows/settings/index.html'))
+    }
     settingsWindow.on('ready-to-show', () => {
         settingsWindow!.show()
     })
@@ -71,7 +79,11 @@ export function openDownloadWindow() {
         show: false,
         autoHideMenuBar: true,
     })
-    downloadWindow.loadURL(isDev ? 'http://localhost:5173/src/windows/download/index.html' : '../web/src/windows/download/index.html')
+    if (isDev) {
+        downloadWindow.loadURL('http://localhost:5173/src/windows/download/index.html')
+    } else {
+        downloadWindow.loadFile(join(__dirname, '../../web/dist/src/windows/download/index.html'))
+    }
     downloadWindow.on('ready-to-show', () => {
         downloadWindow!.show()
     })
