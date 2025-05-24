@@ -12,7 +12,7 @@ export default defineConfig({
                 settings: resolve(import.meta.dirname, 'src/windows/settings/index.html'),
             }
         },
-        outDir: 'dist',
+        outDir: '../app/dist-renderer',
         emptyOutDir: true
     }
 })

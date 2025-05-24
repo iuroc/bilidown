@@ -28,7 +28,7 @@ export function openWorkWindow() {
     if (isDev) {
         workWindow.loadURL('http://localhost:5173/src/windows/work/index.html')
     } else {
-        workWindow.loadFile(join(__dirname, '../../web/dist/src/windows/work/index.html'))
+        workWindow.loadFile(join(__dirname, '../dist-renderer/src/windows/work/index.html'))
     }
     workWindow.on('ready-to-show', () => {
         workWindow!.show()
@@ -55,7 +55,7 @@ export function openSettingsWindow() {
     if (isDev) {
         settingsWindow.loadURL('http://localhost:5173/src/windows/settings/index.html')
     } else {
-        settingsWindow.loadFile(join(__dirname, '../../web/dist/src/windows/settings/index.html'))
+        settingsWindow.loadFile(join(__dirname, '../dist-renderer/src/windows/settings/index.html'))
     }
     settingsWindow.on('ready-to-show', () => {
         settingsWindow!.show()
@@ -82,7 +82,7 @@ export function openDownloadWindow() {
     if (isDev) {
         downloadWindow.loadURL('http://localhost:5173/src/windows/download/index.html')
     } else {
-        downloadWindow.loadFile(join(__dirname, '../../web/dist/src/windows/download/index.html'))
+        downloadWindow.loadFile(join(__dirname, '../dist-renderer/src/windows/download/index.html'))
     }
     downloadWindow.on('ready-to-show', () => {
         downloadWindow!.show()

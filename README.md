@@ -101,3 +101,4 @@ npm run publish
 ## 开发过程中的收获
 
 1. 使用 Vite 打包项目，如果项目中存在顶层 `await`，需要在 `vite.config.ts` 配置 `build.target` 为 `esnext` 等支持的值，而不仅仅在 `tsconfig.json` 中设置 `target`，设置 `tsconfig.json` 可能只是对于编辑器的智能提示来说有效果，对于 `vite build` 还是以 `vite.config.ts` 为准。
+2. Electron 项目的主程序运行在 Node.js 环境，所以前端打包的产物需要放置与主程序的目录内。

@@ -1,4 +1,4 @@
 node_modules
 app/out
 app/js
-web/dist
+app/dist-renderer
