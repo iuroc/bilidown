@@ -11,8 +11,9 @@
 
 -   【单个视频】https://www.bilibili.com/video/BV1LLDCYJEU3/
 -   【番剧和影视剧】https://www.bilibili.com/bangumi/play/ss48831
--   【视频合集】https://space.bilibili.com/282565107/channel/collectiondetail?sid=1427135
+-   【视频合集】https://space.bilibili.com/282565107/lists/1427135
 -   【收藏夹】https://space.bilibili.com/1176277996/favlist?fid=1234122612
+-   【UP 主空间地址】等待 3.x 版本支持
 
 ## 使用说明
 
