@@ -26,7 +26,11 @@
 ## 打包发布
 
 ```bash
-cd app
+cd web
+
+npm run build
+
+cd ../app
 
 # 更新 Electron Forge 配置文件
 tsc forge.config.ts

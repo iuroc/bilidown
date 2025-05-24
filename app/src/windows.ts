@@ -11,13 +11,13 @@ let downloadWindow: BrowserWindow | null = null
 const isDev = !app.isPackaged
 
 export function openWorkWindow() {
-    if (workWindow) {
-        workWindow.focus()
-        // 窗口可能最小化了，尝试恢复窗口显示
-        workWindow.restore()
-        return
-    }
-    workWindow = new BrowserWindow({
+    // if (workWindow && !workWindow.isDestroyed()) {
+    //     workWindow.focus()
+    //     // 窗口可能最小化了，尝试恢复窗口显示
+    //     workWindow.restore()
+    //     return
+    // }
+    const workWindow = new BrowserWindow({
         webPreferences: {
             preload: join(__dirname, '../js/preloads/work.js')
         },
@@ -29,13 +29,13 @@ export function openWorkWindow() {
     workWindow.on('ready-to-show', () => {
         workWindow!.show()
     })
-    workWindow.on('closed', () => {
-        workWindow = null
-    })
+    // workWindow.on('closed', () => {
+    //     workWindow = null
+    // })
 }
 
 export function openSettingsWindow() {
-    if (settingsWindow) {
+    if (settingsWindow && !settingsWindow.isDestroyed()) {
         settingsWindow.focus()
         // 窗口可能最小化了，尝试恢复窗口显示
         settingsWindow.restore()
@@ -58,7 +58,7 @@ export function openSettingsWindow() {
 }
 
 export function openDownloadWindow() {
-    if (downloadWindow) {
+    if (downloadWindow && !downloadWindow.isDestroyed()) {
         downloadWindow.focus()
         // 窗口可能最小化了，尝试恢复窗口显示
         downloadWindow.restore()

@@ -3,6 +3,7 @@ import { resolve } from 'path'
 
 export default defineConfig({
     build: {
+        target: 'esnext',
         rollupOptions: {
             input: {
                 work: resolve(import.meta.dirname, 'src/windows/work/index.html'),
