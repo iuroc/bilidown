@@ -2,7 +2,7 @@ import van from 'vanjs-core'
 
 const { div, button } = van.tags
 
-document.title += `Bilidown ${await window.workAPI.getAppVersion()} - 哔哩哔哩视频解析下载工具`
+document.title += `Bilidown 哔哩哔哩视频解析下载工具 ${await window.workAPI.getAppVersion()}`
 
 const WorkWindow = () => {
 
