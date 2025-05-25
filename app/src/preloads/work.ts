@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { app, contextBridge, ipcRenderer } from 'electron'
 
 /**
  * 只允许主窗口使用

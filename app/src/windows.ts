@@ -23,6 +23,7 @@ export function openWorkWindow() {
         },
         width: 1280,
         height: 800,
+        minWidth: 576,
         show: false,
     })
     if (isDev) {

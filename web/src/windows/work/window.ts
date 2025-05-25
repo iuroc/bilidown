@@ -1,4 +1,6 @@
 import van from 'vanjs-core'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import InputBox from './components/InputBox'
 
 const { div, button } = van.tags
 
@@ -6,17 +8,8 @@ document.title += `Bilidown 哔哩哔哩视频解析下载工具 ${await window.
 
 const WorkWindow = () => {
 
-    return div(
-        button({
-            onclick() {
-                window.workAPI.openDownloadWindow()
-            }
-        }, '打开下载管理'),
-        button({
-            onclick() {
-                window.workAPI.openSettingsWindow()
-            }
-        }, '打开软件设置'),
+    return div({ class: 'container-xxl p-3' },
+        InputBox()
     )
 }
 
