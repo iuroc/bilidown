@@ -1,4 +1,5 @@
 import van from 'vanjs-core'
+import 'bootstrap/dist/css/bootstrap.min.css'
 
 const { div } = van.tags
 

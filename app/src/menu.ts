@@ -4,26 +4,48 @@ import { openDownloadWindow, openSettingsWindow } from './windows'
 export function makeMenu() {
     const appMenu = Menu.buildFromTemplate([
         {
-            label: '下载管理',
-            click: () => {
-                openDownloadWindow()
-            },
+            label: '账户',
+            submenu: [
+                {
+                    label: '收藏夹管理'
+                },
+                {
+                    label: '退出登录'
+                }
+            ]
         },
         {
-            label: '软件设置',
+            label: '下载',
+            submenu: [
+                {
+                    label: '下载管理',
+                    click: () => {
+                        openDownloadWindow()
+                    },
+                },
+                {
+                    label: '打开下载目录',
+                    click: () => {
+                        openDownloadWindow()
+                    },
+                },
+            ]
+        },
+        {
+            label: '设置',
             click: () => {
                 openSettingsWindow()
             },
         },
         {
-            label: '帮助文档',
+            label: '帮助',
             click: () => {
 
             },
             role: 'help'
         },
         {
-            label: '更多操作',
+            label: '更多',
             submenu: [
                 {
                     label: '项目主页',
