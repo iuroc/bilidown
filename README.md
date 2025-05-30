@@ -123,3 +123,8 @@ go build && ./bilidown
 ## 软件界面
 
 ![](./docs/2024-11-05_090604.png)
+
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=iuroc/bilidown&type=Date)](https://www.star-history.com/#iuroc/bilidown&Date)
