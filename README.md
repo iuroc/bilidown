@@ -17,7 +17,7 @@
 
     ```bash
     # 更新 Electron Forge 配置文件
-    tsc forge.config.ts
+    npm run build:forge-config
 
     # 启动项目
     npm run start
