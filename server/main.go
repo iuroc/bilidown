@@ -21,7 +21,7 @@ import (
 const (
 	HTTP_PORT = 8098      // 限定 HTTP 服务器端口
 	HTTP_HOST = ""        // 限定 HTTP 服务器主机
-	VERSION   = "v2.0.15" // 软件版本号，将影响托盘标题显示
+	VERSION   = "v2.0.16" // 软件版本号，将影响托盘标题显示
 )
 
 var urlLocal = fmt.Sprintf("http://127.0.0.1:%d", HTTP_PORT)

@@ -37,7 +37,7 @@ export const start = async (
                                 dimension: k.dimension,
                                 duration: k.duration,
                                 page: index,
-                                part: j.title,
+                                part: k.part || j.title,  // 优先使用page的part字段，如果为空则使用episode的title
                                 bandge: index.toString(),
                                 selected: van.state(bvid == j.bvid)
                             }
