@@ -7,7 +7,7 @@
         "dev": "vite",
         "build": "vite build",
         "preview": "vite preview",
-        "lint": "eslint src/ --ext .js,.ts"
+        "lint": "eslint . --ext .js,.ts"
     },
     "keywords": [],
     "author": "iuroc",
