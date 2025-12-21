@@ -7,5 +7,11 @@ export default defineConfig({
         alias: {
             '@': '/src'
         }
+    },
+    server: {
+        open: true,
+        proxy: {
+            '/api': `http://localhost:8080`
+        }
     }
 })
