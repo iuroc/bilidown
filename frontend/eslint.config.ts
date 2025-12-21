@@ -26,7 +26,7 @@ export default defineConfig([
             '@typescript-eslint/no-floating-promises': 'error'
         }
     },
-    tseslint.configs.recommended,
+    tseslint.configs.recommendedTypeChecked,
     {
         languageOptions: {
             parserOptions: {
