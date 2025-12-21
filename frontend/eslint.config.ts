@@ -3,13 +3,16 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 import stylistic from '@stylistic/eslint-plugin'
+import importPlugin from 'eslint-plugin-import'
 
 export default defineConfig([
     globalIgnores(['dist/', 'node_modules/']),
     {
         files: ['**/*.{js,mjs,cjs,ts,mts,cts}'],
         plugins: {
-            js
+            js,
+            '@stylistic': stylistic,
+            'import': importPlugin
         },
         extends: ['js/recommended'],
         languageOptions: {
@@ -23,7 +26,16 @@ export default defineConfig([
             // 只有需要使用 await 时才使用 async
             'require-await': 'error',
             // async 函数必须使用 await 进行等待
-            '@typescript-eslint/no-floating-promises': 'error'
+            '@typescript-eslint/no-floating-promises': 'error',
+            'no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        './*', // 禁止 ./ 开头的导入
+                        '../*' // 禁止 ../ 开头的导入
+                    ]
+                }
+            ]
         }
     },
     tseslint.configs.recommendedTypeChecked,
