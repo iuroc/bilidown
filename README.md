@@ -37,3 +37,13 @@
 ## 开发说明
 
 - 项目使用 VSCode 开发，通过 [Code Spell Checker](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) 拓展进行拼写检查，开发时可以考虑安装此拓展。
+
+## 开发环境
+
+前端执行 pnpm dev 启动 Vite 开发服务器，其中代理后端地址，开发时访问 Vite 服务地址。
+
+后端执行 air 来启动后端环境，代码修改后会自动重启项目，下面的代码来安装 air。
+
+```bash
+go install github.com/air-verse/air@latest
+```

@@ -2,9 +2,13 @@ package main
 
 import (
 	"fmt"
-	_ "modernc.org/sqlite"
+	"net/http"
 )
 
 func main() {
-	fmt.Println("Hello Bilidown")
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Hello, World!"))
+	})
+	fmt.Println("http://localhost:8080")
+	http.ListenAndServe(":8080", nil)
 }

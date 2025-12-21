@@ -4,6 +4,7 @@
         "dbaeumer",
         "iuroc",
         "modernc",
-        "vanjs"
+        "vanjs",
+        "VITE"
     ]
 }

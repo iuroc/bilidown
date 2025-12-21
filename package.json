@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "dev": "concurrently \"cd backend && air\" \"cd frontend && pnpm dev\" --raw"
+  },
+  "packageManager": "pnpm@10.26.0",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
