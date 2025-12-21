@@ -1,0 +1,27 @@
+{
+    "name": "frontend",
+    "version": "3.0.0",
+    "description": "哔哩哔哩视频解析下载工具，支持 8K 视频、Hi-Res 音频、杜比视界下载、批量解析，可扫码登录，常驻托盘。",
+    "main": "index.js",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview"
+    },
+    "keywords": [],
+    "author": "iuroc",
+    "license": "ISC",
+    "packageManager": "pnpm@10.26.0",
+    "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+    },
+    "devDependencies": {
+        "vite": "^7.3.0"
+    },
+    "type": "module",
+    "dependencies": {
+        "@iuroc/vanjs-router": "^2.2.14",
+        "@iuroc/vanjs-utils": "^1.0.0",
+        "vanjs-core": "^1.6.0"
+    }
+}
