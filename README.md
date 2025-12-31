@@ -37,12 +37,17 @@
 
 ## 开发环境
 
-前端执行 pnpm dev 启动 Vite 开发服务器，其中代理后端地址，开发时访问 Vite 服务地址。
-
-后端执行 air 来启动后端环境，代码修改后会自动重启项目，下面的代码来安装 air。
+```bash
+# frontend
+# npm install -g pnpm
+pnpm install
+pnpm dev
+```
 
 ```bash
-go install github.com/air-verse/air@latest
+# backend
+# go install github.com/air-verse/air@latest
+air
 ```
 
 ## 分支说明
