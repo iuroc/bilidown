@@ -17,5 +17,17 @@ export default defineConfig({
   },
   server: {
     open: true
-  }
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        silenceDeprecations: [
+          'import',
+          'color-functions',
+          'global-builtin',
+          'if-function'
+        ],
+      },
+    },
+  },
 })
