@@ -2,6 +2,8 @@
 
 > 哔哩哔哩视频解析下载工具，支持 8K 视频、Hi-Res 音频、杜比视界下载、批量解析，可扫码登录，常驻托盘。
 
+<img width="2655" height="1109" alt="image" src="https://github.com/user-attachments/assets/d2095ad9-6a2e-442e-b51d-985127af66e8" />
+
 ## 技术栈
 
 ### 前端
