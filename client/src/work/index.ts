@@ -8,7 +8,7 @@ import { ParseModalComp } from './view/parseModal'
 import InputBox from './view/inputBox'
 import { Modal } from 'bootstrap'
 import { LoadingBox } from '../view'
-import { getPopularVideoBvids } from './data'
+import { getPopularVideoBvIds } from './data'
 
 const { div } = van.tags
 
@@ -19,7 +19,7 @@ export class WorkRoute {
     /** 仅作为类名字符串 */
     urlInvalidClass = van.derive(() => this.urlInvalid.val ? 'is-invalid' : '')
     urlValue = van.state('')
-    videoInfocardData = van.state<VideoParseResult>({
+    videoInfoCardData = van.state<VideoParseResult>({
         title: '', description: '', cover: '', publishData: '', duration: 0,
         pages: [], owner: { face: '', mid: 0, name: '' },
         dimension: { width: 0, height: 0, rotate: 0 },
@@ -28,7 +28,7 @@ export class WorkRoute {
     })
     /** 标识视频信息卡片应该显示普通视频还是剧集，值为 `hide` 时隐藏卡片 */
     videoInfoCardMode: VideoInfoCardMode = van.state('hide')
-    ownerFaceHide = van.derive(() => this.videoInfocardData.val.owner.face == '')
+    ownerFaceHide = van.derive(() => this.videoInfoCardData.val.owner.face == '')
 
     /** 全部选项卡和列表数据 */
     allSection
@@ -57,9 +57,9 @@ export class WorkRoute {
         this.allSection = van.derive(() => {
             const list = (
                 this.videoInfoCardMode.val == 'season'
-                    || this.videoInfoCardMode.val == 'video' && this.videoInfocardData.val.section.length == 0
-                    ? [{ title: '正片', pages: this.videoInfocardData.val.pages }] : []
-            ).concat(this.videoInfocardData.val.section)
+                    || this.videoInfoCardMode.val == 'video' && this.videoInfoCardData.val.section.length == 0
+                    ? [{ title: '正片', pages: this.videoInfoCardData.val.pages }] : []
+            ).concat(this.videoInfoCardData.val.section)
             return list
         })
         this.sectionPages = van.derive(() => {
@@ -91,9 +91,9 @@ export class WorkRoute {
                 // if (!value) return goto('work'), _that.initLoading.val = false
                 if (!value) {
                     _that.isInitPopular.val = true
-                    const popularBvids = await getPopularVideoBvids()
+                    const popularBvidList = await getPopularVideoBvIds()
                     idType = 'bv'
-                    value = popularBvids[Math.floor(Math.random() * popularBvids.length)]
+                    value = popularBvidList[Math.floor(Math.random() * popularBvidList.length)]
                 }
                 if (idType == 'bv' && !value.match(/^BV1[a-zA-Z0-9]+$/)) return goto('work')
                 if ((idType == 'ep' || idType == 'ss' || idType == 'fav')
@@ -103,7 +103,7 @@ export class WorkRoute {
                 start(_that, {
                     idType,
                     value,
-                    from: 'onfirst'
+                    from: 'onFirst'
                 }).catch(error => {
                     const errorMessage = `获取视频信息失败：${error.message}`
                     showErrorPage(errorMessage)

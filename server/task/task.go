@@ -25,17 +25,18 @@ import (
 
 // TaskInitOption 创建任务时需要从 POST 请求获取的参数
 type TaskInitOption struct {
-	Bvid     string             `json:"bvid"`
-	Cid      int                `json:"cid"`
-	Format   common.MediaFormat `json:"format"`
-	Title    string             `json:"title"`
-	Owner    string             `json:"owner"`
-	Cover    string             `json:"cover"`
-	Status   TaskStatus         `json:"status"`
-	Folder   string             `json:"folder"`
-	Audio    string             `json:"audio"`
-	Video    string             `json:"video"`
-	Duration int                `json:"duration"`
+	Bvid         string             `json:"bvid"`
+	Cid          int                `json:"cid"`
+	Format       common.MediaFormat `json:"format"`
+	Title        string             `json:"title"`
+	Owner        string             `json:"owner"`
+	Cover        string             `json:"cover"`
+	Status       TaskStatus         `json:"status"`
+	Folder       string             `json:"folder"`
+	Audio        string             `json:"audio"`
+	Video        string             `json:"video"`
+	Duration     int                `json:"duration"`
+	DownloadType string             `json:"downloadType"`
 }
 
 // TaskInDB 任务数据库中的数据
@@ -46,9 +47,14 @@ type TaskInDB struct {
 }
 
 func (task *TaskInDB) FilePath() string {
+	ext := ".mp4"
+	if task.DownloadType == "audio" {
+		ext = ".m4a"
+	}
 	return filepath.Join(task.Folder,
-		fmt.Sprintf("%s %s.mp4", task.Title,
+		fmt.Sprintf("%s %s%s", task.Title,
 			strings.Replace(base64.StdEncoding.EncodeToString([]byte(strconv.FormatInt(task.ID, 10))), "=", "", -1),
+			ext,
 		),
 	)
 }
@@ -70,8 +76,8 @@ var GlobalMergeSem = util.NewSemaphore(3)
 
 func (task *Task) Create(db *sql.DB) error {
 	util.SqliteLock.Lock()
-	result, err := db.Exec(`INSERT INTO "task" ("bvid", "cid", "format", "title", "owner", "cover", "status", "folder", "duration")
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+	result, err := db.Exec(`INSERT INTO "task" ("bvid", "cid", "format", "title", "owner", "cover", "status", "folder", "duration", "download_type")
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		task.Bvid,
 		task.Cid,
 		task.Format,
@@ -81,6 +87,7 @@ func (task *Task) Create(db *sql.DB) error {
 		task.Status,
 		task.Folder,
 		task.Duration,
+		task.DownloadType,
 	)
 	util.SqliteLock.Unlock()
 	if err != nil {
@@ -94,6 +101,9 @@ func (task *Task) Create(db *sql.DB) error {
 
 // Create 创建任务，并将任务加入全局任务列表
 func (task *Task) Start() {
+	if task.DownloadType == "" {
+		task.DownloadType = "merge"
+	}
 	GlobalTaskMux.Lock()
 	GlobalTaskList = append(GlobalTaskList, task)
 	GlobalTaskMux.Unlock()
@@ -114,6 +124,22 @@ func (task *Task) Start() {
 		task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
 		return
 	}
+
+	if task.DownloadType == "audio" {
+		// 仅音频模式：不下载视频，直接重命名音频文件为输出文件
+		GlobalDownloadSem.Release()
+		outputPath := task.TaskInDB.FilePath()
+		audioPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".audio")
+		err = os.Rename(audioPath, outputPath)
+		if err != nil {
+			task.UpdateStatus(db, "error", fmt.Errorf("os.Rename: %v", err))
+			return
+		}
+		task.UpdateStatus(db, "done")
+		return
+	}
+
+	// 合并模式：继续下载视频并合并
 	err = DownloadMedia(client, task.Video, task, "video")
 	if err != nil {
 		GlobalDownloadSem.Release()
@@ -316,7 +342,7 @@ func GetTaskList(db *sql.DB, page int, pageSize int) ([]TaskInDB, error) {
 	util.SqliteLock.Lock()
 	rows, err := db.Query(`SELECT
 		"id", "bvid", "cid", "format", "title",
-		"owner", "cover", "status", "folder", "create_at"
+		"owner", "cover", "status", "folder", "duration", "download_type", "create_at"
 	FROM "task" ORDER BY "id" DESC LIMIT ?, ?`,
 		page*pageSize, pageSize,
 	)
@@ -339,6 +365,8 @@ func GetTaskList(db *sql.DB, page int, pageSize int) ([]TaskInDB, error) {
 			&task.Cover,
 			&task.Status,
 			&task.Folder,
+			&task.Duration,
+			&task.DownloadType,
 			&createAt,
 		)
 		if err != nil {
@@ -366,7 +394,7 @@ func GetTask(db *sql.DB, taskID int) (*TaskInDB, error) {
 	util.SqliteLock.Lock()
 	err := db.QueryRow(`SELECT
 		"id", "bvid", "cid", "format", "title",
-		"owner", "cover", "status", "folder", "create_at"
+		"owner", "cover", "status", "folder", "duration", "download_type", "create_at"
 	FROM "task" WHERE "id" = ?`,
 		taskID,
 	).Scan(
@@ -379,6 +407,8 @@ func GetTask(db *sql.DB, taskID int) (*TaskInDB, error) {
 		&task.Cover,
 		&task.Status,
 		&task.Folder,
+		&task.Duration,
+		&task.DownloadType,
 		&createAt,
 	)
 	util.SqliteLock.Unlock()

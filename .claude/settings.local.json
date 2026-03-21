@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm run:*)",
+      "Bash(go build:*)",
+      "Bash(pnpm build:*)",
+      "Bash(go test:*)",
+      "Bash(go vet:*)",
+      "Bash(npx tsc:*)",
+      "Bash(cd:*)"
+    ]
+  }
+}

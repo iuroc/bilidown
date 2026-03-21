@@ -11,7 +11,7 @@ class VideoItemListComp implements VanComponent {
     constructor(
         public workRoute: WorkRoute
     ) {
-        const { videoInfocardData: data } = workRoute
+        const { videoInfoCardData: data } = workRoute
 
         this.element = div({
             hidden: () => false && data.val.pages.length <= 1,
@@ -70,12 +70,12 @@ const ButtonGroup = (workRoute: WorkRoute) => {
 const ListBox = (pages: State<PageInParseResult[]>) => {
     return () => div({ class: 'row gy-3 gx-3' },
         pages.val.map(page => {
-            const bandgeNotNum = !page.bandge.match(/^\d+$/)
+            const badgeNotNum = !page.badge.match(/^\d+$/)
             const active = page.selected
             return div({ class: 'col-xxl-3 col-lg-4 col-md-6' },
                 div({
                     tabIndex: 0,
-                    class: () => `${bandgeNotNum
+                    class: () => `${badgeNotNum
                         ? `vstack gap-2 justify-content-center`
                         : `hstack gap-3`
                         } shadow-sm h-100 text-break user-select-none card card-body video-item-btn bg-success bg-opacity-10 ${active.val ? 'active' : ''}`,
@@ -88,9 +88,9 @@ const ListBox = (pages: State<PageInParseResult[]>) => {
                         }
                     }
                 },
-                    span({ class: 'badge text-bg-success bg-opacity-75 border', hidden: bandgeNotNum }, page.bandge),
+                    span({ class: 'badge text-bg-success bg-opacity-75 border', hidden: badgeNotNum }, page.badge),
                     div(page.part),
-                    div({ class: `${page.part ? 'small text-muted' : ''}`, hidden: !bandgeNotNum }, page.bandge),
+                    div({ class: `${page.part ? 'small text-muted' : ''}`, hidden: !badgeNotNum }, page.badge),
                 )
             )
         }),

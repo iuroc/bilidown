@@ -84,7 +84,7 @@ export type PageInParseResult = {
         rotate: number
     }
     /** 前置胶囊标签内容 */
-    bandge: string
+    badge: string
     /** 是否选中 */
     selected: State<boolean>
 }
@@ -244,6 +244,7 @@ export type TaskInitData = {
     audio: string
     video: string
     duration: number
+    downloadType: 'audio' | 'merge'
 }
 
 /** 任务数据库中的数据 */
