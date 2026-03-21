@@ -26,6 +26,12 @@ const videoFormatMap: Record<VideoFormat, string> = {
     6: "极速 240P",
 }
 
+const codecMap: Record<12 | 7 | 13, string> = {
+    12: "HEVC (hev1)",
+    7: "AVC (avc1)",
+    13: "AV1 (av01)",
+}
+
 export class ParseModalComp implements VanComponent {
     element: HTMLElement
 
@@ -48,6 +54,9 @@ export class ParseModalComp implements VanComponent {
 
     /** 下载类型：audio 仅音频，video 仅视频，merge 音视频合并 */
     downloadType = van.state<'audio' | 'video' | 'merge'>('merge')
+
+    /** 优先视频编码格式：12 hev1, 7 avc1, 13 av01 */
+    preferredCodec = van.state<12 | 7 | 13>(12)
 
     errorList: State<string[]> = van.state([])
 
@@ -130,7 +139,7 @@ export class ParseModalComp implements VanComponent {
             const owner = workRoute.videoInfoCardData.val.staff.length > 0
                 ? workRoute.videoInfoCardData.val.staff[0].split("[")[0].trim()
                 : workRoute.videoInfoCardData.val.owner.name.trim()
-            const activeVideoInfo = getActiveFormatVideo(info.info!, info.info!.accept_quality[info.formatIndex.val])
+            const activeVideoInfo = getActiveFormatVideo(info.info!, info.info!.accept_quality[info.formatIndex.val], this.preferredCodec.val)
             const pagesLength = workRoute.videoInfoCardData.val.pages.length
 
             return ({
@@ -250,6 +259,15 @@ export class ParseModalComp implements VanComponent {
                         option({ value: 'merge' }, '音视频合并'),
                         option({ value: 'audio' }, '仅音频'),
                         option({ value: 'video' }, '仅视频')
+                    ),
+                    select({
+                        class: 'form-select form-select-sm',
+                        value: _that.preferredCodec,
+                        oninput: (e) => _that.preferredCodec.val = Number((e.target as HTMLSelectElement).value) as 12 | 7 | 13
+                    },
+                        option({ value: '12' }, 'HEVC (hev1)'),
+                        option({ value: '7' }, 'AVC (avc1)'),
+                        option({ value: '13' }, 'AV1 (av01)')
                     )
                 )
             ),
@@ -289,8 +307,10 @@ const getAudioURL = (playInfo: PlayInfo): string => {
     }
 }
 
-const getActiveFormatVideo = (playInfo: PlayInfo, format: VideoFormat): { video: string, width: number, height: number } => {
-    for (const code of [12, 7, 13]) {
+const getActiveFormatVideo = (playInfo: PlayInfo, format: VideoFormat, preferredCodec: 12 | 7 | 13 = 12): { video: string, width: number, height: number } => {
+    // 优先级顺序：用户首选编码格式，然后按默认优先级 12 > 7 > 13
+    const codecOrder = [preferredCodec, 12, 7, 13].filter((value, index, self) => self.indexOf(value) === index)
+    for (const code of codecOrder) {
         for (const item of playInfo.dash.video) {
             if (item.id == format && item.codecid == code) {
                 return {
