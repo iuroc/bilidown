@@ -21,7 +21,7 @@ import (
 const (
 	HTTP_PORT = 8098      // 限定 HTTP 服务器端口
 	HTTP_HOST = ""        // 限定 HTTP 服务器主机
-	VERSION   = "v2.0.15" // 软件版本号，将影响托盘标题显示
+	VERSION   = "v2.1.0" // 软件版本号，将影响托盘标题显示
 )
 
 var urlLocal = fmt.Sprintf("http://127.0.0.1:%d", HTTP_PORT)
@@ -181,6 +181,7 @@ func mustInitTables() {
 		"status" text NOT NULL,
 		"folder" text NOT NULL,
 		"duration" integer NOT NULL,
+		"download_type" text NOT NULL DEFAULT 'merge',
 		"create_at" text NOT NULL DEFAULT CURRENT_TIMESTAMP
 	)`); err != nil {
 		log.Fatalln("create table task:", err)
@@ -193,6 +194,27 @@ func mustInitTables() {
 	if err := initHistoryTask(db); err != nil {
 		log.Fatalln("initHistoryTask:", err)
 	}
+
+	// 添加可能缺失的列（用于数据库迁移）
+	if err := addMissingColumns(db); err != nil {
+		log.Fatalln("addMissingColumns:", err)
+	}
+}
+
+// addMissingColumns 添加可能缺失的列（用于数据库迁移）
+func addMissingColumns(db *sql.DB) error {
+	// 检查download_type列是否存在，如果不存在则添加
+	// SQLite没有直接的方法检查列是否存在，我们尝试添加列并忽略错误
+	// 使用事务确保操作原子性
+	util.SqliteLock.Lock()
+	_, _ = db.Exec(`ALTER TABLE "task" ADD COLUMN "download_type" TEXT DEFAULT 'merge'`)
+	// 将现有记录中的NULL值更新为默认值'merge'
+	_, _ = db.Exec(`UPDATE "task" SET "download_type" = 'merge' WHERE "download_type" IS NULL`)
+	util.SqliteLock.Unlock()
+
+	// 忽略错误，因为列可能已经存在
+	// SQLite错误码为1表示列已存在
+	return nil
 }
 
 // initHistoryTask 将上一次程序运行时未完成的任务进度全部变为 error

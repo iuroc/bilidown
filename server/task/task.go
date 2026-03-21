@@ -25,17 +25,18 @@ import (
 
 // TaskInitOption 创建任务时需要从 POST 请求获取的参数
 type TaskInitOption struct {
-	Bvid     string             `json:"bvid"`
-	Cid      int                `json:"cid"`
-	Format   common.MediaFormat `json:"format"`
-	Title    string             `json:"title"`
-	Owner    string             `json:"owner"`
-	Cover    string             `json:"cover"`
-	Status   TaskStatus         `json:"status"`
-	Folder   string             `json:"folder"`
-	Audio    string             `json:"audio"`
-	Video    string             `json:"video"`
-	Duration int                `json:"duration"`
+	Bvid         string             `json:"bvid"`
+	Cid          int                `json:"cid"`
+	Format       common.MediaFormat `json:"format"`
+	Title        string             `json:"title"`
+	Owner        string             `json:"owner"`
+	Cover        string             `json:"cover"`
+	Status       TaskStatus         `json:"status"`
+	Folder       string             `json:"folder"`
+	Audio        string             `json:"audio"`
+	Video        string             `json:"video"`
+	Duration     int                `json:"duration"`
+	DownloadType string             `json:"downloadType"`
 }
 
 // TaskInDB 任务数据库中的数据
@@ -46,9 +47,14 @@ type TaskInDB struct {
 }
 
 func (task *TaskInDB) FilePath() string {
+	ext := ".mp4"
+	if task.DownloadType == "audio" {
+		ext = ".m4a"
+	}
 	return filepath.Join(task.Folder,
-		fmt.Sprintf("%s %s.mp4", task.Title,
+		fmt.Sprintf("%s %s%s", task.Title,
 			strings.Replace(base64.StdEncoding.EncodeToString([]byte(strconv.FormatInt(task.ID, 10))), "=", "", -1),
+			ext,
 		),
 	)
 }
@@ -70,8 +76,8 @@ var GlobalMergeSem = util.NewSemaphore(3)
 
 func (task *Task) Create(db *sql.DB) error {
 	util.SqliteLock.Lock()
-	result, err := db.Exec(`INSERT INTO "task" ("bvid", "cid", "format", "title", "owner", "cover", "status", "folder", "duration")
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+	result, err := db.Exec(`INSERT INTO "task" ("bvid", "cid", "format", "title", "owner", "cover", "status", "folder", "duration", "download_type")
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		task.Bvid,
 		task.Cid,
 		task.Format,
@@ -81,6 +87,7 @@ func (task *Task) Create(db *sql.DB) error {
 		task.Status,
 		task.Folder,
 		task.Duration,
+		task.DownloadType,
 	)
 	util.SqliteLock.Unlock()
 	if err != nil {
@@ -94,6 +101,9 @@ func (task *Task) Create(db *sql.DB) error {
 
 // Create 创建任务，并将任务加入全局任务列表
 func (task *Task) Start() {
+	if task.DownloadType == "" {
+		task.DownloadType = "merge"
+	}
 	GlobalTaskMux.Lock()
 	GlobalTaskList = append(GlobalTaskList, task)
 	GlobalTaskMux.Unlock()
@@ -108,45 +118,84 @@ func (task *Task) Start() {
 
 	GlobalDownloadSem.Acquire()
 	task.UpdateStatus(db, "running")
-	err = DownloadMedia(client, task.Audio, task, "audio")
-	if err != nil {
-		GlobalDownloadSem.Release()
-		task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
-		return
-	}
-	err = DownloadMedia(client, task.Video, task, "video")
-	if err != nil {
-		GlobalDownloadSem.Release()
-		task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
-		return
-	}
-	GlobalDownloadSem.Release()
 
-	outputPath := task.TaskInDB.FilePath()
+	if task.DownloadType == "audio" {
+		// 仅音频模式：只下载音频，重命名音频文件为输出文件
+		err = DownloadMedia(client, task.Audio, task, "audio")
+		if err != nil {
+			GlobalDownloadSem.Release()
+			task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
+			return
+		}
+		GlobalDownloadSem.Release()
+		outputPath := task.TaskInDB.FilePath()
+		audioPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".audio")
+		err = os.Rename(audioPath, outputPath)
+		if err != nil {
+			task.UpdateStatus(db, "error", fmt.Errorf("os.Rename: %v", err))
+			return
+		}
+		task.UpdateStatus(db, "done")
+		return
+	} else if task.DownloadType == "video" {
+		// 仅视频模式：只下载视频，重命名视频文件为输出文件
+		err = DownloadMedia(client, task.Video, task, "video")
+		if err != nil {
+			GlobalDownloadSem.Release()
+			task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
+			return
+		}
+		GlobalDownloadSem.Release()
+		outputPath := task.TaskInDB.FilePath()
+		videoPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".video")
+		err = os.Rename(videoPath, outputPath)
+		if err != nil {
+			task.UpdateStatus(db, "error", fmt.Errorf("os.Rename: %v", err))
+			return
+		}
+		task.UpdateStatus(db, "done")
+		return
+	} else {
+		// 合并模式：下载音频和视频，然后合并
+		err = DownloadMedia(client, task.Audio, task, "audio")
+		if err != nil {
+			GlobalDownloadSem.Release()
+			task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
+			return
+		}
+		err = DownloadMedia(client, task.Video, task, "video")
+		if err != nil {
+			GlobalDownloadSem.Release()
+			task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
+			return
+		}
+		GlobalDownloadSem.Release()
 
-	videoPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".video")
-	audioPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".audio")
-	GlobalMergeSem.Acquire()
-	err = task.MergeMedia(outputPath, videoPath, audioPath)
-	if err != nil {
+		outputPath := task.TaskInDB.FilePath()
+		videoPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".video")
+		audioPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".audio")
+		GlobalMergeSem.Acquire()
+		err = task.MergeMedia(outputPath, videoPath, audioPath)
+		if err != nil {
+			GlobalMergeSem.Release()
+			task.UpdateStatus(db, "error", fmt.Errorf("task.MergeMedia: %v", err))
+			return
+		}
+		err = os.Remove(videoPath)
+		if err != nil {
+			GlobalMergeSem.Release()
+			task.UpdateStatus(db, "error", fmt.Errorf("os.Remove: %v", err))
+			return
+		}
+		err = os.Remove(audioPath)
+		if err != nil {
+			GlobalMergeSem.Release()
+			task.UpdateStatus(db, "error", fmt.Errorf("os.Remove: %v", err))
+			return
+		}
 		GlobalMergeSem.Release()
-		task.UpdateStatus(db, "error", fmt.Errorf("task.MergeMedia: %v", err))
-		return
+		task.UpdateStatus(db, "done")
 	}
-	err = os.Remove(videoPath)
-	if err != nil {
-		GlobalMergeSem.Release()
-		task.UpdateStatus(db, "error", fmt.Errorf("os.Remove: %v", err))
-		return
-	}
-	err = os.Remove(audioPath)
-	if err != nil {
-		GlobalMergeSem.Release()
-		task.UpdateStatus(db, "error", fmt.Errorf("os.Remove: %v", err))
-		return
-	}
-	GlobalMergeSem.Release()
-	task.UpdateStatus(db, "done")
 }
 
 // 合并音视频
@@ -316,7 +365,7 @@ func GetTaskList(db *sql.DB, page int, pageSize int) ([]TaskInDB, error) {
 	util.SqliteLock.Lock()
 	rows, err := db.Query(`SELECT
 		"id", "bvid", "cid", "format", "title",
-		"owner", "cover", "status", "folder", "create_at"
+		"owner", "cover", "status", "folder", "duration", "download_type", "create_at"
 	FROM "task" ORDER BY "id" DESC LIMIT ?, ?`,
 		page*pageSize, pageSize,
 	)
@@ -339,6 +388,8 @@ func GetTaskList(db *sql.DB, page int, pageSize int) ([]TaskInDB, error) {
 			&task.Cover,
 			&task.Status,
 			&task.Folder,
+			&task.Duration,
+			&task.DownloadType,
 			&createAt,
 		)
 		if err != nil {
@@ -366,7 +417,7 @@ func GetTask(db *sql.DB, taskID int) (*TaskInDB, error) {
 	util.SqliteLock.Lock()
 	err := db.QueryRow(`SELECT
 		"id", "bvid", "cid", "format", "title",
-		"owner", "cover", "status", "folder", "create_at"
+		"owner", "cover", "status", "folder", "duration", "download_type", "create_at"
 	FROM "task" WHERE "id" = ?`,
 		taskID,
 	).Scan(
@@ -379,6 +430,8 @@ func GetTask(db *sql.DB, taskID int) (*TaskInDB, error) {
 		&task.Cover,
 		&task.Status,
 		&task.Folder,
+		&task.Duration,
+		&task.DownloadType,
 		&createAt,
 	)
 	util.SqliteLock.Unlock()

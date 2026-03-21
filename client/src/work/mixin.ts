@@ -13,7 +13,7 @@ export const start = async (
         /** 标识字段值 */
         value: string | number
         /** 调用来源 */
-        from: 'click' | 'onfirst'
+        from: 'click' | 'onFirst'
     }) => {
     // 如果初始载入路由时，路由参数不带有视频信息，则会随机选择一个热门视频
     // 这种情况展示的解析结果，不应该同步修改路由参数，用户直接刷新网页，可以继续随机推荐不同的视频
@@ -24,7 +24,7 @@ export const start = async (
     if (option.idType === 'bv') {
         const bvid = option.value as string
         await getVideoInfo(bvid).then(info => {
-            workRoute.videoInfocardData.val = {
+            workRoute.videoInfoCardData.val = {
                 section: (info.ugc_season.sections || []).map(i => {
                     let index = 0
                     return {
@@ -38,7 +38,7 @@ export const start = async (
                                 duration: k.duration,
                                 page: index,
                                 part: j.title,
-                                bandge: index.toString(),
+                                badge: index.toString(),
                                 selected: van.state(bvid == j.bvid)
                             }
                         }))
@@ -56,7 +56,7 @@ export const start = async (
                 pages: info.pages.map((page, index) => ({
                     ...page,
                     bvid,
-                    bandge: (index + 1).toString(),
+                    badge: (index + 1).toString(),
                     selected: van.state(info.pages.length == 1)
                 })),
                 dimension: info.dimension,
@@ -69,7 +69,7 @@ export const start = async (
         const epid = option.idType === 'ep' ? option.value as number : 0
         const ssid = option.idType === 'ss' ? option.value as number : 0
         await getSeasonInfo(epid, ssid).then(info => {
-            workRoute.videoInfocardData.val = {
+            workRoute.videoInfoCardData.val = {
                 section: (info.section || []).map(i => ({
                     pages: i.episodes.map(episodeToPage),
                     title: i.title
@@ -93,7 +93,7 @@ export const start = async (
     } else if (option.idType == 'fav') {
         const mediaId = option.value as number
         await getFavList(mediaId).then(favList => {
-            workRoute.videoInfocardData.val = {
+            workRoute.videoInfoCardData.val = {
                 areas: [],
                 cover: favList[0].cover,
                 description: favList[0].intro,
@@ -101,7 +101,7 @@ export const start = async (
                 duration: favList[0].duration,
                 owner: favList[0].upper,
                 pages: favList.map((info, index) => ({
-                    bandge: (index + 1).toString(),
+                    badge: (index + 1).toString(),
                     selected: van.state(index == 0),
                     bvid: info.bvid,
                     cid: info.ugc.first_cid,
@@ -131,7 +131,7 @@ const episodeToPage = (episode: Episode, index: number): PageInParseResult => {
         duration: episode.duration,
         page: index + 1,
         part: episode.long_title || (episode.title.match(/^\d+$/) ? `第 ${episode.title} 集` : episode.title),
-        bandge: episode.title,
+        badge: episode.title,
         selected: van.state(false)
     }
 }

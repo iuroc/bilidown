@@ -14,7 +14,7 @@ class VideoInfoCardComp implements VanComponent {
         public workRoute: WorkRoute,
     ) {
         const {
-            videoInfocardData: data,
+            videoInfoCardData: data,
             videoInfoCardMode: mode,
             ownerFaceHide
         } = workRoute
@@ -90,7 +90,7 @@ class VideoInfoCardComp implements VanComponent {
 
 const Right = (parent: VideoInfoCardComp) => {
     const mode = parent.workRoute.videoInfoCardMode
-    const data = parent.workRoute.videoInfocardData
+    const data = parent.workRoute.videoInfoCardData
 
     return div({ class: 'vstack gap-2 h-100' },
         div({ class: 'row gx-2 gy-2' },
@@ -159,7 +159,7 @@ const Right = (parent: VideoInfoCardComp) => {
  */
 const DescriptionGroup = (parent: VideoInfoCardComp, bottom = false) => {
     const mode = parent.workRoute.videoInfoCardMode
-    const data = parent.workRoute.videoInfocardData
+    const data = parent.workRoute.videoInfoCardData
     const _class = van.derive(() => mode.val == 'video' ? 'd-md-flex' : '')
     const size = van.derive(() => mode.val == 'video' ? 'lg' : 'lg')
     return div({

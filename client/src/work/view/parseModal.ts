@@ -5,7 +5,7 @@ import { WorkRoute } from '..'
 import { createTask, getPlayInfo } from '../data'
 import PQueue from 'p-queue'
 
-const { a, button, div, input } = van.tags
+const { a, button, div, input, select, option, label } = van.tags
 
 type Option = {
     workRoute: WorkRoute
@@ -24,6 +24,12 @@ const videoFormatMap: Record<VideoFormat, string> = {
     32: "清晰 480P",
     16: "流畅 360P",
     6: "极速 240P",
+}
+
+const codecMap: Record<12 | 7 | 13, string> = {
+    12: "HEVC (hev1)",
+    7: "AVC (avc1)",
+    13: "AV1 (av01)",
 }
 
 export class ParseModalComp implements VanComponent {
@@ -45,6 +51,14 @@ export class ParseModalComp implements VanComponent {
 
     /** 该属性用于在点击“开始下载”按钮后使按钮变为禁用状态，防止多次点击 */
     downloadBtnDisabled = van.state(false)
+
+    /** 下载类型：audio 仅音频，video 仅视频，merge 音视频合并 */
+    downloadType = van.state<'audio' | 'video' | 'merge'>('merge')
+
+    /** 优先视频编码格式：12 hev1, 7 avc1, 13 av01 */
+    preferredCodec = van.state<12 | 7 | 13>(12)
+    /** 是否优先使用HiRes（flac）音频 */
+    preferHiResAudio = van.state(true)
 
     errorList: State<string[]> = van.state([])
 
@@ -108,8 +122,8 @@ export class ParseModalComp implements VanComponent {
                 this.finishCount.val++
             }).catch(() => {
                 this.finishCount.val++
-                const badgeNotNum = !page.bandge.match(/^\d+$/)
-                this.errorList.val = this.errorList.val.concat(`${page.part}${badgeNotNum ? ` - ${page.bandge}` : ''}`)
+                const badgeNotNum = !page.badge.match(/^\d+$/)
+                this.errorList.val = this.errorList.val.concat(`${page.part}${badgeNotNum ? ` - ${page.badge}` : ''}`)
             })
         }
         await queue.onIdle()
@@ -121,30 +135,30 @@ export class ParseModalComp implements VanComponent {
         this.downloadBtnDisabled.val = true
         // 需要传递给服务器，需要创建下载任务的数据列表
         createTask(selectedPlayInfos.map(info => {
-            const badgeNotNum = !info.page.bandge.match(/^\d+$/)
+            const badgeNotNum = !info.page.badge.match(/^\d+$/)
             const isVideoMode = workRoute.videoInfoCardMode.val == 'video'
-            const cardTitle = workRoute.videoInfocardData.val.title
-            const owner = workRoute.videoInfocardData.val.staff.length > 0
-                ? workRoute.videoInfocardData.val.staff[0].split("[")[0].trim()
-                : workRoute.videoInfocardData.val.owner.name.trim()
-            const activeVideoInfo = getActiveFormatVideo(info.info!, info.info!.accept_quality[info.formatIndex.val])
-            const pagesLength = workRoute.videoInfocardData.val.pages.length
+            const cardTitle = workRoute.videoInfoCardData.val.title
+            const owner = workRoute.videoInfoCardData.val.staff.length > 0
+                ? workRoute.videoInfoCardData.val.staff[0].split("[")[0].trim()
+                : workRoute.videoInfoCardData.val.owner.name.trim()
+            const activeVideoInfo = getActiveFormatVideo(info.info!, info.info!.accept_quality[info.formatIndex.val], this.preferredCodec.val)
+            const pagesLength = workRoute.videoInfoCardData.val.pages.length
 
             return ({
                 bvid: info.page.bvid,
                 cid: info.page.cid,
-                cover: workRoute.videoInfocardData.val.cover,
+                cover: workRoute.videoInfoCardData.val.cover,
                 title: (badgeNotNum
                     ? [
                         info.page.part.trim(),
-                        `[${info.page.bandge.trim()}]`,
+                        `[${info.page.badge.trim()}]`,
                         `[${cardTitle.trim()}]`,
                         `[${videoFormatMap[info.info!.accept_quality[info.formatIndex.val]]}]`,
                         `[${formatSeconds(info.info!.dash.duration)}]`
                     ]
                     : [
                         pagesLength == 1 ? workRoute.allSection.val[workRoute.sectionTabsActiveIndex.val].title : `[${cardTitle.trim()}]`,
-                        workRoute.sectionPages.val.length == 1 ? '' : `[${info.page.bandge.trim()}]`,
+                        workRoute.sectionPages.val.length == 1 ? '' : `[${info.page.badge.trim()}]`,
                         info.page.part.trim(),
                         isVideoMode ? `[${owner}]` : '',
                         `[${videoFormatMap[info.info!.accept_quality[info.formatIndex.val]]}]`,
@@ -152,8 +166,9 @@ export class ParseModalComp implements VanComponent {
                     ]).filter(p => p).join(' '),
                 format: info.info!.accept_quality[info.formatIndex.val],
                 owner,
-                audio: getAudioURL(info.info!),
+                audio: getAudioURL(info.info!, this.preferHiResAudio.val),
                 duration: info.info!.dash.duration,
+                downloadType: this.downloadType.val,
                 ...activeVideoInfo
             })
         })).then(() => {
@@ -180,7 +195,7 @@ export class ParseModalComp implements VanComponent {
             this.allPlayInfo.val.filter(info => info.info)
                 .sort((a, b) => a.page.page - b.page.page)
                 .map(info => {
-                    const badgeNotNum = !info.page.bandge.match(/^\d+$/)
+                    const badgeNotNum = !info.page.badge.match(/^\d+$/)
 
                     return div({
                         class: () => `list-group-item user-select-none py-0 ${info.info ? '' : 'disabled'}`,
@@ -196,9 +211,9 @@ export class ParseModalComp implements VanComponent {
                                     class: 'form-check-input', type: 'checkbox', checked: info.selected,
                                 }),
                                 div({},
-                                    div((badgeNotNum ? '' : `${info.page.bandge}. `) + info.page.part),
+                                    div((badgeNotNum ? '' : `${info.page.badge}. `) + info.page.part),
                                     badgeNotNum ? div({ class: info.page.part ? 'small text-secondary' : '' },
-                                        info.page.bandge) : ''
+                                        info.page.badge) : ''
                                 ),
                             ),
                             div({ class: 'dropdown' },
@@ -236,7 +251,37 @@ export class ParseModalComp implements VanComponent {
 
         return div({ class: `modal-footer` },
             div({ class: 'me-auto', hidden: () => !allFinish.val || totalCount.val == 0 },
-                () => `已选择 (${selectedCount.val}/${totalCount.val}) 项`
+                div({ class: 'hstack gap-3 text-nowrap' },
+                    () => `已选择 (${selectedCount.val}/${totalCount.val}) 项`,
+                    select({
+                        class: 'form-select form-select-sm',
+                        value: _that.downloadType,
+                        oninput: (e) => _that.downloadType.val = (e.target as HTMLSelectElement).value as 'audio' | 'video' | 'merge'
+                    },
+                        option({ value: 'merge' }, '音视频合并'),
+                        option({ value: 'audio' }, '仅音频'),
+                        option({ value: 'video' }, '仅视频')
+                    ),
+                    select({
+                        class: 'form-select form-select-sm',
+                        value: _that.preferredCodec,
+                        oninput: (e) => _that.preferredCodec.val = Number((e.target as HTMLSelectElement).value) as 12 | 7 | 13
+                    },
+                        option({ value: '12' }, 'HEVC (hev1)'),
+                        option({ value: '7' }, 'AVC (avc1)'),
+                        option({ value: '13' }, 'AV1 (av01)')
+                    ),
+                    div({ class: 'form-check form-check-inline' },
+                        input({
+                            type: 'checkbox',
+                            class: 'form-check-input',
+                            id: 'preferHiResAudio',
+                            checked: _that.preferHiResAudio,
+                            oninput: (e) => _that.preferHiResAudio.val = (e.target as HTMLInputElement).checked
+                        }),
+                        label({ class: 'form-check-label', for: 'preferHiResAudio' }, 'Hi-Res')
+                    )
+                )
             ),
             button({
                 class: `btn btn-secondary`,
@@ -266,16 +311,18 @@ export class ParseModalComp implements VanComponent {
     }
 }
 
-const getAudioURL = (playInfo: PlayInfo): string => {
-    if (playInfo.dash.flac) {
+const getAudioURL = (playInfo: PlayInfo, preferHiRes: boolean = true): string => {
+    if (preferHiRes && playInfo.dash.flac) {
         return playInfo.dash.flac.audio.baseUrl
     } else {
         return playInfo.dash.audio.sort((a, b) => b.id - a.id)[0].baseUrl
     }
 }
 
-const getActiveFormatVideo = (playInfo: PlayInfo, format: VideoFormat): { video: string, width: number, height: number } => {
-    for (const code of [12, 7, 13]) {
+const getActiveFormatVideo = (playInfo: PlayInfo, format: VideoFormat, preferredCodec: 12 | 7 | 13 = 12): { video: string, width: number, height: number } => {
+    // 优先级顺序：用户首选编码格式，然后按默认优先级 12 > 7 > 13
+    const codecOrder = [preferredCodec, 12, 7, 13].filter((value, index, self) => self.indexOf(value) === index)
+    for (const code of codecOrder) {
         for (const item of playInfo.dash.video) {
             if (item.id == format && item.codecid == code) {
                 return {

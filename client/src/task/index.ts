@@ -6,7 +6,7 @@ import { TaskInDB, TaskStatus } from '../work/type'
 import { LoadingBox } from '../view'
 import { PlayerModalComp } from './playerModal'
 
-const { div } = van.tags
+const { div, span } = van.tags
 
 const { svg, path } = van.tags('http://www.w3.org/2000/svg')
 
@@ -46,7 +46,8 @@ export class TaskRoute implements VanComponent {
                     () => _that.loading.val ? LoadingBox() : '',
                     () => div({ class: 'list-group', hidden: _that.loading.val },
                         _that.taskList.val.map(task => {
-                            const filename = `${task.title} ${btoa(task.id.toString()).replace(/=/g, '')}.mp4`
+                            const ext = task.downloadType === 'audio' ? '.m4a' : '.mp4'
+                            const filename = `${task.title} ${btoa(task.id.toString()).replace(/=/g, '')}${ext}`
                             return div({
                                 class: () => `list-group-item p-0 hstack user-select-none ${task.statusState.val != 'done' && task.statusState.val != 'error' || task.opening.val ? 'disabled' : ''}`,
                                 hidden: task.deleting,
@@ -55,12 +56,11 @@ export class TaskRoute implements VanComponent {
                                     class: 'vstack gap-2 py-2 px-3',
                                     style: `cursor: pointer;`,
                                     onclick() {
-                                        if (task.statusState.val != 'done') return
-                                        _that.playerModalComp.modal.show()
-                                        _that.playerModalComp.playerComp.src.val = `/api/downloadVideo?path=${encodeURIComponent(
+                                        const src = `/api/downloadVideo?path=${encodeURIComponent(
                                             `${task.folder}\\${filename}`
                                         )}`
-                                        _that.playerModalComp.playerComp.filename.val = task.title
+                                        if (task.statusState.val != 'done') return
+                                        _that.playerModalComp.open(src, task.title, task.downloadType === 'audio' ? 'audio' : 'video')
                                     }
                                 },
                                     div({
@@ -69,11 +69,21 @@ export class TaskRoute implements VanComponent {
                                         ${task.statusState.val == 'waiting' || task.statusState.val == 'running'
                                                 ? 'text-primary' : ''}`
                                     },
-                                        () => task.opening.val ? '正在打开文件位置...' : filename),
+                                        () => {
+                                            if (task.opening.val) return '正在打开文件位置...'
+                                            return div(
+                                                span({
+                                                    class: `me-2 badge ${task.downloadType === 'audio' ? 'bg-success' : 'bg-primary'}`,
+                                                    title: task.downloadType === 'audio' ? '音频' : '视频'
+                                                }, task.downloadType === 'audio' ? 'A' : 'V'),
+                                                span({}, filename),
+                                            )
+                                        }),
                                     div({ class: 'text-secondary small' },
                                         () => {
                                             if (task.statusState.val == 'waiting') return '等待下载'
                                             if (task.statusState.val == 'error') return '下载失败'
+                                            if (task.statusState.val == 'done') return task.folder
                                             if (task.videoProgress.val == 0) {
                                                 return `正在下载音频 (${(task.audioProgress.val * 100).toFixed(2)}%)`
                                             } else if (task.mergeProgress.val == 0) {
@@ -189,7 +199,7 @@ export class TaskRoute implements VanComponent {
                         })
                         if (activeTaskList.filter(task => task.status == 'running').length == 0) {
                             clearInterval(timer)
-                            clearInterval(halper)
+                            clearInterval(helper)
                         }
                         return true
                     }
@@ -199,9 +209,9 @@ export class TaskRoute implements VanComponent {
                     let timer = setInterval(() => {
                         refresh()
                     }, 1000)
-                    let halper = setInterval(() => {
+                    let helper = setInterval(() => {
                         if (now.val.split('/')[0] != 'task') {
-                            clearInterval(halper)
+                            clearInterval(helper)
                             clearInterval(timer)
                         }
                     })

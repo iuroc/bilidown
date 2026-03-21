@@ -124,11 +124,11 @@ func getPopularVideos(w http.ResponseWriter, r *http.Request) {
 		util.Res{Success: false, Message: err.Error()}.Write(w)
 		return
 	}
-	bvids := make([]string, 0)
+	bvidList := make([]string, 0)
 	for _, v := range videos {
-		bvids = append(bvids, v.Bvid)
+		bvidList = append(bvidList, v.Bvid)
 	}
-	util.Res{Success: true, Message: "获取成功", Data: bvids}.Write(w)
+	util.Res{Success: true, Message: "获取成功", Data: bvidList}.Write(w)
 }
 
 var downloadVideo = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
