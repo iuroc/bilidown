@@ -5,7 +5,7 @@ import { WorkRoute } from '..'
 import { createTask, getPlayInfo } from '../data'
 import PQueue from 'p-queue'
 
-const { a, button, div, input, select, option } = van.tags
+const { a, button, div, input, select, option, label } = van.tags
 
 type Option = {
     workRoute: WorkRoute
@@ -57,6 +57,8 @@ export class ParseModalComp implements VanComponent {
 
     /** 优先视频编码格式：12 hev1, 7 avc1, 13 av01 */
     preferredCodec = van.state<12 | 7 | 13>(12)
+    /** 是否优先使用HiRes（flac）音频 */
+    preferHiResAudio = van.state(true)
 
     errorList: State<string[]> = van.state([])
 
@@ -164,7 +166,7 @@ export class ParseModalComp implements VanComponent {
                     ]).filter(p => p).join(' '),
                 format: info.info!.accept_quality[info.formatIndex.val],
                 owner,
-                audio: getAudioURL(info.info!),
+                audio: getAudioURL(info.info!, this.preferHiResAudio.val),
                 duration: info.info!.dash.duration,
                 downloadType: this.downloadType.val,
                 ...activeVideoInfo
@@ -268,6 +270,16 @@ export class ParseModalComp implements VanComponent {
                         option({ value: '12' }, 'HEVC (hev1)'),
                         option({ value: '7' }, 'AVC (avc1)'),
                         option({ value: '13' }, 'AV1 (av01)')
+                    ),
+                    div({ class: 'form-check form-check-inline' },
+                        input({
+                            type: 'checkbox',
+                            class: 'form-check-input',
+                            id: 'preferHiResAudio',
+                            checked: _that.preferHiResAudio,
+                            oninput: (e) => _that.preferHiResAudio.val = (e.target as HTMLInputElement).checked
+                        }),
+                        label({ class: 'form-check-label', for: 'preferHiResAudio' }, 'Hi-Res')
                     )
                 )
             ),
@@ -299,8 +311,8 @@ export class ParseModalComp implements VanComponent {
     }
 }
 
-const getAudioURL = (playInfo: PlayInfo): string => {
-    if (playInfo.dash.flac) {
+const getAudioURL = (playInfo: PlayInfo, preferHiRes: boolean = true): string => {
+    if (preferHiRes && playInfo.dash.flac) {
         return playInfo.dash.flac.audio.baseUrl
     } else {
         return playInfo.dash.audio.sort((a, b) => b.id - a.id)[0].baseUrl
