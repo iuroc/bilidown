@@ -135,6 +135,10 @@ func (task *Task) Start() {
 			task.UpdateStatus(db, "error", fmt.Errorf("os.Rename: %v", err))
 			return
 		}
+		// 添加元数据
+		if err := task.addMetadata(outputPath); err != nil {
+			log.Printf("添加元数据失败 (任务ID: %d): %v", task.ID, err)
+		}
 		task.UpdateStatus(db, "done")
 		return
 	} else if task.DownloadType == "video" {
@@ -152,6 +156,10 @@ func (task *Task) Start() {
 		if err != nil {
 			task.UpdateStatus(db, "error", fmt.Errorf("os.Rename: %v", err))
 			return
+		}
+		// 添加元数据
+		if err := task.addMetadata(outputPath); err != nil {
+			log.Printf("添加元数据失败 (任务ID: %d): %v", task.ID, err)
 		}
 		task.UpdateStatus(db, "done")
 		return
@@ -194,6 +202,10 @@ func (task *Task) Start() {
 			return
 		}
 		GlobalMergeSem.Release()
+		// 添加元数据
+		if err := task.addMetadata(outputPath); err != nil {
+			log.Printf("添加元数据失败 (任务ID: %d): %v", task.ID, err)
+		}
 		task.UpdateStatus(db, "done")
 	}
 }
@@ -444,4 +456,46 @@ func GetTask(db *sql.DB, taskID int) (*TaskInDB, error) {
 		return nil, err
 	}
 	return &task, nil
+}
+
+// addMetadata 使用 ffmpeg 给输出文件添加元数据（description 和 artist）
+func (task *Task) addMetadata(filePath string) error {
+	ffmpegPath, err := util.GetFFmpegPath()
+	if err != nil {
+		return err
+	}
+
+	desc := task.Bvid
+	if desc == "" {
+		desc = ""
+	}
+
+	author := task.Owner
+
+	// 临时文件加上 .mp4 扩展名
+	tempPath := filePath + ".tmp.mp4"
+
+	// 使用双引号包裹文件路径，避免特殊字符
+	cmd := exec.Command(ffmpegPath,
+		"-i", filePath,
+		"-metadata", "description="+desc,
+		"-metadata", "artist="+author,
+		"-codec", "copy",
+		"-y",
+		tempPath,
+	)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("ffmpeg添加元数据失败: %v, 输出: %s", err, string(output))
+	}
+
+	if err := os.Remove(filePath); err != nil {
+		return fmt.Errorf("删除原文件失败: %v", err)
+	}
+	if err := os.Rename(tempPath, filePath); err != nil {
+		return fmt.Errorf("重命名临时文件失败: %v", err)
+	}
+
+	return nil
 }
