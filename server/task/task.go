@@ -118,15 +118,15 @@ func (task *Task) Start() {
 
 	GlobalDownloadSem.Acquire()
 	task.UpdateStatus(db, "running")
-	err = DownloadMedia(client, task.Audio, task, "audio")
-	if err != nil {
-		GlobalDownloadSem.Release()
-		task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
-		return
-	}
 
 	if task.DownloadType == "audio" {
-		// 仅音频模式：不下载视频，直接重命名音频文件为输出文件
+		// 仅音频模式：只下载音频，重命名音频文件为输出文件
+		err = DownloadMedia(client, task.Audio, task, "audio")
+		if err != nil {
+			GlobalDownloadSem.Release()
+			task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
+			return
+		}
 		GlobalDownloadSem.Release()
 		outputPath := task.TaskInDB.FilePath()
 		audioPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".audio")
@@ -137,42 +137,65 @@ func (task *Task) Start() {
 		}
 		task.UpdateStatus(db, "done")
 		return
-	}
-
-	// 合并模式：继续下载视频并合并
-	err = DownloadMedia(client, task.Video, task, "video")
-	if err != nil {
+	} else if task.DownloadType == "video" {
+		// 仅视频模式：只下载视频，重命名视频文件为输出文件
+		err = DownloadMedia(client, task.Video, task, "video")
+		if err != nil {
+			GlobalDownloadSem.Release()
+			task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
+			return
+		}
 		GlobalDownloadSem.Release()
-		task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
+		outputPath := task.TaskInDB.FilePath()
+		videoPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".video")
+		err = os.Rename(videoPath, outputPath)
+		if err != nil {
+			task.UpdateStatus(db, "error", fmt.Errorf("os.Rename: %v", err))
+			return
+		}
+		task.UpdateStatus(db, "done")
 		return
-	}
-	GlobalDownloadSem.Release()
+	} else {
+		// 合并模式：下载音频和视频，然后合并
+		err = DownloadMedia(client, task.Audio, task, "audio")
+		if err != nil {
+			GlobalDownloadSem.Release()
+			task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
+			return
+		}
+		err = DownloadMedia(client, task.Video, task, "video")
+		if err != nil {
+			GlobalDownloadSem.Release()
+			task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
+			return
+		}
+		GlobalDownloadSem.Release()
 
-	outputPath := task.TaskInDB.FilePath()
-
-	videoPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".video")
-	audioPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".audio")
-	GlobalMergeSem.Acquire()
-	err = task.MergeMedia(outputPath, videoPath, audioPath)
-	if err != nil {
+		outputPath := task.TaskInDB.FilePath()
+		videoPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".video")
+		audioPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".audio")
+		GlobalMergeSem.Acquire()
+		err = task.MergeMedia(outputPath, videoPath, audioPath)
+		if err != nil {
+			GlobalMergeSem.Release()
+			task.UpdateStatus(db, "error", fmt.Errorf("task.MergeMedia: %v", err))
+			return
+		}
+		err = os.Remove(videoPath)
+		if err != nil {
+			GlobalMergeSem.Release()
+			task.UpdateStatus(db, "error", fmt.Errorf("os.Remove: %v", err))
+			return
+		}
+		err = os.Remove(audioPath)
+		if err != nil {
+			GlobalMergeSem.Release()
+			task.UpdateStatus(db, "error", fmt.Errorf("os.Remove: %v", err))
+			return
+		}
 		GlobalMergeSem.Release()
-		task.UpdateStatus(db, "error", fmt.Errorf("task.MergeMedia: %v", err))
-		return
+		task.UpdateStatus(db, "done")
 	}
-	err = os.Remove(videoPath)
-	if err != nil {
-		GlobalMergeSem.Release()
-		task.UpdateStatus(db, "error", fmt.Errorf("os.Remove: %v", err))
-		return
-	}
-	err = os.Remove(audioPath)
-	if err != nil {
-		GlobalMergeSem.Release()
-		task.UpdateStatus(db, "error", fmt.Errorf("os.Remove: %v", err))
-		return
-	}
-	GlobalMergeSem.Release()
-	task.UpdateStatus(db, "done")
 }
 
 // 合并音视频

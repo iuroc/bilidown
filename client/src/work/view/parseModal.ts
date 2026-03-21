@@ -46,8 +46,8 @@ export class ParseModalComp implements VanComponent {
     /** 该属性用于在点击“开始下载”按钮后使按钮变为禁用状态，防止多次点击 */
     downloadBtnDisabled = van.state(false)
 
-    /** 下载类型：audio 仅音频，merge 音视频合并 */
-    downloadType = van.state<'audio' | 'merge'>('merge')
+    /** 下载类型：audio 仅音频，video 仅视频，merge 音视频合并 */
+    downloadType = van.state<'audio' | 'video' | 'merge'>('merge')
 
     errorList: State<string[]> = van.state([])
 
@@ -245,10 +245,11 @@ export class ParseModalComp implements VanComponent {
                     select({
                         class: 'form-select form-select-sm',
                         value: _that.downloadType,
-                        oninput: (e) => _that.downloadType.val = (e.target as HTMLSelectElement).value as 'audio' | 'merge'
+                        oninput: (e) => _that.downloadType.val = (e.target as HTMLSelectElement).value as 'audio' | 'video' | 'merge'
                     },
                         option({ value: 'merge' }, '音视频合并'),
-                        option({ value: 'audio' }, '仅音频')
+                        option({ value: 'audio' }, '仅音频'),
+                        option({ value: 'video' }, '仅视频')
                     )
                 )
             ),
