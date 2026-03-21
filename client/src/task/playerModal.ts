@@ -17,7 +17,7 @@ export class PlayerComp implements VanComponent {
         this.element = this.Root()
     }
 
-    Root() {
+    Root(): HTMLElement {
         return video({ src: this.src })
     }
 
