@@ -60,9 +60,7 @@ export class TaskRoute implements VanComponent {
                                             `${task.folder}\\${filename}`
                                         )}`
                                         if (task.statusState.val != 'done') return
-                                        _that.playerModalComp.modal.show()
-                                        _that.playerModalComp.playerComp.src.val = src
-                                        _that.playerModalComp.playerComp.filename.val = task.title
+                                        _that.playerModalComp.open(src, task.title, task.downloadType === 'audio' ? 'audio' : 'video')
                                     }
                                 },
                                     div({
