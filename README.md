@@ -79,14 +79,15 @@ goreleaser release --snapshot --clean
 
 ### 编译指定系统架构
 
-```shell
-cd bilidown/server
-
-# [DEFAULT: linux-amd64]
-docker run --rm -v .:/usr/src/data iuroc/cgo-cross-build go build -o dist/bilidown-linux-amd64/bilidown
+```ini
+# 按上面的步骤进入 Docker 容器内终端
 
 # [darwin-amd64]
-docker run --rm -v .:/usr/src/data -e GOOS=darwin -e GOARCH=amd64 -e CC=o64-clang -e CGO_ENABLED=1 iuroc/cgo-cross-build go build -o dist/bilidown-darwin-amd64/bilidown
+GOOS=darwin
+GOARCH=amd64
+CC=o64-clang
+CGO_ENABLED=1
+go build
 ```
 
 ### 非 Docker 环境编译
