@@ -62,16 +62,19 @@ git clone https://github.com/iuroc/bilidown
 
 ### 交叉编译发行版
 
--   执行 `goreleaser` 命令时将自动执行 `pnpm build` 和 `go mod tidy`
+> 执行 `goreleaser` 命令时将自动执行 `pnpm build` 和 `go mod tidy`
+
+在项目根目录执行：
 
 ```shell
-cd bilidown/server
-# [交叉编译 Releases]
-docker run --rm -v .:/usr/src/data iuroc/cgo-cross-build goreleaser release --snapshot --clean
-
-# [交互式终端]
-cd bilidown
 docker run --rm -it -v .:/usr/src/data iuroc/cgo-cross-build
+```
+
+然后在容器内的终端执行：
+
+```shell
+cd server
+goreleaser release --snapshot --clean
 ```
 
 ### 编译指定系统架构
