@@ -74,6 +74,7 @@ docker run --rm -it -v .:/usr/src/data iuroc/cgo-cross-build
 
 ```shell
 cd server
+git tag v2.1.1
 goreleaser release --snapshot --clean
 ```
 
