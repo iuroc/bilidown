@@ -64,18 +64,22 @@ git clone https://github.com/iuroc/bilidown
 
 > 执行 `goreleaser` 命令时将自动执行 `pnpm build` 和 `go mod tidy`
 
-在项目根目录执行：
+将 `ffmpeg.exe` 放入 `server/bin` 目录内。
+
+在项目根目录执行如下代码，进入 Docker 容器。
 
 ```shell
 docker run --rm -it -v .:/usr/src/data iuroc/cgo-cross-build
 ```
 
-然后在容器内的终端执行：
+在容器内的终端执行如下代码，开始交叉编译。
 
 ```shell
 cd server
 git tag v2.1.1
 goreleaser release --snapshot --clean
+# 正式发行
+# GITHUB_TOKEN=xxx goreleaser release --clean
 ```
 
 ### 编译指定系统架构
