@@ -1,0 +1,520 @@
+package task
+
+import (
+	"bufio"
+	"database/sql"
+	"encoding/base64"
+	"errors"
+	"fmt"
+	"io"
+	"log"
+	"math/rand"
+	"net/http"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"regexp"
+	"strconv"
+	"strings"
+	"sync"
+	"syscall"
+	"time"
+
+	"bilidown/bilibili"
+	"bilidown/common"
+	"bilidown/util"
+)
+
+// TaskInitOption 创建任务时需要从 POST 请求获取的参数
+type TaskInitOption struct {
+	Bvid         string             `json:"bvid"`
+	Cid          int                `json:"cid"`
+	Format       common.MediaFormat `json:"format"`
+	Title        string             `json:"title"`
+	Owner        string             `json:"owner"`
+	Cover        string             `json:"cover"`
+	Status       TaskStatus         `json:"status"`
+	Folder       string             `json:"folder"`
+	Audio        string             `json:"audio"`
+	Video        string             `json:"video"`
+	Duration     int                `json:"duration"`
+	DownloadType string             `json:"downloadType"`
+}
+
+// TaskInDB 任务数据库中的数据
+type TaskInDB struct {
+	TaskInitOption
+	ID       int64     `json:"id"`
+	CreateAt time.Time `json:"createAt"`
+}
+
+func (task *TaskInDB) FilePath() string {
+	ext := ".mp4"
+	if task.DownloadType == "audio" {
+		ext = ".m4a"
+	}
+	return filepath.Join(task.Folder,
+		fmt.Sprintf("%s %s%s", task.Title,
+			strings.Replace(base64.StdEncoding.EncodeToString([]byte(strconv.FormatInt(task.ID, 10))), "=", "", -1),
+			ext,
+		),
+	)
+}
+
+// done | waiting | running | error
+type TaskStatus string
+
+type Task struct {
+	TaskInDB
+	AudioProgress float64 `json:"audioProgress"`
+	VideoProgress float64 `json:"videoProgress"`
+	MergeProgress float64 `json:"mergeProgress"`
+}
+
+var GlobalTaskList = []*Task{}
+var GlobalTaskMux = &sync.Mutex{}
+var GlobalDownloadSem = util.NewSemaphore(1)
+var GlobalMergeSem = util.NewSemaphore(1)
+
+func (task *Task) Create(db *sql.DB) error {
+	util.SqliteLock.Lock()
+	result, err := db.Exec(`INSERT INTO "task" ("bvid", "cid", "format", "title", "owner", "cover", "status", "folder", "duration", "download_type")
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		task.Bvid,
+		task.Cid,
+		task.Format,
+		task.Title,
+		task.Owner,
+		task.Cover,
+		task.Status,
+		task.Folder,
+		task.Duration,
+		task.DownloadType,
+	)
+	util.SqliteLock.Unlock()
+	if err != nil {
+		return err
+	}
+
+	task.ID, err = result.LastInsertId()
+	task.CreateAt = time.Now()
+	return err
+}
+
+// Create 创建任务，并将任务加入全局任务列表
+// Create 创建任务，并将任务加入全局任务列表
+func (task *Task) Start() {
+	if task.DownloadType == "" {
+		task.DownloadType = "merge"
+	}
+	GlobalTaskMux.Lock()
+	GlobalTaskList = append(GlobalTaskList, task)
+	GlobalTaskMux.Unlock()
+	db := util.MustGetDB()
+	defer db.Close()
+	sessdata, err := bilibili.GetSessdata(db)
+	if err != nil {
+		task.UpdateStatus(db, "error", fmt.Errorf("bilibili.GetSessdata: %v", err))
+		return
+	}
+	client := &bilibili.BiliClient{SESSDATA: sessdata}
+
+	GlobalDownloadSem.Acquire()
+	task.UpdateStatus(db, "running")
+
+	defer func() {
+		// 无论任务怎么着，在执行下一个任务前都强制休眠，防止bili抽风或者限速
+		delaySeconds := 5 + rand.Intn(11)
+		delay := time.Duration(delaySeconds) * time.Second
+		log.Printf("任务 ID[%d] 结束，休眠 %v 后开启...\n", task.ID, delay)
+		time.Sleep(delay)
+
+		// 休眠结束后，才真正释放下载令牌
+		GlobalDownloadSem.Release()
+	}()
+
+	if task.DownloadType == "audio" {
+		// 仅音频模式
+		err = DownloadMedia(client, task.Audio, task, "audio")
+		if err != nil {
+
+			task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
+			return
+		}
+
+		outputPath := task.TaskInDB.FilePath()
+		audioPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".audio")
+		err = os.Rename(audioPath, outputPath)
+		if err != nil {
+			task.UpdateStatus(db, "error", fmt.Errorf("os.Rename: %v", err))
+			return
+		}
+		if err := task.addMetadata(outputPath); err != nil {
+			log.Printf("添加元数据失败 (任务ID: %d): %v", task.ID, err)
+		}
+		task.UpdateStatus(db, "done")
+		return
+
+	} else if task.DownloadType == "video" {
+		// 仅视频模式
+		err = DownloadMedia(client, task.Video, task, "video")
+		if err != nil {
+
+			task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
+			return
+		}
+
+		outputPath := task.TaskInDB.FilePath()
+		videoPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".video")
+		err = os.Rename(videoPath, outputPath)
+		if err != nil {
+			task.UpdateStatus(db, "error", fmt.Errorf("os.Rename: %v", err))
+			return
+		}
+		if err := task.addMetadata(outputPath); err != nil {
+			log.Printf("添加元数据失败 (任务ID: %d): %v", task.ID, err)
+		}
+		task.UpdateStatus(db, "done")
+		return
+
+	} else {
+		// 合并模式：下载音频和视频，然后合并
+		err = DownloadMedia(client, task.Audio, task, "audio")
+		if err != nil {
+
+			task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
+			return
+		}
+		err = DownloadMedia(client, task.Video, task, "video")
+		if err != nil {
+
+			task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
+			return
+		}
+
+		outputPath := task.TaskInDB.FilePath()
+		videoPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".video")
+		audioPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".audio")
+
+		GlobalMergeSem.Acquire()
+		err = task.MergeMedia(outputPath, videoPath, audioPath)
+		if err != nil {
+			GlobalMergeSem.Release()
+			task.UpdateStatus(db, "error", fmt.Errorf("task.MergeMedia: %v", err))
+			return
+		}
+		err = os.Remove(videoPath)
+		if err != nil {
+			GlobalMergeSem.Release()
+			task.UpdateStatus(db, "error", fmt.Errorf("os.Remove: %v", err))
+			return
+		}
+		err = os.Remove(audioPath)
+		if err != nil {
+			GlobalMergeSem.Release()
+			task.UpdateStatus(db, "error", fmt.Errorf("os.Remove: %v", err))
+			return
+		}
+		GlobalMergeSem.Release()
+
+		if err := task.addMetadata(outputPath); err != nil {
+			log.Printf("添加元数据失败 (任务ID: %d): %v", task.ID, err)
+		}
+		task.UpdateStatus(db, "done")
+	}
+}
+
+// 合并音视频
+func (task *Task) MergeMedia(outputPath string, inputPaths ...string) error {
+	inputs := []string{}
+	for _, path := range inputPaths {
+		inputs = append(inputs, "-i", path)
+	}
+
+	ffmpegPath, err := util.GetFFmpegPath()
+	if err != nil {
+		return err
+	}
+
+	cmd := exec.Command(ffmpegPath, append(inputs, "-c:v", "copy", "-c:a", "copy", "-progress", "pipe:1", "-strict", "-2", outputPath)...)
+
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	scanner := bufio.NewScanner(stdout)
+
+	progress := newProgressBar(int64(task.Duration))
+	outTimeRegex := regexp.MustCompile(`out_time_ms=(\d+)`) // 毫秒
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		match := outTimeRegex.FindStringSubmatch(line)
+		if len(match) == 2 {
+			outTime, err := strconv.ParseInt(match[1], 10, 64)
+			if err != nil {
+				return err
+			}
+			progress.current = outTime / 1000000
+			task.MergeProgress = progress.percent()
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+
+	if err := cmd.Wait(); err != nil {
+		return err
+	}
+	task.MergeProgress = 1
+
+	return nil
+}
+
+func GetVideoURL(medias []bilibili.Media, format common.MediaFormat) (string, error) {
+	for _, code := range []int{12, 7, 13} {
+		for _, item := range medias {
+			if item.ID == format && item.Codecid == code {
+				return item.BaseURL, nil
+			}
+		}
+	}
+	return "", errors.New("未找到对应视频分辨率格式")
+}
+
+func GetAudioURL(dash *bilibili.Dash) string {
+	if dash.Flac != nil {
+		return dash.Flac.Audio.BaseURL
+	}
+	var maxAudioID common.MediaFormat
+	var audioURL string
+	for _, item := range dash.Audio {
+		if item.ID > maxAudioID {
+			maxAudioID = item.ID
+			audioURL = item.BaseURL
+		}
+	}
+	return audioURL
+}
+
+func (task *Task) UpdateStatus(db *sql.DB, status TaskStatus, errs ...error) error {
+	util.SqliteLock.Lock()
+	_, err := db.Exec(`UPDATE "task" SET "status" = ? WHERE "id" = ?`, status, task.ID)
+	util.SqliteLock.Unlock()
+	if err != nil {
+		return nil
+	}
+	for _, err := range errs {
+		if err != nil {
+			err = util.CreateLog(db, fmt.Sprintf("Task-%d-Error: %v", task.ID, err))
+			if err != nil {
+				log.Fatalln("CreateLog:", err)
+			}
+		}
+	}
+	task.Status = status
+	return err
+}
+
+func DownloadMedia(client *bilibili.BiliClient, _url string, task *Task, mediaType string) error {
+	var resp *http.Response
+	var err error
+	for i := 0; i < 5; i++ {
+		resp, err = client.SimpleGET(_url, nil)
+		if err == nil {
+			break
+		}
+	}
+
+	if err != nil {
+		return err
+	}
+
+	filename := strconv.FormatInt(task.ID, 10) + "." + mediaType
+	filepath := filepath.Join(task.Folder, filename)
+
+	progress := newProgressBar(resp.ContentLength)
+
+	file, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	reader := io.TeeReader(resp.Body, file)
+	buf := make([]byte, 1024)
+	for {
+		n, err := reader.Read(buf)
+		if err != nil && err != io.EOF {
+			return err
+		}
+		if n == 0 {
+			break
+		}
+
+		progress.add(n)
+		GlobalTaskMux.Lock()
+		if mediaType == "video" {
+			task.VideoProgress = progress.percent()
+		} else {
+			task.AudioProgress = progress.percent()
+		}
+		GlobalTaskMux.Unlock()
+	}
+	return nil
+}
+
+type progressBar struct {
+	total   int64
+	current int64
+}
+
+func (p *progressBar) add(n int) {
+	p.current += int64(n)
+}
+
+func (p *progressBar) percent() float64 {
+	return float64(p.current) / float64(p.total)
+}
+
+func newProgressBar(total int64) *progressBar {
+	return &progressBar{
+		total: total,
+	}
+}
+
+func GetTaskList(db *sql.DB, page int, pageSize int) ([]TaskInDB, error) {
+	tasks := []TaskInDB{}
+	util.SqliteLock.Lock()
+	rows, err := db.Query(`SELECT
+		"id", "bvid", "cid", "format", "title",
+		"owner", "cover", "status", "folder", "duration", "download_type", "create_at"
+	FROM "task" ORDER BY "id" DESC LIMIT ?, ?`,
+		page*pageSize, pageSize,
+	)
+	util.SqliteLock.Unlock()
+	if err != nil {
+		return nil, err
+	}
+
+	createAt := ""
+
+	for rows.Next() {
+		task := TaskInDB{}
+		err = rows.Scan(
+			&task.ID,
+			&task.Bvid,
+			&task.Cid,
+			&task.Format,
+			&task.Title,
+			&task.Owner,
+			&task.Cover,
+			&task.Status,
+			&task.Folder,
+			&task.Duration,
+			&task.DownloadType,
+			&createAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		task.CreateAt, err = time.Parse("2006-01-02 15:04:05", createAt)
+		if err != nil {
+			return nil, err
+		}
+		tasks = append(tasks, task)
+	}
+	return tasks, nil
+}
+
+func DeleteTask(db *sql.DB, taskID int) error {
+	util.SqliteLock.Lock()
+	_, err := db.Exec(`DELETE FROM "task" WHERE "id" = ?`, taskID)
+	util.SqliteLock.Unlock()
+	return err
+}
+
+func GetTask(db *sql.DB, taskID int) (*TaskInDB, error) {
+	task := TaskInDB{}
+	createAt := ""
+	util.SqliteLock.Lock()
+	err := db.QueryRow(`SELECT
+		"id", "bvid", "cid", "format", "title",
+		"owner", "cover", "status", "folder", "duration", "download_type", "create_at"
+	FROM "task" WHERE "id" = ?`,
+		taskID,
+	).Scan(
+		&task.ID,
+		&task.Bvid,
+		&task.Cid,
+		&task.Format,
+		&task.Title,
+		&task.Owner,
+		&task.Cover,
+		&task.Status,
+		&task.Folder,
+		&task.Duration,
+		&task.DownloadType,
+		&createAt,
+	)
+	util.SqliteLock.Unlock()
+	if err != nil {
+		return nil, err
+	}
+
+	task.CreateAt, err = time.Parse("2006-01-02 15:04:05", createAt)
+	if err != nil {
+		return nil, err
+	}
+	return &task, nil
+}
+
+// addMetadata 使用 ffmpeg 给输出文件添加元数据（description 和 artist）
+func (task *Task) addMetadata(filePath string) error {
+	ffmpegPath, err := util.GetFFmpegPath()
+	if err != nil {
+		return err
+	}
+
+	desc := task.Bvid
+	if desc == "" {
+		desc = ""
+	}
+
+	author := task.Owner
+
+	// 临时文件加上 .mp4 扩展名
+	tempPath := filePath + ".tmp.mp4"
+
+	// 使用双引号包裹文件路径，避免特殊字符
+	cmd := exec.Command(ffmpegPath,
+		"-i", filePath,
+		"-metadata", "description="+desc,
+		"-metadata", "artist="+author,
+		"-codec", "copy",
+		"-y",
+		tempPath,
+	)
+
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("ffmpeg添加元数据失败: %v, 输出: %s", err, string(output))
+	}
+
+	if err := os.Remove(filePath); err != nil {
+		return fmt.Errorf("删除原文件失败: %v", err)
+	}
+	if err := os.Rename(tempPath, filePath); err != nil {
+		return fmt.Errorf("重命名临时文件失败: %v", err)
+	}
+
+	return nil
+}
