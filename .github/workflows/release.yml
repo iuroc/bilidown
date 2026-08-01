@@ -111,16 +111,16 @@ jobs:
             format: zip
             archive: bilidown_Windows_arm64.zip
           # macOS（macos-13 为 Intel，用于 darwin/amd64；macos-14 为 Apple Silicon）
-          - target: darwin-amd64
-            runner: macos-13
-            goos: darwin
-            goarch: amd64
-            cc: ""
-            cgo: "1"
-            ext: ""
-            ldflags: "-s -w"
-            format: tar.gz
-            archive: bilidown_Darwin_x86_64.tar.gz
+          # - target: darwin-amd64
+          #   runner: macos-13
+          #   goos: darwin
+          #   goarch: amd64
+          #   cc: ""
+          #   cgo: "1"
+          #   ext: ""
+          #   ldflags: "-s -w"
+          #   format: tar.gz
+          #   archive: bilidown_Darwin_x86_64.tar.gz
           - target: darwin-arm64
             runner: macos-14
             goos: darwin
