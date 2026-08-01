@@ -170,15 +170,13 @@ jobs:
           install: mingw-w64-cross-x86_64-gcc
 
       # ffmpeg.exe 被 .gitignore 忽略，不在仓库内，Windows 发行包需在 CI 中下载
+      # 从本仓库 v1.0.1 release 下载，与历史发行版一致（不再依赖第三方 BtbN）
       - name: Download ffmpeg.exe (Windows only)
         if: matrix.goos == 'windows'
-        shell: pwsh
+        shell: bash
         run: |
-          New-Item -ItemType Directory -Force server/bin
-          Invoke-WebRequest -Uri "https://github.com/BtbN/FFmpeg-Builds/releases/latest/download/ffmpeg-master-latest-win64-gpl.zip" -OutFile "$env:TEMP\ffmpeg.zip"
-          Expand-Archive -Path "$env:TEMP\ffmpeg.zip" -DestinationPath "$env:TEMP\ffmpeg" -Force
-          $exe = Get-ChildItem "$env:TEMP\ffmpeg" -Recurse -Filter ffmpeg.exe | Where-Object { $_.FullName -match '\\bin\\ffmpeg\.exe$' } | Select-Object -First 1
-          Copy-Item $exe.FullName server/bin/ffmpeg.exe
+          mkdir -p server/bin
+          curl -fsSL -o server/bin/ffmpeg.exe "https://github.com/iuroc/bilidown/releases/download/v1.0.1/ffmpeg.exe"
 
       - name: Build
         shell: bash
