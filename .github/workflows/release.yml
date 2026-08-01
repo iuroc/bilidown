@@ -2,7 +2,8 @@
 #
 # 取代原 goreleaser + Docker 交叉编译方案：
 # - 在每个目标平台的官方原生 runner 上构建，不再需要 Docker 容器 / osxcross / mingw 交叉容器
-# - systray 依赖 CGO，因此 Linux 装 GTK/appindicator 头文件、Windows 装 MinGW-w64、macOS 用原生 clang
+# - systray 在 Linux/macOS 需要 CGO（GTK/appindicator、AppKit），Windows 是纯 Go（Win32 API）
+#   Windows 各架构用 CGO_ENABLED=0 构建，无需 MinGW-w64
 #
 # 构建产物命名与 goreleaser 保持一致：
 #   bilidown_Linux_x86_64.tar.gz
@@ -73,6 +74,7 @@ jobs:
             goos: linux
             goarch: amd64
             cc: ""
+            cgo: "1"
             ext: ""
             ldflags: "-s -w"
             format: tar.gz
@@ -82,7 +84,8 @@ jobs:
             runner: windows-latest
             goos: windows
             goarch: amd64
-            cc: x86_64-w64-mingw32-gcc
+            cc: ""
+            cgo: "0"
             ext: .exe
             ldflags: "-s -w -H windowsgui"
             format: zip
@@ -91,7 +94,8 @@ jobs:
             runner: windows-latest
             goos: windows
             goarch: "386"
-            cc: i686-w64-mingw32-gcc
+            cc: ""
+            cgo: "0"
             ext: .exe
             ldflags: "-s -w -H windowsgui"
             format: zip
@@ -100,7 +104,8 @@ jobs:
             runner: windows-latest
             goos: windows
             goarch: arm64
-            cc: aarch64-w64-mingw32-gcc
+            cc: ""
+            cgo: "0"
             ext: .exe
             ldflags: "-s -w -H windowsgui"
             format: zip
@@ -111,6 +116,7 @@ jobs:
             goos: darwin
             goarch: amd64
             cc: ""
+            cgo: "1"
             ext: ""
             ldflags: "-s -w"
             format: tar.gz
@@ -120,6 +126,7 @@ jobs:
             goos: darwin
             goarch: arm64
             cc: ""
+            cgo: "1"
             ext: ""
             ldflags: "-s -w"
             format: tar.gz
@@ -147,28 +154,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y pkg-config gcc libgtk-3-dev libayatana-appindicator3-dev
 
-      # Windows：CGO 需要 MinGW-w64 编译器
-      - name: Set up MinGW-w64 (amd64)
-        if: matrix.goos == 'windows' && matrix.goarch == 'amd64'
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: MINGW64
-          install: mingw-w64-x86_64-gcc
-
-      - name: Set up MinGW-w64 (386)
-        if: matrix.goos == 'windows' && matrix.goarch == '386'
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: MINGW32
-          install: mingw-w64-i686-gcc
-
-      - name: Set up MinGW-w64 (arm64 cross)
-        if: matrix.goos == 'windows' && matrix.goarch == 'arm64'
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: MINGW64
-          install: mingw-w64-cross-x86_64-gcc
-
+      # Windows：systray 为纯 Go（Win32 API），无需 MinGW-w64，直接 CGO_ENABLED=0 交叉编译
       # ffmpeg.exe 被 .gitignore 忽略，不在仓库内，Windows 发行包需在 CI 中下载
       # 从本仓库 v1.0.1 release 下载，与历史发行版一致（不再依赖第三方 BtbN）
       - name: Download ffmpeg.exe (Windows only)
@@ -182,7 +168,7 @@ jobs:
         shell: bash
         working-directory: server
         env:
-          CGO_ENABLED: "1"
+          CGO_ENABLED: ${{ matrix.cgo }}
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           CC: ${{ matrix.cc }}
