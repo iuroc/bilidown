@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/exec"
@@ -16,6 +17,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"bilidown/bilibili"
@@ -71,8 +73,8 @@ type Task struct {
 
 var GlobalTaskList = []*Task{}
 var GlobalTaskMux = &sync.Mutex{}
-var GlobalDownloadSem = util.NewSemaphore(3)
-var GlobalMergeSem = util.NewSemaphore(3)
+var GlobalDownloadSem = util.NewSemaphore(1)
+var GlobalMergeSem = util.NewSemaphore(1)
 
 func (task *Task) Create(db *sql.DB) error {
 	util.SqliteLock.Lock()
@@ -100,6 +102,7 @@ func (task *Task) Create(db *sql.DB) error {
 }
 
 // Create 创建任务，并将任务加入全局任务列表
+// Create 创建任务，并将任务加入全局任务列表
 func (task *Task) Start() {
 	if task.DownloadType == "" {
 		task.DownloadType = "merge"
@@ -119,15 +122,26 @@ func (task *Task) Start() {
 	GlobalDownloadSem.Acquire()
 	task.UpdateStatus(db, "running")
 
+	defer func() {
+		// 无论任务怎么着，在执行下一个任务前都强制休眠，防止bili抽风或者限速
+		delaySeconds := 5 + rand.Intn(11)
+		delay := time.Duration(delaySeconds) * time.Second
+		log.Printf("任务 ID[%d] 结束，休眠 %v 后开启...\n", task.ID, delay)
+		time.Sleep(delay)
+
+		// 休眠结束后，才真正释放下载令牌
+		GlobalDownloadSem.Release()
+	}()
+
 	if task.DownloadType == "audio" {
-		// 仅音频模式：只下载音频，重命名音频文件为输出文件
+		// 仅音频模式
 		err = DownloadMedia(client, task.Audio, task, "audio")
 		if err != nil {
-			GlobalDownloadSem.Release()
+
 			task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
 			return
 		}
-		GlobalDownloadSem.Release()
+
 		outputPath := task.TaskInDB.FilePath()
 		audioPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".audio")
 		err = os.Rename(audioPath, outputPath)
@@ -135,21 +149,21 @@ func (task *Task) Start() {
 			task.UpdateStatus(db, "error", fmt.Errorf("os.Rename: %v", err))
 			return
 		}
-		// 添加元数据
 		if err := task.addMetadata(outputPath); err != nil {
 			log.Printf("添加元数据失败 (任务ID: %d): %v", task.ID, err)
 		}
 		task.UpdateStatus(db, "done")
 		return
+
 	} else if task.DownloadType == "video" {
-		// 仅视频模式：只下载视频，重命名视频文件为输出文件
+		// 仅视频模式
 		err = DownloadMedia(client, task.Video, task, "video")
 		if err != nil {
-			GlobalDownloadSem.Release()
+
 			task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
 			return
 		}
-		GlobalDownloadSem.Release()
+
 		outputPath := task.TaskInDB.FilePath()
 		videoPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".video")
 		err = os.Rename(videoPath, outputPath)
@@ -157,31 +171,31 @@ func (task *Task) Start() {
 			task.UpdateStatus(db, "error", fmt.Errorf("os.Rename: %v", err))
 			return
 		}
-		// 添加元数据
 		if err := task.addMetadata(outputPath); err != nil {
 			log.Printf("添加元数据失败 (任务ID: %d): %v", task.ID, err)
 		}
 		task.UpdateStatus(db, "done")
 		return
+
 	} else {
 		// 合并模式：下载音频和视频，然后合并
 		err = DownloadMedia(client, task.Audio, task, "audio")
 		if err != nil {
-			GlobalDownloadSem.Release()
+
 			task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
 			return
 		}
 		err = DownloadMedia(client, task.Video, task, "video")
 		if err != nil {
-			GlobalDownloadSem.Release()
+
 			task.UpdateStatus(db, "error", fmt.Errorf("DownloadMedia: %v", err))
 			return
 		}
-		GlobalDownloadSem.Release()
 
 		outputPath := task.TaskInDB.FilePath()
 		videoPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".video")
 		audioPath := filepath.Join(task.Folder, strconv.FormatInt(task.ID, 10)+".audio")
+
 		GlobalMergeSem.Acquire()
 		err = task.MergeMedia(outputPath, videoPath, audioPath)
 		if err != nil {
@@ -202,7 +216,7 @@ func (task *Task) Start() {
 			return
 		}
 		GlobalMergeSem.Release()
-		// 添加元数据
+
 		if err := task.addMetadata(outputPath); err != nil {
 			log.Printf("添加元数据失败 (任务ID: %d): %v", task.ID, err)
 		}
@@ -223,6 +237,8 @@ func (task *Task) MergeMedia(outputPath string, inputPaths ...string) error {
 	}
 
 	cmd := exec.Command(ffmpegPath, append(inputs, "-c:v", "copy", "-c:a", "copy", "-progress", "pipe:1", "-strict", "-2", outputPath)...)
+
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -258,6 +274,7 @@ func (task *Task) MergeMedia(outputPath string, inputPaths ...string) error {
 		return err
 	}
 	task.MergeProgress = 1
+
 	return nil
 }
 
@@ -484,6 +501,8 @@ func (task *Task) addMetadata(filePath string) error {
 		"-y",
 		tempPath,
 	)
+
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {

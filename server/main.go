@@ -19,8 +19,8 @@ import (
 )
 
 const (
-	HTTP_PORT = 8098      // 限定 HTTP 服务器端口
-	HTTP_HOST = ""        // 限定 HTTP 服务器主机
+	HTTP_PORT = 8098     // 限定 HTTP 服务器端口
+	HTTP_HOST = ""       // 限定 HTTP 服务器主机
 	VERSION   = "v2.1.1" // 软件版本号，将影响托盘标题显示
 )
 
@@ -132,12 +132,21 @@ func setMenuItem() {
 		}
 	}()
 
-	aboutItemText := "Github 项目主页"
+	aboutItemText := "Github 项目原始主页"
 	aboutItem := systray.AddMenuItem(aboutItemText, aboutItemText)
 	go func() {
 		for {
 			<-aboutItem.ClickedCh
 			openBrowser("https://github.com/iuroc/bilidown")
+		}
+	}()
+
+	about2ItemText := "修改的 Github 项目主页"
+	about2Item := systray.AddMenuItem(about2ItemText, about2ItemText)
+	go func() {
+		for {
+			<-about2Item.ClickedCh
+			openBrowser("https://github.com/Fritilla0625/bilidown-lchange")
 		}
 	}()
 
