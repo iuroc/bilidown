@@ -18,6 +18,14 @@
 2. 非 Windows 系统，请先安装 [FFmpeg 工具](https://www.ffmpeg.org/)
 3. 将安装包解压后执行即可
 
+## 第三方客户端
+
+感谢社区开发者对 Bilidown 的支持。
+
+- **bilidown-for-mac**（macOS 原生客户端）
+  - 项目地址：https://github.com/Qwehhh2233/bilidown-for-mac
+  - 基于 Bilidown 后端实现，由社区开发者维护，为 macOS 用户提供原生客户端体验
+
 ## 软件特色
 
 1. 前端采用 [Bootstrap](https://github.com/twbs/bootstrap) 和 [VanJS](https://github.com/vanjs-org/van) 构建，轻量美观
