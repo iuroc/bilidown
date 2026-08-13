@@ -46,7 +46,9 @@ func onReady() {
 	mustRunServer()
 	// 调用默认浏览器访问端口
 	time.Sleep(time.Millisecond * 1000)
-	openBrowser(urlLocalUnix)
+	if os.Getenv("BILIDOWN_STARTUP_OPEN_BROWSER") != "false" {
+		openBrowser(urlLocalUnix)
+	}
 	// 保持运行
 	select {}
 }
