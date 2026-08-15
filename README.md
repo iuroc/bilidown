@@ -141,4 +141,4 @@ go build && ./bilidown
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=iuroc/bilidown&type=Date)](https://www.star-history.com/#iuroc/bilidown&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=iuroc/bilidown&type=Date)](https://star-history.dera.page/#iuroc/bilidown&Date)
