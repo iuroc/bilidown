@@ -1,5 +1,5 @@
 {
-  "name": "bilidown",
+  "name": "@bilidown/client",
   "version": "1.0.0",
   "description": "",
   "scripts": {
