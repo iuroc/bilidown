@@ -2,9 +2,8 @@
     "name": "bilidown",
     "version": "3.0.0",
     "scripts": {
-        "dev": "pnpm -F client dev",
-        "build": "pnpm build:client && pnpm build:server",
-        "build:server": "cd server && go build",
-        "build:client": "pnpm -F client build"
+        "dev": "pnpm -r --parallel --stream dev",
+        "build": "pnpm -r build",
+        "start": "pnpm -F server start"
     }
 }

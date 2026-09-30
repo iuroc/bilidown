@@ -1,3 +1,8 @@
 {
-    "name": "@bilidown/server"
+    "name": "@bilidown/server",
+    "scripts": {
+        "dev": "air",
+        "build": "go build",
+        "start": "bilidown"
+    }
 }

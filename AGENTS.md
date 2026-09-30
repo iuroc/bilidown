@@ -54,6 +54,8 @@ go build && ./bilidown    # 或 go run main.go
 
 前端开发时可在 `client/` 目录用 `pnpm dev` 启动 Vite 热更新；dev 服务器已把 `/api` 代理到 `http://127.0.0.1:8098`（见 `vite.config.ts`），因此调试接口时需要后端同时在 8098 端口运行。
 
+前后端联调时，在仓库根目录运行 `pnpm dev`：它并行启动前端 Vite 热更新与后端 air 热重载（`pnpm -r --parallel`）。air 需单独安装：`go install github.com/air-verse/air@latest`。`pnpm build` 后可运行 `pnpm start` 直接启动打包好的 `bilidown` 可执行文件。
+
 日常只需改后端时，在 `server/` 目录直接运行 `main.go` 即可，无需任何交叉编译或容器。
 
 ## 构建
